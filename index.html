@@ -116,7 +116,6 @@ input[type="range"] {
   overflow: hidden;
 }
 
-/* petite zone d'état, pas de grand encart vide */
 #status {
   position: absolute;
   top: 8px;
@@ -135,10 +134,6 @@ input[type="range"] {
   color: #86efac;
 }
 
-/*
-  Le texte dispose d'espace avant et après,
-  mais il n'y a aucun grand bloc visuel noir distinct.
-*/
 #prompter {
   position: absolute;
   inset: 0;
@@ -408,9 +403,8 @@ function updateDisplay(forceScroll = false) {
 
   /*
     On ne reconstruit jamais le texte.
-    On modifie seulement les classes.
-    Donc aucun changement de taille ou retour à la ligne
-    provoqué par le suivi vocal.
+    Cela évite les changements de ligne
+    et les sauts visuels pendant la lecture.
   */
 
   for (let i = 0; i < words.length; i++) {
@@ -429,10 +423,7 @@ function updateDisplay(forceScroll = false) {
   }
 
   /*
-    Le prompteur ne se repositionne pas à chaque mot.
-
-    Il attend plusieurs mots avant de bouger,
-    ce qui donne un déplacement beaucoup plus calme.
+    Le prompteur ne bouge pas à chaque mot.
   */
 
   if (
@@ -469,13 +460,8 @@ function scrollToCurrentWord() {
 
   target = Math.max(0, target);
 
-  /*
-    Limitation importante :
-    même si la reconnaissance croit avoir avancé,
-    l'écran ne peut pas bondir énormément d'un seul coup.
-  */
-
-  const currentScroll = prompter.scrollTop;
+  const currentScroll =
+    prompter.scrollTop;
 
   const maximumJump =
     prompter.clientHeight * 0.28;
@@ -496,7 +482,7 @@ function scrollToCurrentWord() {
 
 
 /* =========================================================
-   RECHERCHE D'UNE SÉQUENCE PRONONCÉE
+   RECHERCHE D'UNE POSITION
 ========================================================= */
 
 function findBestPosition(spokenWords) {
@@ -505,39 +491,37 @@ function findBestPosition(spokenWords) {
     return null;
   }
 
-  /*
-    On ne cherche que près de la position actuelle.
+  const recentSpoken =
+    spokenWords.slice(-6);
 
-    Surtout, on n'autorise pas le moteur à aller
-    très loin devant simplement parce qu'il reconnaît
-    un mot courant comme "de", "la", "les", etc.
-  */
 
-  const searchStart =
+  /* =====================================================
+     1. RECHERCHE NORMALE
+
+     On cherche seulement près de la position actuelle.
+     C'est le comportement prudent qui fonctionne bien.
+  ===================================================== */
+
+  const localStart =
     Math.max(0, currentWord - 4);
 
-  const searchEnd =
-    Math.min(words.length - 1, currentWord + 8);
+  const localEnd =
+    Math.min(
+      words.length - 1,
+      currentWord + 8
+    );
 
   let bestPosition = null;
   let bestScore = 0;
 
+
   for (
-    let candidate = searchStart;
-    candidate <= searchEnd;
+    let candidate = localStart;
+    candidate <= localEnd;
     candidate++
   ) {
 
     let score = 0;
-    let compared = 0;
-
-    /*
-      On compare jusqu'aux 5 derniers mots entendus
-      avec plusieurs mots du texte.
-    */
-
-    const recentSpoken =
-      spokenWords.slice(-5);
 
     for (
       let offset = 0;
@@ -546,14 +530,14 @@ function findBestPosition(spokenWords) {
     ) {
 
       const spoken =
-        recentSpoken[recentSpoken.length - 1 - offset];
+        recentSpoken[
+          recentSpoken.length - 1 - offset
+        ];
 
       const textIndex =
         candidate - offset;
 
       if (textIndex < 0) continue;
-
-      compared++;
 
       if (
         words[textIndex] &&
@@ -562,11 +546,6 @@ function findBestPosition(spokenWords) {
         score++;
       }
     }
-
-    /*
-      Il faut au moins deux correspondances,
-      sauf tout au début de la chronique.
-    */
 
     if (
       score > bestScore &&
@@ -581,7 +560,104 @@ function findBestPosition(spokenWords) {
     }
   }
 
-  return bestPosition;
+
+  /*
+    Si la recherche locale donne une bonne
+    correspondance, on garde le fonctionnement normal.
+  */
+
+  if (bestPosition !== null) {
+
+    return {
+      position: bestPosition,
+      jump: false
+    };
+  }
+
+
+  /* =====================================================
+     2. RATTRAPAGE INTELLIGENT
+
+     Si rien ne correspond près de la position actuelle,
+     l'élève a peut-être sauté une phrase.
+
+     On cherche alors plus loin, mais on exige une
+     correspondance beaucoup plus forte.
+  ===================================================== */
+
+  const recoveryStart =
+    currentWord + 9;
+
+  const recoveryEnd =
+    Math.min(
+      words.length - 1,
+      currentWord + 60
+    );
+
+  let recoveryPosition = null;
+  let recoveryScore = 0;
+
+
+  for (
+    let candidate = recoveryStart;
+    candidate <= recoveryEnd;
+    candidate++
+  ) {
+
+    let score = 0;
+
+    for (
+      let offset = 0;
+      offset < recentSpoken.length;
+      offset++
+    ) {
+
+      const spoken =
+        recentSpoken[
+          recentSpoken.length - 1 - offset
+        ];
+
+      const textIndex =
+        candidate - offset;
+
+      if (textIndex < recoveryStart) {
+        continue;
+      }
+
+      if (
+        words[textIndex] &&
+        words[textIndex].normalized === spoken
+      ) {
+        score++;
+      }
+    }
+
+    /*
+      Trois correspondances minimum sont nécessaires
+      pour accepter un grand saut.
+    */
+
+    if (
+      score >= 3 &&
+      score > recoveryScore
+    ) {
+
+      recoveryScore = score;
+      recoveryPosition = candidate;
+    }
+  }
+
+
+  if (recoveryPosition !== null) {
+
+    return {
+      position: recoveryPosition,
+      jump: true
+    };
+  }
+
+
+  return null;
 }
 
 
@@ -596,12 +672,20 @@ const SpeechRecognition =
 
 if (SpeechRecognition) {
 
-  recognition = new SpeechRecognition();
+  recognition =
+    new SpeechRecognition();
 
-  recognition.lang = "fr-FR";
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.maxAlternatives = 1;
+  recognition.lang =
+    "fr-FR";
+
+  recognition.continuous =
+    true;
+
+  recognition.interimResults =
+    true;
+
+  recognition.maxAlternatives =
+    1;
 
 
   recognition.onstart = () => {
@@ -611,7 +695,9 @@ if (SpeechRecognition) {
     statusBox.textContent =
       "🎤 Écoute en cours";
 
-    statusBox.classList.add("listening");
+    statusBox.classList.add(
+      "listening"
+    );
 
     voiceBtn.textContent =
       "🎤 Écoute";
@@ -623,8 +709,8 @@ if (SpeechRecognition) {
     let transcript = "";
 
     /*
-      On utilise ici la dernière hypothèse disponible,
-      sans additionner encore et encore tout l'historique.
+      On récupère uniquement la reconnaissance
+      actuellement fournie par le navigateur.
     */
 
     for (
@@ -637,6 +723,7 @@ if (SpeechRecognition) {
         event.results[i][0].transcript + " ";
     }
 
+
     const spokenWords =
       transcript
         .trim()
@@ -644,39 +731,77 @@ if (SpeechRecognition) {
         .map(normalizeWord)
         .filter(Boolean);
 
-    if (!spokenWords.length) return;
 
-    const bestPosition =
-      findBestPosition(spokenWords);
-
-    if (bestPosition === null) {
+    if (!spokenWords.length) {
       return;
     }
 
-    /*
-      Sécurité essentielle :
-      une reconnaissance ne peut avancer
-      que de quelques mots maximum.
-    */
 
-    const maximumAdvance = 4;
+    const match =
+      findBestPosition(spokenWords);
 
-    let newPosition =
-      Math.min(
-        bestPosition + 1,
-        currentWord + maximumAdvance
-      );
 
-    /*
-      On autorise un petit retour arrière,
-      utile si l'élève reprend une phrase.
-    */
+    if (match === null) {
+      return;
+    }
 
-    newPosition =
-      Math.max(
-        currentWord - 2,
-        newPosition
-      );
+
+    let newPosition;
+
+
+    /* ===================================================
+       CAS 1 : SAUT DE PHRASE DÉTECTÉ
+    =================================================== */
+
+    if (match.jump) {
+
+      /*
+        Plusieurs mots correspondent nettement
+        à un passage situé plus loin.
+
+        On considère donc que l'élève a volontairement
+        sauté une phrase ou un passage.
+      */
+
+      newPosition =
+        match.position + 1;
+
+    }
+
+
+    /* ===================================================
+       CAS 2 : LECTURE NORMALE
+    =================================================== */
+
+    else {
+
+      /*
+        On conserve la sécurité de la version
+        précédente : le suivi ne peut pas bondir
+        brutalement vers l'avant.
+      */
+
+      const maximumAdvance = 4;
+
+      newPosition =
+        Math.min(
+          match.position + 1,
+          currentWord + maximumAdvance
+        );
+
+
+      /*
+        Petit retour arrière autorisé si l'élève
+        reprend quelques mots.
+      */
+
+      newPosition =
+        Math.max(
+          currentWord - 2,
+          newPosition
+        );
+    }
+
 
     newPosition =
       Math.max(
@@ -687,16 +812,37 @@ if (SpeechRecognition) {
         )
       );
 
+
     if (newPosition !== currentWord) {
 
-      currentWord = newPosition;
+      currentWord =
+        newPosition;
 
-      updateDisplay(false);
+
+      /*
+        Lors d'un véritable saut de phrase,
+        on autorise le prompteur à rejoindre
+        immédiatement la nouvelle zone.
+      */
+
+      if (match.jump) {
+        lastScrollWord = -1;
+      }
+
+
+      updateDisplay(
+        match.jump
+      );
     }
   };
 
 
   recognition.onerror = event => {
+
+    /*
+      Une courte absence de parole n'est pas
+      considérée comme une erreur.
+    */
 
     if (event.error === "no-speech") {
       return;
@@ -712,15 +858,18 @@ if (SpeechRecognition) {
     if (listening) {
 
       /*
-        Chrome arrête parfois automatiquement
-        une session de reconnaissance.
+        Chrome peut fermer automatiquement une
+        session de reconnaissance.
+
         On la relance uniquement si l'utilisateur
-        n'a pas demandé la pause.
+        est toujours en mode lecture.
       */
 
       setTimeout(() => {
 
-        if (!listening) return;
+        if (!listening) {
+          return;
+        }
 
         try {
           recognition.start();
@@ -729,12 +878,16 @@ if (SpeechRecognition) {
 
       }, 250);
 
-    } else {
+    }
+
+    else {
 
       statusBox.textContent =
         "⏸ Suivi arrêté";
 
-      statusBox.classList.remove("listening");
+      statusBox.classList.remove(
+        "listening"
+      );
 
       voiceBtn.textContent =
         "🎤 Suivi vocal";
@@ -744,153 +897,177 @@ if (SpeechRecognition) {
 
 
 /* =========================================================
-   LANCER LE SUIVI
+   LANCER / ARRÊTER LE SUIVI VOCAL
 ========================================================= */
 
-voiceBtn.addEventListener("click", () => {
+voiceBtn.addEventListener(
+  "click",
+  () => {
 
-  if (!SpeechRecognition) {
-
-    alert(
-      "Le suivi vocal n'est pas disponible dans ce navigateur. Essayez Chrome ou Edge."
-    );
-
-    return;
-  }
-
-  /*
-    Si on est encore dans l'éditeur,
-    on prépare d'abord l'écran de lecture.
-  */
-
-  if (
-    editorScreen.style.display !== "none"
-  ) {
-
-    if (!buildText()) {
+    if (!SpeechRecognition) {
 
       alert(
-        "Collez d'abord le texte de votre chronique."
+        "Le suivi vocal n'est pas disponible dans ce navigateur. Essayez Chrome ou Edge."
       );
 
       return;
     }
 
-    editorScreen.style.display = "none";
-    readerScreen.style.display = "block";
 
-    prompter.scrollTop = 0;
+    /*
+      Si on se trouve encore dans l'éditeur,
+      on construit d'abord le prompteur.
+    */
 
-    updateDisplay(true);
-  }
+    if (
+      editorScreen.style.display !== "none"
+    ) {
 
-  if (!listening) {
+      if (!buildText()) {
 
-    listening = true;
+        alert(
+          "Collez d'abord le texte de votre chronique."
+        );
 
-    try {
-      recognition.start();
+        return;
+      }
+
+
+      editorScreen.style.display =
+        "none";
+
+      readerScreen.style.display =
+        "block";
+
+      prompter.scrollTop =
+        0;
+
+      updateDisplay(true);
     }
-    catch (e) {}
 
-  } else {
 
-    listening = false;
+    if (!listening) {
 
-    try {
-      recognition.stop();
+      listening = true;
+
+      try {
+        recognition.start();
+      }
+      catch (e) {}
+
     }
-    catch (e) {}
+
+    else {
+
+      listening = false;
+
+      try {
+        recognition.stop();
+      }
+      catch (e) {}
+    }
   }
-});
+);
 
 
 /* =========================================================
    PAUSE
 ========================================================= */
 
-pauseBtn.addEventListener("click", () => {
+pauseBtn.addEventListener(
+  "click",
+  () => {
 
-  listening = false;
+    listening = false;
 
-  if (recognition) {
+    if (recognition) {
 
-    try {
-      recognition.stop();
+      try {
+        recognition.stop();
+      }
+      catch (e) {}
     }
-    catch (e) {}
+
+    statusBox.textContent =
+      "⏸ En pause";
+
+    statusBox.classList.remove(
+      "listening"
+    );
+
+    voiceBtn.textContent =
+      "🎤 Suivi vocal";
   }
-
-  statusBox.textContent =
-    "⏸ En pause";
-
-  statusBox.classList.remove("listening");
-
-  voiceBtn.textContent =
-    "🎤 Suivi vocal";
-});
+);
 
 
 /* =========================================================
    RETOUR AU DÉBUT
 ========================================================= */
 
-resetBtn.addEventListener("click", () => {
+resetBtn.addEventListener(
+  "click",
+  () => {
 
-  currentWord = 0;
-  lastScrollWord = -1;
+    currentWord = 0;
+    lastScrollWord = -1;
 
-  prompter.scrollTop = 0;
+    prompter.scrollTop = 0;
 
-  updateDisplay(true);
+    updateDisplay(true);
 
-  statusBox.textContent =
-    "↩ Revenu au début";
-});
+    statusBox.textContent =
+      "↩ Revenu au début";
+  }
+);
 
 
 /* =========================================================
    MODIFIER LE TEXTE
 ========================================================= */
 
-editBtn.addEventListener("click", () => {
+editBtn.addEventListener(
+  "click",
+  () => {
 
-  listening = false;
+    listening = false;
 
-  if (recognition) {
+    if (recognition) {
 
-    try {
-      recognition.stop();
+      try {
+        recognition.stop();
+      }
+      catch (e) {}
     }
-    catch (e) {}
+
+    readerScreen.style.display =
+      "none";
+
+    editorScreen.style.display =
+      "block";
+
+    voiceBtn.textContent =
+      "🎤 Suivi vocal";
   }
-
-  readerScreen.style.display = "none";
-  editorScreen.style.display = "block";
-
-  voiceBtn.textContent =
-    "🎤 Suivi vocal";
-});
+);
 
 
 /* =========================================================
    TAILLE DU TEXTE
 ========================================================= */
 
-fontSize.addEventListener("input", () => {
+fontSize.addEventListener(
+  "input",
+  () => {
 
-  text.style.fontSize =
-    fontSize.value + "px";
+    text.style.fontSize =
+      fontSize.value + "px";
 
-  /*
-    Après changement de taille,
-    on replace doucement le mot actuel.
-  */
-
-  setTimeout(() => {
-    scrollToCurrentWord();
-  }, 50);
-});
+    setTimeout(() => {
+      scrollToCurrentWord();
+    }, 50);
+  }
+);
 
 </script>
 
