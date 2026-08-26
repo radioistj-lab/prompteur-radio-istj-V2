@@ -27,8 +27,6 @@
   --primary: #4f7cff;
   --primary-hover: #628aff;
   --green: #2fc77a;
-  --orange: #f0a43c;
-  --red: #e95d63;
   --current: #ffd84d;
   --read: #7c899d;
 }
@@ -178,7 +176,6 @@ input {
 #scriptTitle:focus,
 #inputText:focus {
   border-color: #557fff;
-
   box-shadow:
     0 0 0 3px rgba(79,124,255,.12);
 }
@@ -190,7 +187,7 @@ input {
 
 
 /* =========================================================
-   TEXTE
+   TEXTE ÉDITEUR
 ========================================================= */
 
 #inputText {
@@ -501,9 +498,14 @@ button:active {
   color: #ffe27a;
 }
 
+#displayBtn.active {
+  background: #29446f;
+  color: #c5d8ff;
+}
+
 
 /* =========================================================
-   TAILLE
+   TAILLE RAPIDE
 ========================================================= */
 
 .fontControl {
@@ -537,6 +539,130 @@ button:active {
   text-align: center;
 
   color: #aeb9ca;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   PANNEAU AFFICHAGE
+========================================================= */
+
+#displayPanel {
+  display: none;
+
+  position: absolute;
+
+  z-index: 200;
+
+  top: 66px;
+  right: 12px;
+
+  width: min(350px, calc(100vw - 24px));
+
+  padding: 16px;
+
+  border:
+    1px solid rgba(255,255,255,.1);
+
+  border-radius: 16px;
+
+  background:
+    rgba(16,23,37,.98);
+
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.55);
+}
+
+#displayPanel.open {
+  display: block;
+}
+
+.displayPanelTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 16px;
+}
+
+.displayPanelTitle strong {
+  font-size: 16px;
+}
+
+#closeDisplayBtn {
+  width: 30px;
+  height: 30px;
+
+  border-radius: 8px;
+
+  background: #202b3c;
+  color: #b9c4d4;
+}
+
+.settingGroup {
+  margin-bottom: 18px;
+}
+
+.settingGroup:last-of-type {
+  margin-bottom: 12px;
+}
+
+.settingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 8px;
+
+  color: #dce4ef;
+  font-size: 13px;
+}
+
+.settingValue {
+  color: #8fa1b9;
+  font-size: 12px;
+}
+
+.settingRange {
+  width: 100%;
+  accent-color: #557fff;
+}
+
+.alignmentButtons {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 6px;
+}
+
+.alignmentButton {
+  min-height: 38px;
+
+  padding: 6px 5px;
+
+  border-radius: 9px;
+
+  background: #1b2535;
+  color: #b9c4d4;
+
+  font-size: 12px;
+}
+
+.alignmentButton.active {
+  background: #345da2;
+  color: white;
+}
+
+#resetDisplayBtn {
+  width: 100%;
+  min-height: 38px;
+
+  margin-top: 3px;
+
+  border-radius: 9px;
+
+  background: #222d3d;
+  color: #c1ccdc;
+
   font-size: 12px;
 }
 
@@ -617,12 +743,13 @@ button:active {
 }
 
 #text {
+  width: 88%;
   max-width: 1120px;
   margin: 0 auto;
 
   padding:
     35vh
-    6%
+    0
     55vh;
 
   font-size: 46px;
@@ -791,7 +918,7 @@ button:active {
   .toolbarButton {
     height: 36px;
 
-    padding: 0 8px;
+    padding: 0 7px;
 
     font-size: 11px;
   }
@@ -809,11 +936,13 @@ button:active {
     top: 62px;
   }
 
+  #displayPanel {
+    top: 59px;
+    right: 7px;
+  }
+
   #text {
     font-size: 30px;
-
-    padding-left: 4%;
-    padding-right: 4%;
   }
 }
 
@@ -899,7 +1028,7 @@ button:active {
   }
 
   .fontButton {
-    width: 31px;
+    width: 29px;
   }
 
   #fontLabel {
@@ -907,20 +1036,34 @@ button:active {
   }
 
   #fullscreenBtn {
-    width: 34px;
+    width: 32px;
     padding: 0;
   }
 
   #mirrorBtn {
+    padding: 0 5px;
+  }
+
+  #displayBtn {
     padding: 0 6px;
+  }
+
+  #displayPanel {
+    top: 58px;
+    left: 7px;
+    right: 7px;
+
+    width: auto;
+
+    max-height:
+      calc(100vh - 70px);
+
+    overflow-y: auto;
   }
 
   #text {
     font-size: 24px;
     line-height: 1.45;
-
-    padding-left: 3.5%;
-    padding-right: 3.5%;
   }
 
   #status {
@@ -1117,6 +1260,15 @@ button:active {
 
 
     <button
+      id="displayBtn"
+      class="toolbarButton"
+      title="Réglages d'affichage"
+    >
+      ⚙️ Affichage
+    </button>
+
+
+    <button
       id="mirrorBtn"
       class="toolbarButton"
       title="Activer le mode miroir"
@@ -1134,6 +1286,166 @@ button:active {
     </button>
 
   </div>
+
+
+
+  <!-- =====================================================
+       PANNEAU AFFICHAGE
+  ====================================================== -->
+
+  <div id="displayPanel">
+
+    <div class="displayPanelTitle">
+
+      <strong>
+        ⚙️ Affichage
+      </strong>
+
+      <button
+        id="closeDisplayBtn"
+        title="Fermer"
+      >
+        ✕
+      </button>
+
+    </div>
+
+
+    <div class="settingGroup">
+
+      <div class="settingHeader">
+
+        <span>
+          Taille du texte
+        </span>
+
+        <span
+          id="fontSizeValue"
+          class="settingValue"
+        >
+          46 px
+        </span>
+
+      </div>
+
+      <input
+        id="fontSizeRange"
+        class="settingRange"
+        type="range"
+        min="20"
+        max="70"
+        step="2"
+        value="46"
+      >
+
+    </div>
+
+
+    <div class="settingGroup">
+
+      <div class="settingHeader">
+
+        <span>
+          Interligne
+        </span>
+
+        <span
+          id="lineHeightValue"
+          class="settingValue"
+        >
+          1,52
+        </span>
+
+      </div>
+
+      <input
+        id="lineHeightRange"
+        class="settingRange"
+        type="range"
+        min="1.20"
+        max="2.00"
+        step="0.05"
+        value="1.52"
+      >
+
+    </div>
+
+
+    <div class="settingGroup">
+
+      <div class="settingHeader">
+
+        <span>
+          Largeur de lecture
+        </span>
+
+        <span
+          id="textWidthValue"
+          class="settingValue"
+        >
+          88 %
+        </span>
+
+      </div>
+
+      <input
+        id="textWidthRange"
+        class="settingRange"
+        type="range"
+        min="45"
+        max="96"
+        step="1"
+        value="88"
+      >
+
+    </div>
+
+
+    <div class="settingGroup">
+
+      <div class="settingHeader">
+
+        <span>
+          Alignement
+        </span>
+
+      </div>
+
+
+      <div class="alignmentButtons">
+
+        <button
+          class="alignmentButton"
+          data-align="left"
+        >
+          ⬅ Gauche
+        </button>
+
+        <button
+          class="alignmentButton active"
+          data-align="center"
+        >
+          ↔ Centré
+        </button>
+
+        <button
+          class="alignmentButton"
+          data-align="justify"
+        >
+          ☰ Justifié
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <button id="resetDisplayBtn">
+      ↩ Réglages par défaut
+    </button>
+
+  </div>
+
 
 
   <div id="status">
@@ -1246,6 +1558,41 @@ const fontPlus =
 const fontLabel =
   document.getElementById("fontLabel");
 
+const displayBtn =
+  document.getElementById("displayBtn");
+
+const displayPanel =
+  document.getElementById("displayPanel");
+
+const closeDisplayBtn =
+  document.getElementById("closeDisplayBtn");
+
+const fontSizeRange =
+  document.getElementById("fontSizeRange");
+
+const fontSizeValue =
+  document.getElementById("fontSizeValue");
+
+const lineHeightRange =
+  document.getElementById("lineHeightRange");
+
+const lineHeightValue =
+  document.getElementById("lineHeightValue");
+
+const textWidthRange =
+  document.getElementById("textWidthRange");
+
+const textWidthValue =
+  document.getElementById("textWidthValue");
+
+const alignmentButtons =
+  document.querySelectorAll(
+    ".alignmentButton"
+  );
+
+const resetDisplayBtn =
+  document.getElementById("resetDisplayBtn");
+
 const countdown =
   document.getElementById("countdown");
 
@@ -1279,6 +1626,12 @@ let previousTrackedTime = 0;
 
 let currentFontSize = 46;
 
+let currentLineHeight = 1.52;
+
+let currentTextWidth = 88;
+
+let currentAlignment = "center";
+
 let mirrorMode = false;
 
 let countdownRunning = false;
@@ -1287,7 +1640,7 @@ let currentSavedId = null;
 
 
 /* =========================================================
-   PARAMÈTRES DU MOTEUR V3
+   PARAMÈTRES MOTEUR V3
 ========================================================= */
 
 const SILENCE_DELAY = 950;
@@ -1298,11 +1651,14 @@ const MAX_CORRECTION_PER_FRAME = 1.2;
 
 
 /* =========================================================
-   STOCKAGE LOCAL
+   STOCKAGE
 ========================================================= */
 
 const STORAGE_KEY =
   "prompteur_vocal_scripts_v4";
+
+const DISPLAY_STORAGE_KEY =
+  "prompteur_vocal_display_v4";
 
 
 function getSavedScripts() {
@@ -1340,6 +1696,205 @@ function storeScripts(scripts) {
     STORAGE_KEY,
     JSON.stringify(scripts)
   );
+}
+
+
+/* =========================================================
+   PRÉFÉRENCES AFFICHAGE
+========================================================= */
+
+function saveDisplaySettings() {
+
+  const settings = {
+
+    fontSize:
+      currentFontSize,
+
+    lineHeight:
+      currentLineHeight,
+
+    textWidth:
+      currentTextWidth,
+
+    alignment:
+      currentAlignment
+  };
+
+
+  try {
+
+    localStorage.setItem(
+      DISPLAY_STORAGE_KEY,
+      JSON.stringify(settings)
+    );
+
+  }
+
+  catch (error) {}
+}
+
+
+function loadDisplaySettings() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        DISPLAY_STORAGE_KEY
+      );
+
+
+    if (!saved) {
+      return;
+    }
+
+
+    const settings =
+      JSON.parse(saved);
+
+
+    if (
+      Number.isFinite(
+        settings.fontSize
+      )
+    ) {
+
+      currentFontSize =
+        Math.max(
+          20,
+          Math.min(
+            70,
+            settings.fontSize
+          )
+        );
+    }
+
+
+    if (
+      Number.isFinite(
+        settings.lineHeight
+      )
+    ) {
+
+      currentLineHeight =
+        Math.max(
+          1.2,
+          Math.min(
+            2,
+            settings.lineHeight
+          )
+        );
+    }
+
+
+    if (
+      Number.isFinite(
+        settings.textWidth
+      )
+    ) {
+
+      currentTextWidth =
+        Math.max(
+          45,
+          Math.min(
+            96,
+            settings.textWidth
+          )
+        );
+    }
+
+
+    if (
+      ["left","center","justify"]
+        .includes(
+          settings.alignment
+        )
+    ) {
+
+      currentAlignment =
+        settings.alignment;
+    }
+
+  }
+
+  catch (error) {}
+}
+
+
+/* =========================================================
+   APPLIQUER AFFICHAGE
+========================================================= */
+
+function applyDisplaySettings(
+  save = true
+) {
+
+  text.style.fontSize =
+    currentFontSize +
+    "px";
+
+
+  text.style.lineHeight =
+    currentLineHeight;
+
+
+  text.style.width =
+    currentTextWidth +
+    "%";
+
+
+  text.style.textAlign =
+    currentAlignment;
+
+
+  fontLabel.textContent =
+    currentFontSize;
+
+
+  fontSizeRange.value =
+    currentFontSize;
+
+
+  fontSizeValue.textContent =
+    currentFontSize +
+    " px";
+
+
+  lineHeightRange.value =
+    currentLineHeight;
+
+
+  lineHeightValue.textContent =
+    currentLineHeight
+      .toFixed(2)
+      .replace(".",",");
+
+
+  textWidthRange.value =
+    currentTextWidth;
+
+
+  textWidthValue.textContent =
+    currentTextWidth +
+    " %";
+
+
+  alignmentButtons.forEach(
+    button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.align ===
+          currentAlignment
+      );
+    }
+  );
+
+
+  if (save) {
+
+    saveDisplaySettings();
+  }
 }
 
 
@@ -1575,7 +2130,7 @@ function renderLibrary() {
 
 
 /* =========================================================
-   ENREGISTRER
+   ENREGISTRER TEXTE
 ========================================================= */
 
 saveBtn.addEventListener(
@@ -1709,7 +2264,7 @@ saveBtn.addEventListener(
 
 
 /* =========================================================
-   COMPTEUR
+   COMPTEUR MOTS
 ========================================================= */
 
 function updateWordCount() {
@@ -1852,7 +2407,7 @@ function buildText() {
 
 
 /* =========================================================
-   AFFICHAGE
+   AFFICHAGE SUIVI
 ========================================================= */
 
 function updateDisplay(
@@ -2184,7 +2739,6 @@ function findBestPosition(
   let bestPosition =
     null;
 
-
   let bestScore =
     0;
 
@@ -2258,7 +2812,6 @@ function findBestPosition(
       bestScore =
         score;
 
-
       bestPosition =
         candidate;
     }
@@ -2297,7 +2850,6 @@ function findBestPosition(
 
   let recoveryPosition =
     null;
-
 
   let recoveryScore =
     0;
@@ -2367,7 +2919,6 @@ function findBestPosition(
 
       recoveryScore =
         score;
-
 
       recoveryPosition =
         candidate;
@@ -2821,6 +3372,16 @@ launchBtn.addEventListener(
       "block";
 
 
+    displayPanel.classList.remove(
+      "open"
+    );
+
+
+    displayBtn.classList.remove(
+      "active"
+    );
+
+
     requestAnimationFrame(
       () => {
 
@@ -2899,7 +3460,7 @@ pauseBtn.addEventListener(
 
 
 /* =========================================================
-   RETOUR AU DÉBUT
+   RETOUR DÉBUT
 ========================================================= */
 
 resetBtn.addEventListener(
@@ -2977,6 +3538,16 @@ editBtn.addEventListener(
     }
 
 
+    displayPanel.classList.remove(
+      "open"
+    );
+
+
+    displayBtn.classList.remove(
+      "active"
+    );
+
+
     readerScreen.style.display =
       "none";
 
@@ -2988,38 +3559,21 @@ editBtn.addEventListener(
 
 
 /* =========================================================
-   TAILLE
+   TAILLE RAPIDE
 ========================================================= */
-
-function applyFontSize() {
-
-  currentFontSize =
-    Math.max(
-      20,
-      Math.min(
-        70,
-        currentFontSize
-      )
-    );
-
-
-  text.style.fontSize =
-    currentFontSize +
-    "px";
-
-
-  fontLabel.textContent =
-    currentFontSize;
-}
-
 
 fontMinus.addEventListener(
   "click",
   () => {
 
-    currentFontSize -= 2;
+    currentFontSize =
+      Math.max(
+        20,
+        currentFontSize - 2
+      );
 
-    applyFontSize();
+
+    applyDisplaySettings();
   }
 );
 
@@ -3028,9 +3582,134 @@ fontPlus.addEventListener(
   "click",
   () => {
 
-    currentFontSize += 2;
+    currentFontSize =
+      Math.min(
+        70,
+        currentFontSize + 2
+      );
 
-    applyFontSize();
+
+    applyDisplaySettings();
+  }
+);
+
+
+/* =========================================================
+   PANNEAU AFFICHAGE
+========================================================= */
+
+displayBtn.addEventListener(
+  "click",
+  () => {
+
+    const isOpen =
+      displayPanel.classList.toggle(
+        "open"
+      );
+
+
+    displayBtn.classList.toggle(
+      "active",
+      isOpen
+    );
+  }
+);
+
+
+closeDisplayBtn.addEventListener(
+  "click",
+  () => {
+
+    displayPanel.classList.remove(
+      "open"
+    );
+
+
+    displayBtn.classList.remove(
+      "active"
+    );
+  }
+);
+
+
+fontSizeRange.addEventListener(
+  "input",
+  () => {
+
+    currentFontSize =
+      Number(
+        fontSizeRange.value
+      );
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+lineHeightRange.addEventListener(
+  "input",
+  () => {
+
+    currentLineHeight =
+      Number(
+        lineHeightRange.value
+      );
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+textWidthRange.addEventListener(
+  "input",
+  () => {
+
+    currentTextWidth =
+      Number(
+        textWidthRange.value
+      );
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+alignmentButtons.forEach(
+  button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        currentAlignment =
+          button.dataset.align;
+
+
+        applyDisplaySettings();
+      }
+    );
+  }
+);
+
+
+resetDisplayBtn.addEventListener(
+  "click",
+  () => {
+
+    currentFontSize = 46;
+
+    currentLineHeight = 1.52;
+
+    currentTextWidth = 88;
+
+    currentAlignment =
+      "center";
+
+
+    applyDisplaySettings();
   }
 );
 
@@ -3136,7 +3815,9 @@ fullscreenBtn.addEventListener(
 
 updateWordCount();
 
-applyFontSize();
+loadDisplaySettings();
+
+applyDisplaySettings(false);
 
 applyMirrorMode();
 
