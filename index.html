@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.1
+  Prompteur vocal V5.2
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -822,92 +822,6 @@ button:active {
 
 
 /* =========================================================
-   AFFICHAGE DEPUIS PARAMÈTRES
-========================================================= */
-
-settingsFontSizeRange.addEventListener(
-  "input",
-  () => {
-
-    currentFontSize =
-      Number(
-        settingsFontSizeRange.value
-      );
-
-
-    applyDisplaySettings();
-  }
-);
-
-
-settingsLineHeightRange.addEventListener(
-  "input",
-  () => {
-
-    currentLineHeight =
-      Number(
-        settingsLineHeightRange.value
-      );
-
-
-    applyDisplaySettings();
-  }
-);
-
-
-settingsTextWidthRange.addEventListener(
-  "input",
-  () => {
-
-    currentTextWidth =
-      Number(
-        settingsTextWidthRange.value
-      );
-
-
-    applyDisplaySettings();
-  }
-);
-
-
-settingsAlignmentButtons.forEach(
-  button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        currentAlignment =
-          button.dataset.settingsAlign;
-
-
-        applyDisplaySettings();
-      }
-    );
-  }
-);
-
-
-settingsResetDisplayBtn.addEventListener(
-  "click",
-  () => {
-
-    currentFontSize = 46;
-
-    currentLineHeight = 1.52;
-
-    currentTextWidth = 88;
-
-    currentAlignment =
-      "center";
-
-
-    applyDisplaySettings();
-  }
-);
-
-
-/* =========================================================
    PANNEAU AFFICHAGE
 ========================================================= */
 
@@ -935,6 +849,10 @@ settingsResetDisplayBtn.addEventListener(
 
   box-shadow:
     0 18px 50px rgba(0,0,0,.55);
+}
+
+#displayPanel[hidden] {
+  display: none !important;
 }
 
 #displayPanel.open {
@@ -2003,7 +1921,7 @@ settingsResetDisplayBtn.addEventListener(
        PANNEAU AFFICHAGE
   ====================================================== -->
 
-  <div id="displayPanel">
+  <div id="displayPanel" hidden>
 
     <div class="displayPanelTitle">
 
@@ -3512,6 +3430,92 @@ function applyDisplaySettings(
 
 
 /* =========================================================
+   AFFICHAGE DEPUIS PARAMÈTRES
+========================================================= */
+
+settingsFontSizeRange.addEventListener(
+  "input",
+  () => {
+
+    currentFontSize =
+      Number(
+        settingsFontSizeRange.value
+      );
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+settingsLineHeightRange.addEventListener(
+  "input",
+  () => {
+
+    currentLineHeight =
+      Number(
+        settingsLineHeightRange.value
+      );
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+settingsTextWidthRange.addEventListener(
+  "input",
+  () => {
+
+    currentTextWidth =
+      Number(
+        settingsTextWidthRange.value
+      );
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+settingsAlignmentButtons.forEach(
+  button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        currentAlignment =
+          button.dataset.settingsAlign;
+
+
+        applyDisplaySettings();
+      }
+    );
+  }
+);
+
+
+settingsResetDisplayBtn.addEventListener(
+  "click",
+  () => {
+
+    currentFontSize = 46;
+
+    currentLineHeight = 1.52;
+
+    currentTextWidth = 88;
+
+    currentAlignment =
+      "center";
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+/* =========================================================
    BIBLIOTHÈQUE
 ========================================================= */
 
@@ -4992,6 +4996,10 @@ launchBtn.addEventListener(
     requestWakeLock();
 
 
+    displayPanel.hidden =
+      true;
+
+
     displayPanel.classList.remove(
       "open"
     );
@@ -5158,6 +5166,10 @@ editBtn.addEventListener(
     }
 
 
+    displayPanel.hidden =
+      true;
+
+
     displayPanel.classList.remove(
       "open"
     );
@@ -5226,9 +5238,7 @@ displayBtn.addEventListener(
   () => {
 
     const willOpen =
-      !displayPanel.classList.contains(
-        "open"
-      );
+      displayPanel.hidden;
 
 
     if (
@@ -5278,15 +5288,19 @@ displayBtn.addEventListener(
     }
 
 
-    const isOpen =
-      displayPanel.classList.toggle(
-        "open"
-      );
+    displayPanel.hidden =
+      !willOpen;
+
+
+    displayPanel.classList.toggle(
+      "open",
+      willOpen
+    );
 
 
     displayBtn.classList.toggle(
       "active",
-      isOpen
+      willOpen
     );
   }
 );
@@ -5295,6 +5309,10 @@ displayBtn.addEventListener(
 closeDisplayBtn.addEventListener(
   "click",
   () => {
+
+    displayPanel.hidden =
+      true;
+
 
     displayPanel.classList.remove(
       "open"
