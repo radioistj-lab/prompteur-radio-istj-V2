@@ -1,12 +1,12 @@
 {
   "name": "Prompteur vocal",
   "short_name": "Prompteur",
-  "description": "Prompteur vocal avec suivi de lecture, bibliothèque locale et mode miroir.",
+  "description": "Prompteur vocal avec suivi de lecture, bibliothèque locale, paramètres d’affichage, mode miroir et fonctionnement PWA.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#070b14",
-  "theme_color": "#0b1020",
+  "background_color": "#0F172A",
+  "theme_color": "#0F172A",
   "lang": "fr",
   "orientation": "any",
   "icons": [
