@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b1020">
+<meta name="robots" content="noindex, nofollow, noarchive">
 
 <title>Prompteur vocal</title>
 
@@ -12,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5
+  Prompteur vocal V5.1
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -930,7 +931,7 @@ settingsResetDisplayBtn.addEventListener(
   border-radius: 16px;
 
   background:
-    rgba(16,23,37,.98);
+    #101725;
 
   box-shadow:
     0 18px 50px rgba(0,0,0,.55);
@@ -3657,7 +3658,11 @@ function renderLibrary() {
             saveMessage.textContent =
               "Texte chargé.";
 
-            window.scrollTo({
+            showHomeTab(
+              "prepare"
+            );
+
+            editorScreen.scrollTo({
               top: 0,
               behavior: "smooth"
             });
@@ -5219,6 +5224,59 @@ fontPlus.addEventListener(
 displayBtn.addEventListener(
   "click",
   () => {
+
+    const willOpen =
+      !displayPanel.classList.contains(
+        "open"
+      );
+
+
+    if (
+      willOpen &&
+      listening
+    ) {
+
+      listening =
+        false;
+
+
+      voiceActive =
+        false;
+
+
+      targetScrollSpeed =
+        0;
+
+
+      currentScrollSpeed =
+        0;
+
+
+      if (recognition) {
+
+        try {
+
+          recognition.stop();
+
+        }
+
+        catch (e) {}
+      }
+
+
+      statusText.textContent =
+        "En pause — réglages d'affichage";
+
+
+      statusBox.classList.remove(
+        "listening"
+      );
+
+
+      pauseBtn.textContent =
+        "▶ Reprendre";
+    }
+
 
     const isOpen =
       displayPanel.classList.toggle(
