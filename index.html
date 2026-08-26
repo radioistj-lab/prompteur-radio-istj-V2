@@ -3,101 +3,167 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prompteur Radio ISTJ V2</title>
+<title>Prompteur Radio ISTJ</title>
 
 <style>
 * { box-sizing: border-box; }
 
-body {
+html, body {
   margin: 0;
+  width: 100%;
+  height: 100%;
   font-family: Arial, sans-serif;
-  background: #090d16;
+  background: #05070b;
   color: white;
+  overflow: hidden;
 }
 
+/* ---------- BARRE SUPÉRIEURE ---------- */
+
 header {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  left: 0;
+  right: 0;
+  min-height: 62px;
+  z-index: 100;
   background: #1f2937;
-  padding: 12px 18px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
+  padding: 9px 14px;
   flex-wrap: wrap;
 }
 
-h1 {
-  font-size: 1.25rem;
-  margin: 0;
-  margin-right: auto;
+header h1 {
+  margin: 0 auto 0 0;
+  font-size: 20px;
+  white-space: nowrap;
 }
 
 button {
   border: 0;
   border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 15px;
+  padding: 9px 13px;
+  font-size: 14px;
   cursor: pointer;
   color: white;
+  white-space: nowrap;
 }
 
 #voiceBtn { background: #16a34a; }
-#autoBtn { background: #2563eb; }
-#pauseBtn { background: #f59e0b; }
-#resetBtn { background: #ef4444; }
+#pauseBtn { background: #d97706; }
+#resetBtn { background: #dc2626; }
+#editBtn { background: #2563eb; }
 
 .control {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-#editor {
-  padding: 16px;
+input[type="range"] {
+  width: 90px;
+}
+
+/* ---------- ÉDITEUR ---------- */
+
+#editorScreen {
+  position: absolute;
+  top: 62px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: #f3f4f6;
+  padding: 18px;
+  overflow: auto;
 }
 
-textarea {
+#editorScreen h2 {
+  margin: 0 0 10px;
+  color: #111827;
+}
+
+#inputText {
   width: 100%;
-  height: 150px;
-  padding: 14px;
-  font-size: 17px;
+  height: calc(100vh - 190px);
+  min-height: 300px;
+  padding: 18px;
+  font-size: 18px;
+  line-height: 1.5;
   border: 1px solid #bbb;
-  border-radius: 8px;
-  resize: vertical;
+  border-radius: 10px;
+  resize: none;
 }
 
-#status {
-  background: #111827;
-  text-align: center;
-  padding: 8px;
+#editorHelp {
+  color: #4b5563;
+  margin: 8px 0 0;
   font-size: 14px;
+}
+
+/* ---------- ÉCRAN PROMPTEUR ---------- */
+
+#readerScreen {
+  display: none;
+  position: absolute;
+  top: 62px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #05070b;
+  overflow: hidden;
+}
+
+/* petite zone d'état, pas de grand encart vide */
+#status {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: rgba(31,41,55,.85);
   color: #d1d5db;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 #status.listening {
   color: #86efac;
 }
 
+/*
+  Le texte dispose d'espace avant et après,
+  mais il n'y a aucun grand bloc visuel noir distinct.
+*/
 #prompter {
-  height: calc(100vh - 300px);
-  min-height: 400px;
+  position: absolute;
+  inset: 0;
   overflow-y: auto;
-  padding: 42vh 8% 50vh;
+  scrollbar-width: none;
+  overscroll-behavior: none;
+}
+
+#prompter::-webkit-scrollbar {
+  display: none;
 }
 
 #text {
   max-width: 1100px;
-  margin: auto;
-  font-size: 48px;
+  margin: 0 auto;
+  padding: 36vh 6% 55vh;
+  font-size: 46px;
   line-height: 1.55;
   text-align: center;
+  overflow-wrap: break-word;
 }
 
 .word {
-  transition: color .15s, opacity .15s;
+  display: inline;
+  color: #f8fafc;
 }
 
 .word.read {
@@ -108,10 +174,63 @@ textarea {
   color: #facc15;
 }
 
-@media(max-width:700px) {
-  #text { font-size: 34px; }
-  #prompter { padding-left: 4%; padding-right: 4%; }
-  h1 { width: 100%; }
+/* ---------- MOBILE / TABLETTE ---------- */
+
+@media (max-width: 800px) {
+
+  header {
+    min-height: 54px;
+    padding: 6px 8px;
+    gap: 5px;
+  }
+
+  header h1 {
+    font-size: 16px;
+  }
+
+  button {
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+
+  .control {
+    font-size: 11px;
+  }
+
+  input[type="range"] {
+    width: 65px;
+  }
+
+  #editorScreen,
+  #readerScreen {
+    top: 54px;
+  }
+
+  #text {
+    font-size: 30px;
+    line-height: 1.48;
+    padding-left: 4%;
+    padding-right: 4%;
+  }
+
+  #status {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 520px) {
+
+  header h1 {
+    display: none;
+  }
+
+  header {
+    justify-content: center;
+  }
+
+  #text {
+    font-size: 27px;
+  }
 }
 </style>
 </head>
@@ -120,148 +239,360 @@ textarea {
 
 <header>
 
-<h1>🎙️ Prompteur Radio ISTJ</h1>
+<h1>🎙️ Radio ISTJ</h1>
 
 <button id="voiceBtn">🎤 Suivi vocal</button>
-<button id="autoBtn">▶ Automatique</button>
 <button id="pauseBtn">⏸ Pause</button>
 <button id="resetBtn">↩ Début</button>
+<button id="editBtn">✏️ Modifier</button>
 
 <div class="control">
-Vitesse
-<input id="speed" type="range" min="1" max="10" value="4">
-</div>
-
-<div class="control">
-Taille
-<input id="fontSize" type="range" min="28" max="80" value="48">
+  Taille
+  <input id="fontSize" type="range" min="22" max="70" value="46">
 </div>
 
 </header>
 
-<div id="editor">
-<textarea id="inputText"
-placeholder="Collez ici le texte de votre chronique..."></textarea>
+
+<!-- ÉCRAN DE SAISIE -->
+
+<div id="editorScreen">
+
+  <h2>Préparer la chronique</h2>
+
+  <textarea
+    id="inputText"
+    placeholder="Collez ici le texte de votre chronique..."
+  ></textarea>
+
+  <p id="editorHelp">
+    Une fois le texte prêt, cliquez sur « Suivi vocal ».
+  </p>
+
 </div>
 
-<div id="status">
-Prêt — collez une chronique puis démarrez le suivi vocal.
+
+<!-- ÉCRAN DE LECTURE -->
+
+<div id="readerScreen">
+
+  <div id="status">
+    Prêt
+  </div>
+
+  <div id="prompter">
+    <div id="text"></div>
+  </div>
+
 </div>
 
-<div id="prompter">
-<div id="text">
-Votre chronique apparaîtra ici.
-</div>
-</div>
 
 <script>
 
-const inputText = document.getElementById("inputText");
-const text = document.getElementById("text");
-const prompter = document.getElementById("prompter");
+/* =========================================================
+   ÉLÉMENTS
+========================================================= */
 
-const voiceBtn = document.getElementById("voiceBtn");
-const autoBtn = document.getElementById("autoBtn");
-const pauseBtn = document.getElementById("pauseBtn");
-const resetBtn = document.getElementById("resetBtn");
+const editorScreen =
+  document.getElementById("editorScreen");
 
-const statusBox = document.getElementById("status");
-const speed = document.getElementById("speed");
-const fontSize = document.getElementById("fontSize");
+const readerScreen =
+  document.getElementById("readerScreen");
+
+const inputText =
+  document.getElementById("inputText");
+
+const text =
+  document.getElementById("text");
+
+const prompter =
+  document.getElementById("prompter");
+
+const statusBox =
+  document.getElementById("status");
+
+const voiceBtn =
+  document.getElementById("voiceBtn");
+
+const pauseBtn =
+  document.getElementById("pauseBtn");
+
+const resetBtn =
+  document.getElementById("resetBtn");
+
+const editBtn =
+  document.getElementById("editBtn");
+
+const fontSize =
+  document.getElementById("fontSize");
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
 
 let words = [];
 let currentWord = 0;
 
-let automatic = false;
-let animationId = null;
-let lastTime = null;
-
 let recognition = null;
 let listening = false;
 
+let lastScrollWord = -1;
 
-/* ---------- TEXTE ---------- */
 
-function normalize(word) {
-  return word
+/* =========================================================
+   NORMALISATION
+========================================================= */
+
+function normalizeWord(value) {
+
+  return value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^\p{L}\p{N}]/gu, "");
+
 }
+
+
+/* =========================================================
+   CONSTRUCTION DU TEXTE
+========================================================= */
 
 function buildText() {
 
   const content = inputText.value.trim();
 
   if (!content) {
-    text.textContent = "Votre chronique apparaîtra ici.";
-    words = [];
-    return;
+    return false;
   }
 
   text.innerHTML = "";
 
   const rawWords = content.split(/\s+/);
 
-  words = rawWords.map((word, index) => {
+  words = rawWords.map((rawWord, index) => {
 
     const span = document.createElement("span");
 
     span.className = "word";
-    span.textContent = word + " ";
     span.dataset.index = index;
+    span.textContent = rawWord + " ";
 
     text.appendChild(span);
 
     return {
-      original: word,
-      normalized: normalize(word),
+      original: rawWord,
+      normalized: normalizeWord(rawWord),
       element: span
     };
+
   });
 
   currentWord = 0;
-  updateHighlight();
+  lastScrollWord = -1;
+
+  updateDisplay(true);
+
+  return true;
 }
 
-inputText.addEventListener("input", buildText);
 
+/* =========================================================
+   AFFICHAGE
+========================================================= */
 
-/* ---------- AFFICHAGE ---------- */
+function updateDisplay(forceScroll = false) {
 
-function updateHighlight() {
+  if (!words.length) return;
 
-  words.forEach((word, index) => {
+  /*
+    On ne reconstruit jamais le texte.
+    On modifie seulement les classes.
+    Donc aucun changement de taille ou retour à la ligne
+    provoqué par le suivi vocal.
+  */
 
-    word.element.classList.remove("read", "current");
+  for (let i = 0; i < words.length; i++) {
 
-    if (index < currentWord)
-      word.element.classList.add("read");
+    const element = words[i].element;
 
-    if (index === currentWord)
-      word.element.classList.add("current");
-  });
+    element.classList.remove("read", "current");
 
-  if (words[currentWord]) {
+    if (i < currentWord) {
+      element.classList.add("read");
+    }
 
-    const target =
-      words[currentWord].element.offsetTop
-      - prompter.clientHeight * 0.45;
+    if (i === currentWord) {
+      element.classList.add("current");
+    }
+  }
 
-    prompter.scrollTo({
-      top: Math.max(0, target),
-      behavior: "smooth"
-    });
+  /*
+    Le prompteur ne se repositionne pas à chaque mot.
+
+    Il attend plusieurs mots avant de bouger,
+    ce qui donne un déplacement beaucoup plus calme.
+  */
+
+  if (
+    forceScroll ||
+    lastScrollWord < 0 ||
+    currentWord - lastScrollWord >= 5
+  ) {
+
+    scrollToCurrentWord();
+
+    lastScrollWord = currentWord;
   }
 }
 
 
-/* ---------- RECONNAISSANCE VOCALE ---------- */
+/* =========================================================
+   DÉFILEMENT DOUX ET LIMITÉ
+========================================================= */
+
+function scrollToCurrentWord() {
+
+  const item = words[currentWord];
+
+  if (!item) return;
+
+  const desiredPosition =
+    prompter.clientHeight * 0.43;
+
+  const wordPosition =
+    item.element.offsetTop;
+
+  let target =
+    wordPosition - desiredPosition;
+
+  target = Math.max(0, target);
+
+  /*
+    Limitation importante :
+    même si la reconnaissance croit avoir avancé,
+    l'écran ne peut pas bondir énormément d'un seul coup.
+  */
+
+  const currentScroll = prompter.scrollTop;
+
+  const maximumJump =
+    prompter.clientHeight * 0.28;
+
+  if (target > currentScroll + maximumJump) {
+    target = currentScroll + maximumJump;
+  }
+
+  if (target < currentScroll - maximumJump) {
+    target = currentScroll - maximumJump;
+  }
+
+  prompter.scrollTo({
+    top: target,
+    behavior: "smooth"
+  });
+}
+
+
+/* =========================================================
+   RECHERCHE D'UNE SÉQUENCE PRONONCÉE
+========================================================= */
+
+function findBestPosition(spokenWords) {
+
+  if (!spokenWords.length || !words.length) {
+    return null;
+  }
+
+  /*
+    On ne cherche que près de la position actuelle.
+
+    Surtout, on n'autorise pas le moteur à aller
+    très loin devant simplement parce qu'il reconnaît
+    un mot courant comme "de", "la", "les", etc.
+  */
+
+  const searchStart =
+    Math.max(0, currentWord - 4);
+
+  const searchEnd =
+    Math.min(words.length - 1, currentWord + 8);
+
+  let bestPosition = null;
+  let bestScore = 0;
+
+  for (
+    let candidate = searchStart;
+    candidate <= searchEnd;
+    candidate++
+  ) {
+
+    let score = 0;
+    let compared = 0;
+
+    /*
+      On compare jusqu'aux 5 derniers mots entendus
+      avec plusieurs mots du texte.
+    */
+
+    const recentSpoken =
+      spokenWords.slice(-5);
+
+    for (
+      let offset = 0;
+      offset < recentSpoken.length;
+      offset++
+    ) {
+
+      const spoken =
+        recentSpoken[recentSpoken.length - 1 - offset];
+
+      const textIndex =
+        candidate - offset;
+
+      if (textIndex < 0) continue;
+
+      compared++;
+
+      if (
+        words[textIndex] &&
+        words[textIndex].normalized === spoken
+      ) {
+        score++;
+      }
+    }
+
+    /*
+      Il faut au moins deux correspondances,
+      sauf tout au début de la chronique.
+    */
+
+    if (
+      score > bestScore &&
+      (
+        score >= 2 ||
+        (currentWord < 3 && score >= 1)
+      )
+    ) {
+
+      bestScore = score;
+      bestPosition = candidate;
+    }
+  }
+
+  return bestPosition;
+}
+
+
+/* =========================================================
+   SPEECH RECOGNITION
+========================================================= */
 
 const SpeechRecognition =
   window.SpeechRecognition ||
   window.webkitSpeechRecognition;
+
 
 if (SpeechRecognition) {
 
@@ -270,80 +601,106 @@ if (SpeechRecognition) {
   recognition.lang = "fr-FR";
   recognition.continuous = true;
   recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
 
   recognition.onstart = () => {
 
     listening = true;
 
     statusBox.textContent =
-      "🎤 Micro actif — lisez votre chronique.";
+      "🎤 Écoute en cours";
 
     statusBox.classList.add("listening");
 
-    voiceBtn.textContent = "🎤 Écoute en cours";
+    voiceBtn.textContent =
+      "🎤 Écoute";
   };
 
 
-  recognition.onresult = (event) => {
+  recognition.onresult = event => {
 
     let transcript = "";
+
+    /*
+      On utilise ici la dernière hypothèse disponible,
+      sans additionner encore et encore tout l'historique.
+    */
 
     for (
       let i = event.resultIndex;
       i < event.results.length;
       i++
     ) {
-      transcript += event.results[i][0].transcript + " ";
+
+      transcript +=
+        event.results[i][0].transcript + " ";
     }
 
     const spokenWords =
       transcript
+        .trim()
         .split(/\s+/)
-        .map(normalize)
+        .map(normalizeWord)
         .filter(Boolean);
 
     if (!spokenWords.length) return;
 
+    const bestPosition =
+      findBestPosition(spokenWords);
+
+    if (bestPosition === null) {
+      return;
+    }
+
     /*
-      On cherche les mots prononcés dans une petite
-      fenêtre située devant la position actuelle.
-      Cela évite qu'un mot répété plus loin fasse
-      bondir le prompteur.
+      Sécurité essentielle :
+      une reconnaissance ne peut avancer
+      que de quelques mots maximum.
     */
 
-    spokenWords.forEach(spoken => {
+    const maximumAdvance = 4;
 
-      let found = -1;
+    let newPosition =
+      Math.min(
+        bestPosition + 1,
+        currentWord + maximumAdvance
+      );
 
-      const end =
-        Math.min(currentWord + 12, words.length);
+    /*
+      On autorise un petit retour arrière,
+      utile si l'élève reprend une phrase.
+    */
 
-      for (
-        let i = currentWord;
-        i < end;
-        i++
-      ) {
+    newPosition =
+      Math.max(
+        currentWord - 2,
+        newPosition
+      );
 
-        if (words[i].normalized === spoken) {
-          found = i;
-          break;
-        }
-      }
+    newPosition =
+      Math.max(
+        0,
+        Math.min(
+          words.length - 1,
+          newPosition
+        )
+      );
 
-      if (found !== -1) {
-        currentWord = found + 1;
-      }
+    if (newPosition !== currentWord) {
 
-    });
+      currentWord = newPosition;
 
-    if (currentWord >= words.length)
-      currentWord = words.length - 1;
-
-    updateHighlight();
+      updateDisplay(false);
+    }
   };
 
 
-  recognition.onerror = (event) => {
+  recognition.onerror = event => {
+
+    if (event.error === "no-speech") {
+      return;
+    }
 
     statusBox.textContent =
       "Micro : " + event.error;
@@ -354,15 +711,28 @@ if (SpeechRecognition) {
 
     if (listening) {
 
-      try {
-        recognition.start();
-      }
-      catch(e) {}
+      /*
+        Chrome arrête parfois automatiquement
+        une session de reconnaissance.
+        On la relance uniquement si l'utilisateur
+        n'a pas demandé la pause.
+      */
+
+      setTimeout(() => {
+
+        if (!listening) return;
+
+        try {
+          recognition.start();
+        }
+        catch (e) {}
+
+      }, 250);
 
     } else {
 
       statusBox.textContent =
-        "Suivi vocal arrêté.";
+        "⏸ Suivi arrêté";
 
       statusBox.classList.remove("listening");
 
@@ -370,36 +740,49 @@ if (SpeechRecognition) {
         "🎤 Suivi vocal";
     }
   };
-
 }
 
 
-/* ---------- BOUTON VOCAL ---------- */
+/* =========================================================
+   LANCER LE SUIVI
+========================================================= */
 
 voiceBtn.addEventListener("click", () => {
 
   if (!SpeechRecognition) {
 
     alert(
-      "La reconnaissance vocale n'est pas disponible dans ce navigateur. Utilisez Chrome."
+      "Le suivi vocal n'est pas disponible dans ce navigateur. Essayez Chrome ou Edge."
     );
 
     return;
   }
 
-  if (!inputText.value.trim()) {
+  /*
+    Si on est encore dans l'éditeur,
+    on prépare d'abord l'écran de lecture.
+  */
 
-    alert(
-      "Collez d'abord le texte de votre chronique."
-    );
+  if (
+    editorScreen.style.display !== "none"
+  ) {
 
-    return;
+    if (!buildText()) {
+
+      alert(
+        "Collez d'abord le texte de votre chronique."
+      );
+
+      return;
+    }
+
+    editorScreen.style.display = "none";
+    readerScreen.style.display = "block";
+
+    prompter.scrollTop = 0;
+
+    updateDisplay(true);
   }
-
-  buildText();
-
-  automatic = false;
-  cancelAnimationFrame(animationId);
 
   if (!listening) {
 
@@ -408,130 +791,105 @@ voiceBtn.addEventListener("click", () => {
     try {
       recognition.start();
     }
-    catch(e) {}
+    catch (e) {}
 
   } else {
 
     listening = false;
-    recognition.stop();
-
-  }
-
-});
-
-
-/* ---------- MODE AUTOMATIQUE ---------- */
-
-function autoScroll(timestamp) {
-
-  if (!automatic) return;
-
-  if (lastTime === null)
-    lastTime = timestamp;
-
-  if (timestamp - lastTime > 16) {
-
-    prompter.scrollTop +=
-      Number(speed.value) * 0.25;
-
-    lastTime = timestamp;
-  }
-
-  animationId =
-    requestAnimationFrame(autoScroll);
-}
-
-
-autoBtn.addEventListener("click", () => {
-
-  if (!inputText.value.trim()) {
-
-    alert(
-      "Collez d'abord le texte de votre chronique."
-    );
-
-    return;
-  }
-
-  if (listening) {
-
-    listening = false;
 
     try {
       recognition.stop();
     }
-    catch(e) {}
-
+    catch (e) {}
   }
-
-  automatic = true;
-  lastTime = null;
-
-  cancelAnimationFrame(animationId);
-
-  animationId =
-    requestAnimationFrame(autoScroll);
-
-  statusBox.textContent =
-    "▶ Défilement automatique.";
 });
 
 
-/* ---------- PAUSE ---------- */
+/* =========================================================
+   PAUSE
+========================================================= */
 
 pauseBtn.addEventListener("click", () => {
 
-  automatic = false;
-  cancelAnimationFrame(animationId);
+  listening = false;
 
-  if (listening) {
-
-    listening = false;
+  if (recognition) {
 
     try {
       recognition.stop();
     }
-    catch(e) {}
+    catch (e) {}
   }
 
-  statusBox.textContent = "⏸ En pause.";
+  statusBox.textContent =
+    "⏸ En pause";
+
+  statusBox.classList.remove("listening");
+
+  voiceBtn.textContent =
+    "🎤 Suivi vocal";
 });
 
 
-/* ---------- RETOUR DÉBUT ---------- */
+/* =========================================================
+   RETOUR AU DÉBUT
+========================================================= */
 
 resetBtn.addEventListener("click", () => {
 
-  automatic = false;
-  cancelAnimationFrame(animationId);
+  currentWord = 0;
+  lastScrollWord = -1;
 
-  if (listening) {
+  prompter.scrollTop = 0;
 
-    listening = false;
+  updateDisplay(true);
+
+  statusBox.textContent =
+    "↩ Revenu au début";
+});
+
+
+/* =========================================================
+   MODIFIER LE TEXTE
+========================================================= */
+
+editBtn.addEventListener("click", () => {
+
+  listening = false;
+
+  if (recognition) {
 
     try {
       recognition.stop();
     }
-    catch(e) {}
+    catch (e) {}
   }
 
-  currentWord = 0;
-  prompter.scrollTop = 0;
+  readerScreen.style.display = "none";
+  editorScreen.style.display = "block";
 
-  updateHighlight();
-
-  statusBox.textContent =
-    "Revenu au début.";
+  voiceBtn.textContent =
+    "🎤 Suivi vocal";
 });
 
 
-/* ---------- TAILLE ---------- */
+/* =========================================================
+   TAILLE DU TEXTE
+========================================================= */
 
 fontSize.addEventListener("input", () => {
 
   text.style.fontSize =
     fontSize.value + "px";
 
+  /*
+    Après changement de taille,
+    on replace doucement le mot actuel.
+  */
+
+  setTimeout(() => {
+    scrollToCurrentWord();
+  }, 50);
 });
 
 </script>
