@@ -123,7 +123,7 @@ input {
 
 
 /* =========================================================
-   CARTE ÉDITEUR
+   CARTES
 ========================================================= */
 
 .editorCard,
@@ -156,7 +156,7 @@ input {
 
 
 /* =========================================================
-   TITRE DE LA CHRONIQUE
+   TITRE
 ========================================================= */
 
 #scriptTitle {
@@ -287,7 +287,7 @@ button:active {
 
 
 /* =========================================================
-   MESSAGE DE SAUVEGARDE
+   MESSAGE SAUVEGARDE
 ========================================================= */
 
 #saveMessage {
@@ -342,9 +342,7 @@ button:active {
 
   padding: 12px;
 
-  border:
-    1px solid rgba(255,255,255,.07);
-
+  border: 1px solid rgba(255,255,255,.07);
   border-radius: 12px;
 
   background: #0b111d;
@@ -427,6 +425,11 @@ button:active {
   overflow: hidden;
 }
 
+
+/* =========================================================
+   BARRE DE COMMANDES
+========================================================= */
+
 #readerToolbar {
   position: absolute;
 
@@ -443,8 +446,7 @@ button:active {
   gap: 7px;
   padding: 7px 12px;
 
-  background:
-    rgba(12,17,27,.96);
+  background: rgba(12,17,27,.96);
 
   border-bottom:
     1px solid rgba(255,255,255,.07);
@@ -475,6 +477,10 @@ button:active {
   font-size: 13px;
 }
 
+.toolbarButton:hover {
+  background: #263349;
+}
+
 #pauseBtn {
   background: #49351d;
   color: #ffc96e;
@@ -488,6 +494,11 @@ button:active {
 #editBtn {
   background: #203458;
   color: #a9c3ff;
+}
+
+#mirrorBtn.active {
+  background: #4b3d17;
+  color: #ffe27a;
 }
 
 
@@ -517,6 +528,10 @@ button:active {
   font-weight: 650;
 }
 
+.fontButton:hover {
+  background: #263349;
+}
+
 #fontLabel {
   min-width: 42px;
   text-align: center;
@@ -527,7 +542,7 @@ button:active {
 
 
 /* =========================================================
-   ÉTAT
+   ÉTAT MICRO
 ========================================================= */
 
 #status {
@@ -616,6 +631,13 @@ button:active {
   text-align: center;
 
   overflow-wrap: break-word;
+
+  transform: scaleX(1);
+  transform-origin: center center;
+}
+
+#text.mirrored {
+  transform: scaleX(-1);
 }
 
 .word {
@@ -769,9 +791,9 @@ button:active {
   .toolbarButton {
     height: 36px;
 
-    padding: 0 9px;
+    padding: 0 8px;
 
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .fontControl,
@@ -872,12 +894,12 @@ button:active {
   }
 
   .toolbarButton {
-    padding: 0 7px;
-    font-size: 11px;
+    padding: 0 5px;
+    font-size: 10px;
   }
 
   .fontButton {
-    width: 34px;
+    width: 31px;
   }
 
   #fontLabel {
@@ -885,8 +907,12 @@ button:active {
   }
 
   #fullscreenBtn {
-    width: 36px;
+    width: 34px;
     padding: 0;
+  }
+
+  #mirrorBtn {
+    padding: 0 6px;
   }
 
   #text {
@@ -990,7 +1016,6 @@ button:active {
     </div>
 
 
-
     <!-- ===================================================
          BIBLIOTHÈQUE
     =================================================== -->
@@ -1071,6 +1096,7 @@ button:active {
       <button
         id="fontMinus"
         class="fontButton"
+        title="Réduire le texte"
       >
         A−
       </button>
@@ -1082,11 +1108,21 @@ button:active {
       <button
         id="fontPlus"
         class="fontButton"
+        title="Agrandir le texte"
       >
         A+
       </button>
 
     </div>
+
+
+    <button
+      id="mirrorBtn"
+      class="toolbarButton"
+      title="Activer le mode miroir"
+    >
+      🪞 Miroir
+    </button>
 
 
     <button
@@ -1195,6 +1231,9 @@ const resetBtn =
 const editBtn =
   document.getElementById("editBtn");
 
+const mirrorBtn =
+  document.getElementById("mirrorBtn");
+
 const fullscreenBtn =
   document.getElementById("fullscreenBtn");
 
@@ -1239,6 +1278,8 @@ let previousTrackedWord = 0;
 let previousTrackedTime = 0;
 
 let currentFontSize = 46;
+
+let mirrorMode = false;
 
 let countdownRunning = false;
 
@@ -1303,7 +1344,7 @@ function storeScripts(scripts) {
 
 
 /* =========================================================
-   AFFICHAGE BIBLIOTHÈQUE
+   BIBLIOTHÈQUE
 ========================================================= */
 
 function renderLibrary() {
@@ -1668,7 +1709,7 @@ saveBtn.addEventListener(
 
 
 /* =========================================================
-   COMPTEUR DE MOTS
+   COMPTEUR
 ========================================================= */
 
 function updateWordCount() {
@@ -1730,7 +1771,7 @@ function normalizeWord(value) {
 
 
 /* =========================================================
-   CONSTRUCTION DU TEXTE
+   CONSTRUCTION TEXTE
 ========================================================= */
 
 function buildText() {
@@ -1811,7 +1852,7 @@ function buildText() {
 
 
 /* =========================================================
-   AFFICHAGE DU SUIVI
+   AFFICHAGE
 ========================================================= */
 
 function updateDisplay(
@@ -1897,7 +1938,7 @@ function positionImmediately() {
 
 
 /* =========================================================
-   ESTIMATION DU RYTHME
+   ESTIMATION RYTHME
 ========================================================= */
 
 function updateReadingSpeed() {
@@ -2106,7 +2147,7 @@ function hybridScrollLoop(time) {
 
 
 /* =========================================================
-   RECHERCHE DU TEXTE
+   RECHERCHE POSITION
 ========================================================= */
 
 function findBestPosition(
@@ -2355,7 +2396,7 @@ function findBestPosition(
 
 
 /* =========================================================
-   SPEECH RECOGNITION
+   RECONNAISSANCE VOCALE
 ========================================================= */
 
 const SpeechRecognition =
@@ -2626,7 +2667,7 @@ if (SpeechRecognition) {
 
 
 /* =========================================================
-   DÉMARRER LE MICRO
+   DÉMARRER MICRO
 ========================================================= */
 
 function startRecognition() {
@@ -2858,7 +2899,7 @@ pauseBtn.addEventListener(
 
 
 /* =========================================================
-   DÉBUT
+   RETOUR AU DÉBUT
 ========================================================= */
 
 resetBtn.addEventListener(
@@ -2995,6 +3036,68 @@ fontPlus.addEventListener(
 
 
 /* =========================================================
+   MODE MIROIR
+========================================================= */
+
+function applyMirrorMode() {
+
+  if (mirrorMode) {
+
+    text.classList.add(
+      "mirrored"
+    );
+
+
+    mirrorBtn.classList.add(
+      "active"
+    );
+
+
+    mirrorBtn.textContent =
+      "🪞 Normal";
+
+
+    mirrorBtn.title =
+      "Désactiver le mode miroir";
+
+  }
+
+  else {
+
+    text.classList.remove(
+      "mirrored"
+    );
+
+
+    mirrorBtn.classList.remove(
+      "active"
+    );
+
+
+    mirrorBtn.textContent =
+      "🪞 Miroir";
+
+
+    mirrorBtn.title =
+      "Activer le mode miroir";
+  }
+}
+
+
+mirrorBtn.addEventListener(
+  "click",
+  () => {
+
+    mirrorMode =
+      !mirrorMode;
+
+
+    applyMirrorMode();
+  }
+);
+
+
+/* =========================================================
    PLEIN ÉCRAN
 ========================================================= */
 
@@ -3034,6 +3137,8 @@ fullscreenBtn.addEventListener(
 updateWordCount();
 
 applyFontSize();
+
+applyMirrorMode();
 
 renderLibrary();
 
