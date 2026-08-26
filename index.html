@@ -7,8 +7,12 @@
 
 <title>Prompteur vocal</title>
 
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="icon-192.png">
+
 <!--
-  Prompteur vocal V4
+  Prompteur vocal V5
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -397,6 +401,279 @@ button:active {
 
 
 /* =========================================================
+   NAVIGATION ACCUEIL
+========================================================= */
+
+.homeTabs {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.homeTabButton {
+  min-height: 44px;
+  padding: 8px 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 11px;
+
+  background: #0d1421;
+  color: #aeb9ca;
+
+  font-weight: 600;
+}
+
+.homeTabButton.active {
+  background: #203458;
+  color: #dce8ff;
+  border-color: #365991;
+}
+
+.homeTabPanel {
+  display: none;
+}
+
+.homeTabPanel.active {
+  display: block;
+}
+
+
+/* =========================================================
+   OUTILS BIBLIOTHÈQUE
+========================================================= */
+
+.libraryTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-bottom: 14px;
+}
+
+.libraryToolButton {
+  min-height: 38px;
+  padding: 0 13px;
+
+  border-radius: 9px;
+
+  background: #1b2535;
+  color: #d6deea;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.libraryToolButton:hover {
+  background: #263349;
+}
+
+#importFileInput {
+  display: none;
+}
+
+
+/* =========================================================
+   PARAMÈTRES ACCUEIL
+========================================================= */
+
+.settingsCard {
+  background: rgba(16,23,37,.92);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+
+  box-shadow:
+    0 22px 60px rgba(0,0,0,.3);
+}
+
+.settingsTitle {
+  margin-bottom: 18px;
+}
+
+.settingsTitle h2 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.settingsTitle p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.settingsSection {
+  padding: 16px 0;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+.settingsSection:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.settingsSection h3 {
+  margin: 0 0 13px;
+  font-size: 15px;
+}
+
+.settingsPreview {
+  margin-top: 15px;
+  padding: 16px;
+
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+
+  background: #05080d;
+
+  overflow: hidden;
+}
+
+#settingsPreviewText {
+  margin: 0 auto;
+  color: #edf2f7;
+  transition: all .15s ease;
+}
+
+.settingToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.settingToggleText strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.settingToggleText span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 27px;
+  flex: 0 0 auto;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switchSlider {
+  position: absolute;
+  inset: 0;
+
+  border-radius: 999px;
+
+  background: #303b4d;
+
+  transition: .2s;
+}
+
+.switchSlider::before {
+  content: "";
+
+  position: absolute;
+
+  width: 21px;
+  height: 21px;
+
+  left: 3px;
+  top: 3px;
+
+  border-radius: 50%;
+
+  background: white;
+
+  transition: .2s;
+}
+
+.switch input:checked + .switchSlider {
+  background: #3f73cf;
+}
+
+.switch input:checked + .switchSlider::before {
+  transform: translateX(21px);
+}
+
+.settingsActionButton {
+  min-height: 40px;
+  padding: 0 14px;
+
+  border-radius: 9px;
+
+  background: #203458;
+  color: #c7d8ff;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settingsActionButton:disabled {
+  cursor: default;
+  opacity: .45;
+}
+
+.settingsStatus {
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.settingsStatus.online {
+  color: #83deb0;
+}
+
+.settingsStatus.offline {
+  color: #f4bd6b;
+}
+
+.offlineNote {
+  margin-top: 9px;
+  color: #8593a8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   ÉCRAN ACTIF
+========================================================= */
+
+#wakeBadge {
+  display: none;
+  align-items: center;
+  gap: 5px;
+
+  height: 38px;
+  padding: 0 10px;
+
+  border-radius: 9px;
+
+  background: #173b2c;
+  color: #95e5bb;
+
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+#wakeBadge.active {
+  display: flex;
+}
+
+/* =========================================================
    COPYRIGHT
 ========================================================= */
 
@@ -541,6 +818,92 @@ button:active {
   color: #aeb9ca;
   font-size: 12px;
 }
+
+
+/* =========================================================
+   AFFICHAGE DEPUIS PARAMÈTRES
+========================================================= */
+
+settingsFontSizeRange.addEventListener(
+  "input",
+  () => {
+
+    currentFontSize =
+      Number(
+        settingsFontSizeRange.value
+      );
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+settingsLineHeightRange.addEventListener(
+  "input",
+  () => {
+
+    currentLineHeight =
+      Number(
+        settingsLineHeightRange.value
+      );
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+settingsTextWidthRange.addEventListener(
+  "input",
+  () => {
+
+    currentTextWidth =
+      Number(
+        settingsTextWidthRange.value
+      );
+
+
+    applyDisplaySettings();
+  }
+);
+
+
+settingsAlignmentButtons.forEach(
+  button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        currentAlignment =
+          button.dataset.settingsAlign;
+
+
+        applyDisplaySettings();
+      }
+    );
+  }
+);
+
+
+settingsResetDisplayBtn.addEventListener(
+  "click",
+  () => {
+
+    currentFontSize = 46;
+
+    currentLineHeight = 1.52;
+
+    currentTextWidth = 88;
+
+    currentAlignment =
+      "center";
+
+
+    applyDisplaySettings();
+  }
+);
 
 
 /* =========================================================
@@ -1070,6 +1433,24 @@ button:active {
     font-size: 10px;
     padding: 5px 9px;
   }
+
+  .homeTabs {
+    gap: 5px;
+  }
+
+  .homeTabButton {
+    padding: 7px 5px;
+    font-size: 11px;
+  }
+
+  .settingsCard {
+    border-radius: 15px;
+    padding: 13px;
+  }
+
+  #wakeBadge {
+    display: none !important;
+  }
 }
 
 </style>
@@ -1102,7 +1483,36 @@ button:active {
     </div>
 
 
-    <div class="editorCard">
+    <div class="homeTabs">
+
+      <button
+        class="homeTabButton active"
+        data-home-tab="prepare"
+      >
+        ✍️ Texte
+      </button>
+
+      <button
+        class="homeTabButton"
+        data-home-tab="library"
+      >
+        📚 Mes textes
+      </button>
+
+      <button
+        class="homeTabButton"
+        data-home-tab="settings"
+      >
+        ⚙️ Paramètres
+      </button>
+
+    </div>
+
+
+    <div
+      id="preparePanel"
+      class="editorCard homeTabPanel active"
+    >
 
       <div class="editorTitle">
 
@@ -1163,7 +1573,10 @@ button:active {
          BIBLIOTHÈQUE
     =================================================== -->
 
-    <div class="libraryCard">
+    <div
+      id="libraryPanel"
+      class="libraryCard homeTabPanel"
+    >
 
       <div class="libraryHeader">
 
@@ -1178,7 +1591,295 @@ button:active {
       </div>
 
 
+      <div class="libraryTools">
+
+        <button
+          id="exportLibraryBtn"
+          class="libraryToolButton"
+        >
+          ⬇️ Exporter la sauvegarde
+        </button>
+
+        <button
+          id="importLibraryBtn"
+          class="libraryToolButton"
+        >
+          ⬆️ Importer une sauvegarde
+        </button>
+
+        <input
+          id="importFileInput"
+          type="file"
+          accept="application/json,.json"
+        >
+
+      </div>
+
+
       <div id="libraryList"></div>
+
+    </div>
+
+
+    <div
+      id="settingsPanel"
+      class="settingsCard homeTabPanel"
+    >
+
+      <div class="settingsTitle">
+
+        <h2>
+          ⚙️ Paramètres
+        </h2>
+
+        <p>
+          Préparez l'affichage avant le direct.
+          Les réglages restent aussi accessibles pendant la lecture.
+        </p>
+
+      </div>
+
+
+      <div class="settingsSection">
+
+        <h3>
+          Affichage du prompteur
+        </h3>
+
+
+        <div class="settingGroup">
+
+          <div class="settingHeader">
+
+            <span>
+              Taille du texte
+            </span>
+
+            <span
+              id="settingsFontSizeValue"
+              class="settingValue"
+            >
+              46 px
+            </span>
+
+          </div>
+
+          <input
+            id="settingsFontSizeRange"
+            class="settingRange"
+            type="range"
+            min="20"
+            max="70"
+            step="2"
+            value="46"
+          >
+
+        </div>
+
+
+        <div class="settingGroup">
+
+          <div class="settingHeader">
+
+            <span>
+              Interligne
+            </span>
+
+            <span
+              id="settingsLineHeightValue"
+              class="settingValue"
+            >
+              1,52
+            </span>
+
+          </div>
+
+          <input
+            id="settingsLineHeightRange"
+            class="settingRange"
+            type="range"
+            min="1.20"
+            max="2.00"
+            step="0.05"
+            value="1.52"
+          >
+
+        </div>
+
+
+        <div class="settingGroup">
+
+          <div class="settingHeader">
+
+            <span>
+              Largeur de lecture
+            </span>
+
+            <span
+              id="settingsTextWidthValue"
+              class="settingValue"
+            >
+              88 %
+            </span>
+
+          </div>
+
+          <input
+            id="settingsTextWidthRange"
+            class="settingRange"
+            type="range"
+            min="45"
+            max="96"
+            step="1"
+            value="88"
+          >
+
+        </div>
+
+
+        <div class="settingGroup">
+
+          <div class="settingHeader">
+
+            <span>
+              Alignement
+            </span>
+
+          </div>
+
+          <div class="alignmentButtons">
+
+            <button
+              class="settingsAlignmentButton alignmentButton"
+              data-settings-align="left"
+            >
+              ⬅ Gauche
+            </button>
+
+            <button
+              class="settingsAlignmentButton alignmentButton active"
+              data-settings-align="center"
+            >
+              ↔ Centré
+            </button>
+
+            <button
+              class="settingsAlignmentButton alignmentButton"
+              data-settings-align="justify"
+            >
+              ☰ Justifié
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <button
+          id="settingsResetDisplayBtn"
+          class="settingsActionButton"
+        >
+          ↩ Réglages d'affichage par défaut
+        </button>
+
+
+        <div class="settingsPreview">
+
+          <div id="settingsPreviewText">
+            Votre texte apparaîtra ainsi dans le prompteur.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="settingsSection">
+
+        <h3>
+          Tablette et écran
+        </h3>
+
+        <div class="settingToggleRow">
+
+          <div class="settingToggleText">
+
+            <strong>
+              Garder l'écran allumé pendant la lecture
+            </strong>
+
+            <span>
+              Empêche la mise en veille lorsque l'appareil le permet.
+            </span>
+
+          </div>
+
+          <label class="switch">
+
+            <input
+              id="keepAwakeToggle"
+              type="checkbox"
+              checked
+            >
+
+            <span class="switchSlider"></span>
+
+          </label>
+
+        </div>
+
+        <div
+          id="wakeSupportStatus"
+          class="settingsStatus"
+        ></div>
+
+      </div>
+
+
+      <div class="settingsSection">
+
+        <h3>
+          Installation
+        </h3>
+
+        <button
+          id="installAppBtn"
+          class="settingsActionButton"
+          disabled
+        >
+          📲 Installer l'application
+        </button>
+
+        <div
+          id="installStatus"
+          class="settingsStatus"
+        >
+          Vérification de l'installation…
+        </div>
+
+      </div>
+
+
+      <div class="settingsSection">
+
+        <h3>
+          Connexion et mode hors ligne
+        </h3>
+
+        <div
+          id="connectionStatus"
+          class="settingsStatus"
+        ></div>
+
+        <div class="offlineNote">
+          Une fois l'application installée ou mise en cache,
+          l'interface et les textes enregistrés peuvent rester disponibles
+          sans connexion. Le suivi vocal repose toutefois sur le service
+          de reconnaissance du navigateur et peut nécessiter Internet
+          selon l'appareil.
+        </div>
+
+      </div>
 
     </div>
 
@@ -1275,6 +1976,14 @@ button:active {
     >
       🪞 Miroir
     </button>
+
+
+    <div
+      id="wakeBadge"
+      title="L'écran est maintenu allumé"
+    >
+      ☀️ Écran actif
+    </div>
 
 
     <button
@@ -1587,11 +2296,77 @@ const textWidthValue =
 
 const alignmentButtons =
   document.querySelectorAll(
-    ".alignmentButton"
+    "#displayPanel .alignmentButton"
   );
 
 const resetDisplayBtn =
   document.getElementById("resetDisplayBtn");
+
+const homeTabButtons =
+  document.querySelectorAll(
+    ".homeTabButton"
+  );
+
+const homeTabPanels =
+  document.querySelectorAll(
+    ".homeTabPanel"
+  );
+
+const exportLibraryBtn =
+  document.getElementById("exportLibraryBtn");
+
+const importLibraryBtn =
+  document.getElementById("importLibraryBtn");
+
+const importFileInput =
+  document.getElementById("importFileInput");
+
+const settingsFontSizeRange =
+  document.getElementById("settingsFontSizeRange");
+
+const settingsFontSizeValue =
+  document.getElementById("settingsFontSizeValue");
+
+const settingsLineHeightRange =
+  document.getElementById("settingsLineHeightRange");
+
+const settingsLineHeightValue =
+  document.getElementById("settingsLineHeightValue");
+
+const settingsTextWidthRange =
+  document.getElementById("settingsTextWidthRange");
+
+const settingsTextWidthValue =
+  document.getElementById("settingsTextWidthValue");
+
+const settingsAlignmentButtons =
+  document.querySelectorAll(
+    ".settingsAlignmentButton"
+  );
+
+const settingsResetDisplayBtn =
+  document.getElementById("settingsResetDisplayBtn");
+
+const settingsPreviewText =
+  document.getElementById("settingsPreviewText");
+
+const keepAwakeToggle =
+  document.getElementById("keepAwakeToggle");
+
+const wakeSupportStatus =
+  document.getElementById("wakeSupportStatus");
+
+const wakeBadge =
+  document.getElementById("wakeBadge");
+
+const installAppBtn =
+  document.getElementById("installAppBtn");
+
+const installStatus =
+  document.getElementById("installStatus");
+
+const connectionStatus =
+  document.getElementById("connectionStatus");
 
 const countdown =
   document.getElementById("countdown");
@@ -1638,6 +2413,12 @@ let countdownRunning = false;
 
 let currentSavedId = null;
 
+let keepAwakeEnabled = true;
+
+let wakeLock = null;
+
+let deferredInstallPrompt = null;
+
 
 /* =========================================================
    PARAMÈTRES MOTEUR V3
@@ -1659,6 +2440,9 @@ const STORAGE_KEY =
 
 const DISPLAY_STORAGE_KEY =
   "prompteur_vocal_display_v4";
+
+const GENERAL_STORAGE_KEY =
+  "prompteur_vocal_general_v5";
 
 
 function getSavedScripts() {
@@ -1697,6 +2481,776 @@ function storeScripts(scripts) {
     JSON.stringify(scripts)
   );
 }
+
+
+/* =========================================================
+   NAVIGATION ACCUEIL
+========================================================= */
+
+function showHomeTab(tabName) {
+
+  homeTabButtons.forEach(
+    button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.homeTab ===
+          tabName
+      );
+    }
+  );
+
+
+  homeTabPanels.forEach(
+    panel => {
+
+      panel.classList.toggle(
+        "active",
+        panel.id ===
+          tabName + "Panel"
+      );
+    }
+  );
+
+
+  if (tabName === "library") {
+
+    renderLibrary();
+  }
+
+
+  if (tabName === "settings") {
+
+    updateConnectionStatus();
+    updateWakeSupportStatus();
+    updateInstallStatus();
+  }
+}
+
+
+homeTabButtons.forEach(
+  button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        showHomeTab(
+          button.dataset.homeTab
+        );
+      }
+    );
+  }
+);
+
+
+/* =========================================================
+   PARAMÈTRES GÉNÉRAUX
+========================================================= */
+
+function saveGeneralSettings() {
+
+  const settings = {
+
+    keepAwake:
+      keepAwakeEnabled
+  };
+
+
+  try {
+
+    localStorage.setItem(
+      GENERAL_STORAGE_KEY,
+      JSON.stringify(settings)
+    );
+  }
+
+  catch (error) {}
+}
+
+
+function loadGeneralSettings() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        GENERAL_STORAGE_KEY
+      );
+
+
+    if (!saved) {
+      return;
+    }
+
+
+    const settings =
+      JSON.parse(saved);
+
+
+    if (
+      typeof settings.keepAwake ===
+      "boolean"
+    ) {
+
+      keepAwakeEnabled =
+        settings.keepAwake;
+    }
+  }
+
+  catch (error) {}
+}
+
+
+/* =========================================================
+   EXPORT / IMPORT
+========================================================= */
+
+function exportBackup() {
+
+  const backup = {
+
+    format:
+      "prompteur-vocal-backup",
+
+    version:
+      1,
+
+    exportedAt:
+      new Date().toISOString(),
+
+    scripts:
+      getSavedScripts(),
+
+    displaySettings: {
+
+      fontSize:
+        currentFontSize,
+
+      lineHeight:
+        currentLineHeight,
+
+      textWidth:
+        currentTextWidth,
+
+      alignment:
+        currentAlignment
+    },
+
+    generalSettings: {
+
+      keepAwake:
+        keepAwakeEnabled
+    }
+  };
+
+
+  const blob =
+    new Blob(
+      [
+        JSON.stringify(
+          backup,
+          null,
+          2
+        )
+      ],
+      {
+        type:
+          "application/json"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(blob);
+
+
+  const link =
+    document.createElement("a");
+
+
+  const date =
+    new Date()
+      .toISOString()
+      .slice(0,10);
+
+
+  link.href = url;
+
+  link.download =
+    "prompteur-vocal-sauvegarde-" +
+    date +
+    ".json";
+
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+
+  URL.revokeObjectURL(url);
+}
+
+
+async function importBackup(file) {
+
+  if (!file) {
+    return;
+  }
+
+
+  try {
+
+    const content =
+      await file.text();
+
+
+    const backup =
+      JSON.parse(content);
+
+
+    if (
+      backup.format !==
+        "prompteur-vocal-backup" ||
+      !Array.isArray(
+        backup.scripts
+      )
+    ) {
+
+      throw new Error(
+        "Format non reconnu"
+      );
+    }
+
+
+    const confirmed =
+      confirm(
+        "Importer cette sauvegarde ? Les textes déjà présents seront conservés et les textes portant le même identifiant seront mis à jour."
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    const existing =
+      getSavedScripts();
+
+
+    const scriptsById =
+      new Map();
+
+
+    existing.forEach(
+      script => {
+
+        scriptsById.set(
+          script.id,
+          script
+        );
+      }
+    );
+
+
+    backup.scripts.forEach(
+      script => {
+
+        if (
+          !script ||
+          typeof script.id !==
+            "string" ||
+          typeof script.title !==
+            "string" ||
+          typeof script.text !==
+            "string"
+        ) {
+
+          return;
+        }
+
+
+        scriptsById.set(
+          script.id,
+          script
+        );
+      }
+    );
+
+
+    storeScripts(
+      Array.from(
+        scriptsById.values()
+      )
+    );
+
+
+    if (
+      backup.displaySettings &&
+      typeof backup.displaySettings ===
+        "object"
+    ) {
+
+      const display =
+        backup.displaySettings;
+
+
+      if (
+        Number.isFinite(
+          display.fontSize
+        )
+      ) {
+
+        currentFontSize =
+          Math.max(
+            20,
+            Math.min(
+              70,
+              display.fontSize
+            )
+          );
+      }
+
+
+      if (
+        Number.isFinite(
+          display.lineHeight
+        )
+      ) {
+
+        currentLineHeight =
+          Math.max(
+            1.2,
+            Math.min(
+              2,
+              display.lineHeight
+            )
+          );
+      }
+
+
+      if (
+        Number.isFinite(
+          display.textWidth
+        )
+      ) {
+
+        currentTextWidth =
+          Math.max(
+            45,
+            Math.min(
+              96,
+              display.textWidth
+            )
+          );
+      }
+
+
+      if (
+        [
+          "left",
+          "center",
+          "justify"
+        ].includes(
+          display.alignment
+        )
+      ) {
+
+        currentAlignment =
+          display.alignment;
+      }
+
+
+      applyDisplaySettings();
+    }
+
+
+    if (
+      backup.generalSettings &&
+      typeof backup.generalSettings.keepAwake ===
+        "boolean"
+    ) {
+
+      keepAwakeEnabled =
+        backup.generalSettings.keepAwake;
+
+      keepAwakeToggle.checked =
+        keepAwakeEnabled;
+
+      saveGeneralSettings();
+    }
+
+
+    renderLibrary();
+
+
+    alert(
+      "Sauvegarde importée avec succès."
+    );
+  }
+
+  catch (error) {
+
+    alert(
+      "Impossible d'importer cette sauvegarde. Vérifiez que vous avez sélectionné un fichier créé par Prompteur vocal."
+    );
+  }
+
+  finally {
+
+    importFileInput.value = "";
+  }
+}
+
+
+exportLibraryBtn.addEventListener(
+  "click",
+  exportBackup
+);
+
+
+importLibraryBtn.addEventListener(
+  "click",
+  () => {
+
+    importFileInput.click();
+  }
+);
+
+
+importFileInput.addEventListener(
+  "change",
+  () => {
+
+    importBackup(
+      importFileInput.files[0]
+    );
+  }
+);
+
+
+/* =========================================================
+   ÉCRAN TOUJOURS ALLUMÉ
+========================================================= */
+
+function updateWakeSupportStatus() {
+
+  if (
+    "wakeLock" in navigator
+  ) {
+
+    wakeSupportStatus.textContent =
+      keepAwakeEnabled
+      ? "Maintien de l'écran activé pour les lectures."
+      : "Maintien de l'écran désactivé.";
+
+    wakeSupportStatus.className =
+      "settingsStatus online";
+  }
+
+  else {
+
+    wakeSupportStatus.textContent =
+      "Cet appareil ne propose pas le maintien automatique de l'écran. Le prompteur reste utilisable normalement.";
+
+    wakeSupportStatus.className =
+      "settingsStatus";
+  }
+}
+
+
+function updateWakeBadge() {
+
+  wakeBadge.classList.toggle(
+    "active",
+    Boolean(wakeLock)
+  );
+}
+
+
+async function requestWakeLock() {
+
+  if (
+    !keepAwakeEnabled ||
+    !("wakeLock" in navigator) ||
+    document.visibilityState !==
+      "visible"
+  ) {
+
+    return;
+  }
+
+
+  try {
+
+    if (wakeLock) {
+      return;
+    }
+
+
+    wakeLock =
+      await navigator.wakeLock.request(
+        "screen"
+      );
+
+
+    updateWakeBadge();
+
+
+    wakeLock.addEventListener(
+      "release",
+      () => {
+
+        wakeLock = null;
+
+        updateWakeBadge();
+      },
+      {
+        once: true
+      }
+    );
+  }
+
+  catch (error) {
+
+    wakeLock = null;
+
+    updateWakeBadge();
+  }
+}
+
+
+async function releaseWakeLock() {
+
+  if (!wakeLock) {
+    return;
+  }
+
+
+  try {
+
+    await wakeLock.release();
+  }
+
+  catch (error) {}
+
+
+  wakeLock = null;
+
+  updateWakeBadge();
+}
+
+
+keepAwakeToggle.addEventListener(
+  "change",
+  async () => {
+
+    keepAwakeEnabled =
+      keepAwakeToggle.checked;
+
+
+    saveGeneralSettings();
+
+    updateWakeSupportStatus();
+
+
+    if (!keepAwakeEnabled) {
+
+      await releaseWakeLock();
+    }
+
+    else if (
+      readerScreen.style.display ===
+        "block"
+    ) {
+
+      await requestWakeLock();
+    }
+  }
+);
+
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    if (
+      document.visibilityState ===
+        "visible" &&
+      keepAwakeEnabled &&
+      readerScreen.style.display ===
+        "block"
+    ) {
+
+      requestWakeLock();
+    }
+  }
+);
+
+
+/* =========================================================
+   PWA / INSTALLATION
+========================================================= */
+
+function isStandaloneMode() {
+
+  return (
+    window.matchMedia(
+      "(display-mode: standalone)"
+    ).matches ||
+    window.navigator.standalone ===
+      true
+  );
+}
+
+
+function updateInstallStatus() {
+
+  if (isStandaloneMode()) {
+
+    installAppBtn.disabled = true;
+
+    installStatus.textContent =
+      "Application déjà installée sur cet appareil.";
+
+    installStatus.className =
+      "settingsStatus online";
+
+    return;
+  }
+
+
+  if (deferredInstallPrompt) {
+
+    installAppBtn.disabled = false;
+
+    installStatus.textContent =
+      "L'application peut être installée sur cet appareil.";
+
+    installStatus.className =
+      "settingsStatus online";
+
+    return;
+  }
+
+
+  installAppBtn.disabled = true;
+
+  installStatus.textContent =
+    "Si le bouton d'installation reste indisponible, utilisez l'option d'installation ou Ajouter à l'écran d'accueil du navigateur.";
+
+  installStatus.className =
+    "settingsStatus";
+}
+
+
+window.addEventListener(
+  "beforeinstallprompt",
+  event => {
+
+    event.preventDefault();
+
+    deferredInstallPrompt =
+      event;
+
+    updateInstallStatus();
+  }
+);
+
+
+installAppBtn.addEventListener(
+  "click",
+  async () => {
+
+    if (!deferredInstallPrompt) {
+      return;
+    }
+
+
+    deferredInstallPrompt.prompt();
+
+
+    await deferredInstallPrompt
+      .userChoice;
+
+
+    deferredInstallPrompt =
+      null;
+
+
+    updateInstallStatus();
+  }
+);
+
+
+window.addEventListener(
+  "appinstalled",
+  () => {
+
+    deferredInstallPrompt =
+      null;
+
+    updateInstallStatus();
+  }
+);
+
+
+if (
+  "serviceWorker" in navigator
+) {
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register("./sw.js")
+        .catch(
+          () => {}
+        );
+    }
+  );
+}
+
+
+/* =========================================================
+   ÉTAT CONNEXION
+========================================================= */
+
+function updateConnectionStatus() {
+
+  if (navigator.onLine) {
+
+    connectionStatus.textContent =
+      "● En ligne";
+
+    connectionStatus.className =
+      "settingsStatus online";
+  }
+
+  else {
+
+    connectionStatus.textContent =
+      "● Hors connexion — l'interface et les textes locaux restent disponibles.";
+
+    connectionStatus.className =
+      "settingsStatus offline";
+  }
+}
+
+
+window.addEventListener(
+  "online",
+  updateConnectionStatus
+);
+
+
+window.addEventListener(
+  "offline",
+  updateConnectionStatus
+);
 
 
 /* =========================================================
@@ -1889,6 +3443,64 @@ function applyDisplaySettings(
       );
     }
   );
+
+
+  settingsFontSizeRange.value =
+    currentFontSize;
+
+
+  settingsFontSizeValue.textContent =
+    currentFontSize +
+    " px";
+
+
+  settingsLineHeightRange.value =
+    currentLineHeight;
+
+
+  settingsLineHeightValue.textContent =
+    currentLineHeight
+      .toFixed(2)
+      .replace(".",",");
+
+
+  settingsTextWidthRange.value =
+    currentTextWidth;
+
+
+  settingsTextWidthValue.textContent =
+    currentTextWidth +
+    " %";
+
+
+  settingsAlignmentButtons.forEach(
+    button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.settingsAlign ===
+          currentAlignment
+      );
+    }
+  );
+
+
+  settingsPreviewText.style.fontSize =
+    Math.max(18, currentFontSize * 0.52) +
+    "px";
+
+
+  settingsPreviewText.style.lineHeight =
+    currentLineHeight;
+
+
+  settingsPreviewText.style.width =
+    currentTextWidth +
+    "%";
+
+
+  settingsPreviewText.style.textAlign =
+    currentAlignment;
 
 
   if (save) {
@@ -3372,6 +4984,9 @@ launchBtn.addEventListener(
       "block";
 
 
+    requestWakeLock();
+
+
     displayPanel.classList.remove(
       "open"
     );
@@ -3546,6 +5161,9 @@ editBtn.addEventListener(
     displayBtn.classList.remove(
       "active"
     );
+
+
+    releaseWakeLock();
 
 
     readerScreen.style.display =
@@ -3815,6 +5433,11 @@ fullscreenBtn.addEventListener(
 
 updateWordCount();
 
+loadGeneralSettings();
+
+keepAwakeToggle.checked =
+  keepAwakeEnabled;
+
 loadDisplaySettings();
 
 applyDisplaySettings(false);
@@ -3822,6 +5445,12 @@ applyDisplaySettings(false);
 applyMirrorMode();
 
 renderLibrary();
+
+updateWakeSupportStatus();
+
+updateConnectionStatus();
+
+updateInstallStatus();
 
 requestAnimationFrame(
   hybridScrollLoop
