@@ -4,9 +4,222 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prompteur Radio ISTJ V2</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111827;
+      color: white;
+    }
+
+    header {
+      background: #1f2937;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #startBtn {
+      background: #22c55e;
+      color: white;
+    }
+
+    #pauseBtn {
+      background: #f59e0b;
+      color: white;
+    }
+
+    #resetBtn {
+      background: #ef4444;
+      color: white;
+    }
+
+    label {
+      font-size: 0.9rem;
+    }
+
+    input[type="range"] {
+      vertical-align: middle;
+    }
+
+    #editor {
+      padding: 20px;
+      background: #f3f4f6;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      padding: 15px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+
+    #prompter {
+      height: calc(100vh - 320px);
+      min-height: 350px;
+      overflow-y: auto;
+      padding: 45vh 8% 50vh;
+      scroll-behavior: auto;
+    }
+
+    #text {
+      max-width: 1100px;
+      margin: auto;
+      font-size: 48px;
+      line-height: 1.55;
+      text-align: center;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 700px) {
+      #text {
+        font-size: 34px;
+      }
+
+      #prompter {
+        padding-left: 5%;
+        padding-right: 5%;
+      }
+
+      header {
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Prompteur Radio ISTJ V2</h1>
-  <p>Installation réussie.</p>
+
+<header>
+  <h1>🎙️ Prompteur Radio ISTJ</h1>
+
+  <div class="controls">
+    <button id="startBtn">▶ Démarrer</button>
+    <button id="pauseBtn">⏸ Pause</button>
+    <button id="resetBtn">↩ Revenir au début</button>
+
+    <label>
+      Vitesse
+      <input id="speed" type="range" min="1" max="10" value="4">
+    </label>
+
+    <label>
+      Taille
+      <input id="fontSize" type="range" min="28" max="80" value="48">
+    </label>
+  </div>
+</header>
+
+<div id="editor">
+  <textarea id="inputText" placeholder="Collez ici le texte de votre chronique..."></textarea>
+</div>
+
+<div id="prompter">
+  <div id="text">
+    Votre chronique apparaîtra ici.
+  </div>
+</div>
+
+<script>
+  const inputText = document.getElementById("inputText");
+  const text = document.getElementById("text");
+  const prompter = document.getElementById("prompter");
+
+  const startBtn = document.getElementById("startBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const speed = document.getElementById("speed");
+  const fontSize = document.getElementById("fontSize");
+
+  let scrolling = false;
+  let animationId = null;
+  let lastTime = null;
+
+  inputText.addEventListener("input", () => {
+    text.textContent =
+      inputText.value || "Votre chronique apparaîtra ici.";
+  });
+
+  fontSize.addEventListener("input", () => {
+    text.style.fontSize = fontSize.value + "px";
+  });
+
+  function scroll(timestamp) {
+
+    if (!scrolling) return;
+
+    if (lastTime === null) {
+      lastTime = timestamp;
+    }
+
+    const elapsed = timestamp - lastTime;
+
+    if (elapsed > 16) {
+      const pixels = Number(speed.value) * 0.25;
+      prompter.scrollTop += pixels;
+      lastTime = timestamp;
+    }
+
+    animationId = requestAnimationFrame(scroll);
+  }
+
+  startBtn.addEventListener("click", () => {
+
+    if (!inputText.value.trim()) {
+      alert("Collez d'abord le texte de votre chronique.");
+      return;
+    }
+
+    scrolling = true;
+    lastTime = null;
+
+    cancelAnimationFrame(animationId);
+    animationId = requestAnimationFrame(scroll);
+  });
+
+  pauseBtn.addEventListener("click", () => {
+    scrolling = false;
+    cancelAnimationFrame(animationId);
+  });
+
+  resetBtn.addEventListener("click", () => {
+    scrolling = false;
+    cancelAnimationFrame(animationId);
+    prompter.scrollTop = 0;
+  });
+</script>
+
 </body>
 </html>
