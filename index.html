@@ -18,7 +18,9 @@ html, body {
   overflow: hidden;
 }
 
-/* ---------- BARRE SUPÉRIEURE ---------- */
+/* =========================
+   BARRE SUPÉRIEURE
+========================= */
 
 header {
   position: fixed;
@@ -67,7 +69,9 @@ input[type="range"] {
   width: 90px;
 }
 
-/* ---------- ÉDITEUR ---------- */
+/* =========================
+   ÉDITEUR
+========================= */
 
 #editorScreen {
   position: absolute;
@@ -103,7 +107,9 @@ input[type="range"] {
   font-size: 14px;
 }
 
-/* ---------- ÉCRAN PROMPTEUR ---------- */
+/* =========================
+   PROMPTEUR
+========================= */
 
 #readerScreen {
   display: none;
@@ -169,7 +175,9 @@ input[type="range"] {
   color: #facc15;
 }
 
-/* ---------- MOBILE / TABLETTE ---------- */
+/* =========================
+   TABLETTE
+========================= */
 
 @media (max-width: 800px) {
 
@@ -213,6 +221,10 @@ input[type="range"] {
   }
 }
 
+/* =========================
+   TÉLÉPHONE
+========================= */
+
 @media (max-width: 520px) {
 
   header h1 {
@@ -224,7 +236,12 @@ input[type="range"] {
   }
 
   #text {
-    font-size: 27px;
+    font-size: 24px;
+    line-height: 1.45;
+  }
+
+  input[type="range"] {
+    width: 55px;
   }
 }
 </style>
@@ -243,13 +260,19 @@ input[type="range"] {
 
 <div class="control">
   Taille
-  <input id="fontSize" type="range" min="22" max="70" value="46">
+  <input
+    id="fontSize"
+    type="range"
+    min="20"
+    max="70"
+    value="46"
+  >
 </div>
 
 </header>
 
 
-<!-- ÉCRAN DE SAISIE -->
+<!-- ÉDITEUR -->
 
 <div id="editorScreen">
 
@@ -267,7 +290,7 @@ input[type="range"] {
 </div>
 
 
-<!-- ÉCRAN DE LECTURE -->
+<!-- LECTURE -->
 
 <div id="readerScreen">
 
@@ -334,6 +357,59 @@ let listening = false;
 
 let lastScrollWord = -1;
 
+/*
+  MODE HYBRIDE
+*/
+
+let voiceActive = false;
+
+let lastVoiceActivity = 0;
+
+let animationFrame = null;
+let previousFrameTime = 0;
+
+/*
+  Vitesse du mouvement en pixels / seconde.
+  Elle va apprendre progressivement le rythme du lecteur.
+*/
+
+let targetScrollSpeed = 0;
+let currentScrollSpeed = 0;
+
+let estimatedReadingSpeed = 24;
+
+/*
+  Informations utilisées pour estimer
+  le rythme réel de lecture.
+*/
+
+let previousTrackedWord = 0;
+let previousTrackedTime = 0;
+
+
+/* =========================================================
+   PARAMÈTRES DU MODE HYBRIDE
+========================================================= */
+
+/*
+  Temps de silence avant arrêt du défilement.
+*/
+
+const SILENCE_DELAY = 950;
+
+/*
+  Accélération / ralentissement progressifs.
+*/
+
+const SPEED_SMOOTHING = 0.055;
+
+/*
+  Correction maximale automatique vers le mot jaune.
+  Très faible volontairement pour éviter les bonds.
+*/
+
+const MAX_CORRECTION_PER_FRAME = 1.2;
+
 
 /* =========================================================
    NORMALISATION
@@ -356,7 +432,8 @@ function normalizeWord(value) {
 
 function buildText() {
 
-  const content = inputText.value.trim();
+  const content =
+    inputText.value.trim();
 
   if (!content) {
     return false;
@@ -364,28 +441,38 @@ function buildText() {
 
   text.innerHTML = "";
 
-  const rawWords = content.split(/\s+/);
+  const rawWords =
+    content.split(/\s+/);
 
-  words = rawWords.map((rawWord, index) => {
+  words = rawWords.map(
+    (rawWord, index) => {
 
-    const span = document.createElement("span");
+      const span =
+        document.createElement("span");
 
-    span.className = "word";
-    span.dataset.index = index;
-    span.textContent = rawWord + " ";
+      span.className = "word";
+      span.dataset.index = index;
+      span.textContent = rawWord + " ";
 
-    text.appendChild(span);
+      text.appendChild(span);
 
-    return {
-      original: rawWord,
-      normalized: normalizeWord(rawWord),
-      element: span
-    };
+      return {
+        original: rawWord,
+        normalized: normalizeWord(rawWord),
+        element: span
+      };
 
-  });
+    }
+  );
 
   currentWord = 0;
   lastScrollWord = -1;
+
+  previousTrackedWord = 0;
+  previousTrackedTime = performance.now();
+
+  targetScrollSpeed = 0;
+  currentScrollSpeed = 0;
 
   updateDisplay(true);
 
@@ -394,24 +481,26 @@ function buildText() {
 
 
 /* =========================================================
-   AFFICHAGE
+   AFFICHAGE DES MOTS
 ========================================================= */
 
 function updateDisplay(forceScroll = false) {
 
   if (!words.length) return;
 
-  /*
-    On ne reconstruit jamais le texte.
-    Cela évite les changements de ligne
-    et les sauts visuels pendant la lecture.
-  */
+  for (
+    let i = 0;
+    i < words.length;
+    i++
+  ) {
 
-  for (let i = 0; i < words.length; i++) {
+    const element =
+      words[i].element;
 
-    const element = words[i].element;
-
-    element.classList.remove("read", "current");
+    element.classList.remove(
+      "read",
+      "current"
+    );
 
     if (i < currentWord) {
       element.classList.add("read");
@@ -423,71 +512,293 @@ function updateDisplay(forceScroll = false) {
   }
 
   /*
-    Le prompteur ne bouge pas à chaque mot.
+    Le mot jaune ne commande plus directement
+    chaque mouvement.
+
+    Il sert d'ancre au défilement continu.
   */
 
-  if (
-    forceScroll ||
-    lastScrollWord < 0 ||
-    currentWord - lastScrollWord >= 5
-  ) {
-
-    scrollToCurrentWord();
-
-    lastScrollWord = currentWord;
+  if (forceScroll) {
+    positionImmediately();
   }
 }
 
 
 /* =========================================================
-   DÉFILEMENT DOUX ET LIMITÉ
+   POSITION INITIALE
 ========================================================= */
 
-function scrollToCurrentWord() {
+function positionImmediately() {
 
-  const item = words[currentWord];
+  const item =
+    words[currentWord];
 
   if (!item) return;
 
-  const desiredPosition =
+  const desired =
     prompter.clientHeight * 0.43;
 
-  const wordPosition =
-    item.element.offsetTop;
+  const target =
+    Math.max(
+      0,
+      item.element.offsetTop - desired
+    );
 
-  let target =
-    wordPosition - desiredPosition;
+  prompter.scrollTop = target;
 
-  target = Math.max(0, target);
-
-  const currentScroll =
-    prompter.scrollTop;
-
-  const maximumJump =
-    prompter.clientHeight * 0.28;
-
-  if (target > currentScroll + maximumJump) {
-    target = currentScroll + maximumJump;
-  }
-
-  if (target < currentScroll - maximumJump) {
-    target = currentScroll - maximumJump;
-  }
-
-  prompter.scrollTo({
-    top: target,
-    behavior: "smooth"
-  });
+  lastScrollWord = currentWord;
 }
 
 
 /* =========================================================
-   RECHERCHE D'UNE POSITION
+   ESTIMATION DU RYTHME DE LECTURE
 ========================================================= */
 
-function findBestPosition(spokenWords) {
+function updateReadingSpeed() {
 
-  if (!spokenWords.length || !words.length) {
+  const now =
+    performance.now();
+
+  const elapsed =
+    now - previousTrackedTime;
+
+  const wordDifference =
+    currentWord - previousTrackedWord;
+
+  /*
+    On n'actualise le rythme que si plusieurs mots
+    ont réellement été parcourus.
+  */
+
+  if (
+    wordDifference >= 2 &&
+    elapsed >= 250
+  ) {
+
+    const wordsPerSecond =
+      wordDifference /
+      (elapsed / 1000);
+
+    /*
+      On évite les estimations absurdes dues
+      à une reconnaissance momentanément mauvaise.
+    */
+
+    if (
+      wordsPerSecond > 0.7 &&
+      wordsPerSecond < 6
+    ) {
+
+      /*
+        Conversion approximative en vitesse visuelle.
+        La vitesse réelle sera ensuite corrigée
+        doucement grâce à la position du mot jaune.
+      */
+
+      const calculatedSpeed =
+        wordsPerSecond * 13;
+
+      estimatedReadingSpeed =
+        estimatedReadingSpeed * 0.75 +
+        calculatedSpeed * 0.25;
+    }
+
+    previousTrackedWord =
+      currentWord;
+
+    previousTrackedTime =
+      now;
+  }
+}
+
+
+/* =========================================================
+   DÉTECTION DE PAROLE
+========================================================= */
+
+function markVoiceActivity() {
+
+  voiceActive = true;
+
+  lastVoiceActivity =
+    performance.now();
+
+  /*
+    Tant que la personne parle,
+    le défilement vise la vitesse
+    correspondant à son rythme.
+  */
+
+  targetScrollSpeed =
+    estimatedReadingSpeed;
+}
+
+
+/* =========================================================
+   BOUCLE DE DÉFILEMENT HYBRIDE
+========================================================= */
+
+function hybridScrollLoop(time) {
+
+  if (!listening) {
+
+    animationFrame =
+      requestAnimationFrame(
+        hybridScrollLoop
+      );
+
+    previousFrameTime = time;
+
+    return;
+  }
+
+
+  if (!previousFrameTime) {
+    previousFrameTime = time;
+  }
+
+  const delta =
+    Math.min(
+      50,
+      time - previousFrameTime
+    );
+
+  previousFrameTime = time;
+
+
+  /* =====================================================
+     SILENCE
+  ===================================================== */
+
+  const silenceDuration =
+    performance.now() -
+    lastVoiceActivity;
+
+  if (
+    silenceDuration >
+    SILENCE_DELAY
+  ) {
+
+    voiceActive = false;
+    targetScrollSpeed = 0;
+  }
+
+
+  /* =====================================================
+     ACCÉLÉRATION / RALENTISSEMENT PROGRESSIFS
+  ===================================================== */
+
+  currentScrollSpeed +=
+    (
+      targetScrollSpeed -
+      currentScrollSpeed
+    ) *
+    SPEED_SMOOTHING;
+
+
+  /*
+    Si on est presque arrêté,
+    on passe réellement à zéro.
+  */
+
+  if (
+    !voiceActive &&
+    Math.abs(currentScrollSpeed) < 0.15
+  ) {
+
+    currentScrollSpeed = 0;
+  }
+
+
+  /* =====================================================
+     DÉFILEMENT CONTINU
+  ===================================================== */
+
+  const movement =
+    currentScrollSpeed *
+    (delta / 1000);
+
+  prompter.scrollTop += movement;
+
+
+  /* =====================================================
+     CORRECTION DOUCE AVEC LE MOT JAUNE
+  ===================================================== */
+
+  const item =
+    words[currentWord];
+
+  if (item) {
+
+    const desiredPosition =
+      prompter.clientHeight * 0.43;
+
+    const actualPosition =
+      item.element.offsetTop -
+      prompter.scrollTop;
+
+    const difference =
+      actualPosition -
+      desiredPosition;
+
+
+    /*
+      Zone morte :
+      tant que le mot jaune reste raisonnablement
+      proche de sa position idéale, on ne corrige rien.
+    */
+
+    const deadZone =
+      prompter.clientHeight * 0.12;
+
+
+    if (
+      Math.abs(difference) >
+      deadZone
+    ) {
+
+      /*
+        Correction très progressive.
+        Aucun scrollTo brutal.
+      */
+
+      let correction =
+        difference * 0.012;
+
+      correction =
+        Math.max(
+          -MAX_CORRECTION_PER_FRAME,
+          Math.min(
+            MAX_CORRECTION_PER_FRAME,
+            correction
+          )
+        );
+
+      prompter.scrollTop +=
+        correction;
+    }
+  }
+
+
+  animationFrame =
+    requestAnimationFrame(
+      hybridScrollLoop
+    );
+}
+
+
+/* =========================================================
+   RECHERCHE DE POSITION
+========================================================= */
+
+function findBestPosition(
+  spokenWords
+) {
+
+  if (
+    !spokenWords.length ||
+    !words.length
+  ) {
     return null;
   }
 
@@ -497,13 +808,13 @@ function findBestPosition(spokenWords) {
 
   /* =====================================================
      1. RECHERCHE NORMALE
-
-     On cherche seulement près de la position actuelle.
-     C'est le comportement prudent qui fonctionne bien.
   ===================================================== */
 
   const localStart =
-    Math.max(0, currentWord - 4);
+    Math.max(
+      0,
+      currentWord - 4
+    );
 
   const localEnd =
     Math.min(
@@ -531,7 +842,9 @@ function findBestPosition(spokenWords) {
 
       const spoken =
         recentSpoken[
-          recentSpoken.length - 1 - offset
+          recentSpoken.length -
+          1 -
+          offset
         ];
 
       const textIndex =
@@ -541,17 +854,23 @@ function findBestPosition(spokenWords) {
 
       if (
         words[textIndex] &&
-        words[textIndex].normalized === spoken
+        words[textIndex].normalized ===
+        spoken
       ) {
+
         score++;
       }
     }
+
 
     if (
       score > bestScore &&
       (
         score >= 2 ||
-        (currentWord < 3 && score >= 1)
+        (
+          currentWord < 3 &&
+          score >= 1
+        )
       )
     ) {
 
@@ -560,11 +879,6 @@ function findBestPosition(spokenWords) {
     }
   }
 
-
-  /*
-    Si la recherche locale donne une bonne
-    correspondance, on garde le fonctionnement normal.
-  */
 
   if (bestPosition !== null) {
 
@@ -576,13 +890,7 @@ function findBestPosition(spokenWords) {
 
 
   /* =====================================================
-     2. RATTRAPAGE INTELLIGENT
-
-     Si rien ne correspond près de la position actuelle,
-     l'élève a peut-être sauté une phrase.
-
-     On cherche alors plus loin, mais on exige une
-     correspondance beaucoup plus forte.
+     2. RATTRAPAGE APRÈS SAUT DE PHRASE
   ===================================================== */
 
   const recoveryStart =
@@ -614,28 +922,31 @@ function findBestPosition(spokenWords) {
 
       const spoken =
         recentSpoken[
-          recentSpoken.length - 1 - offset
+          recentSpoken.length -
+          1 -
+          offset
         ];
 
       const textIndex =
         candidate - offset;
 
-      if (textIndex < recoveryStart) {
+      if (
+        textIndex <
+        recoveryStart
+      ) {
         continue;
       }
 
       if (
         words[textIndex] &&
-        words[textIndex].normalized === spoken
+        words[textIndex].normalized ===
+        spoken
       ) {
+
         score++;
       }
     }
 
-    /*
-      Trois correspondances minimum sont nécessaires
-      pour accepter un grand saut.
-    */
 
     if (
       score >= 3 &&
@@ -648,7 +959,9 @@ function findBestPosition(spokenWords) {
   }
 
 
-  if (recoveryPosition !== null) {
+  if (
+    recoveryPosition !== null
+  ) {
 
     return {
       position: recoveryPosition,
@@ -662,7 +975,7 @@ function findBestPosition(spokenWords) {
 
 
 /* =========================================================
-   SPEECH RECOGNITION
+   RECONNAISSANCE VOCALE
 ========================================================= */
 
 const SpeechRecognition =
@@ -692,6 +1005,18 @@ if (SpeechRecognition) {
 
     listening = true;
 
+    /*
+      On ne fait pas encore défiler tant
+      qu'aucune parole n'a été détectée.
+    */
+
+    voiceActive = false;
+
+    lastVoiceActivity =
+      performance.now();
+
+    targetScrollSpeed = 0;
+
     statusBox.textContent =
       "🎤 Écoute en cours";
 
@@ -704,153 +1029,170 @@ if (SpeechRecognition) {
   };
 
 
-  recognition.onresult = event => {
+  recognition.onresult =
+    event => {
 
-    let transcript = "";
-
-    /*
-      On récupère uniquement la reconnaissance
-      actuellement fournie par le navigateur.
-    */
-
-    for (
-      let i = event.resultIndex;
-      i < event.results.length;
-      i++
-    ) {
-
-      transcript +=
-        event.results[i][0].transcript + " ";
-    }
+      let transcript = "";
 
 
-    const spokenWords =
-      transcript
-        .trim()
-        .split(/\s+/)
-        .map(normalizeWord)
-        .filter(Boolean);
+      for (
+        let i = event.resultIndex;
+        i < event.results.length;
+        i++
+      ) {
 
-
-    if (!spokenWords.length) {
-      return;
-    }
-
-
-    const match =
-      findBestPosition(spokenWords);
-
-
-    if (match === null) {
-      return;
-    }
-
-
-    let newPosition;
-
-
-    /* ===================================================
-       CAS 1 : SAUT DE PHRASE DÉTECTÉ
-    =================================================== */
-
-    if (match.jump) {
-
-      /*
-        Plusieurs mots correspondent nettement
-        à un passage situé plus loin.
-
-        On considère donc que l'élève a volontairement
-        sauté une phrase ou un passage.
-      */
-
-      newPosition =
-        match.position + 1;
-
-    }
-
-
-    /* ===================================================
-       CAS 2 : LECTURE NORMALE
-    =================================================== */
-
-    else {
-
-      /*
-        On conserve la sécurité de la version
-        précédente : le suivi ne peut pas bondir
-        brutalement vers l'avant.
-      */
-
-      const maximumAdvance = 4;
-
-      newPosition =
-        Math.min(
-          match.position + 1,
-          currentWord + maximumAdvance
-        );
-
-
-      /*
-        Petit retour arrière autorisé si l'élève
-        reprend quelques mots.
-      */
-
-      newPosition =
-        Math.max(
-          currentWord - 2,
-          newPosition
-        );
-    }
-
-
-    newPosition =
-      Math.max(
-        0,
-        Math.min(
-          words.length - 1,
-          newPosition
-        )
-      );
-
-
-    if (newPosition !== currentWord) {
-
-      currentWord =
-        newPosition;
-
-
-      /*
-        Lors d'un véritable saut de phrase,
-        on autorise le prompteur à rejoindre
-        immédiatement la nouvelle zone.
-      */
-
-      if (match.jump) {
-        lastScrollWord = -1;
+        transcript +=
+          event.results[i][0]
+            .transcript + " ";
       }
 
 
-      updateDisplay(
-        match.jump
-      );
-    }
-  };
+      const spokenWords =
+        transcript
+          .trim()
+          .split(/\s+/)
+          .map(normalizeWord)
+          .filter(Boolean);
 
 
-  recognition.onerror = event => {
+      if (!spokenWords.length) {
+        return;
+      }
 
-    /*
-      Une courte absence de parole n'est pas
-      considérée comme une erreur.
-    */
 
-    if (event.error === "no-speech") {
-      return;
-    }
+      /*
+        Dès que le moteur reçoit de la parole,
+        le défilement peut fonctionner.
+      */
 
-    statusBox.textContent =
-      "Micro : " + event.error;
-  };
+      markVoiceActivity();
+
+
+      const match =
+        findBestPosition(
+          spokenWords
+        );
+
+
+      if (match === null) {
+
+        /*
+          Même si le texte n'a pas encore été
+          reconnu précisément, on sait que
+          l'élève est en train de parler.
+
+          Le défilement reste donc doux.
+        */
+
+        return;
+      }
+
+
+      let newPosition;
+
+
+      /* =================================================
+         SAUT DE PHRASE
+      ================================================= */
+
+      if (match.jump) {
+
+        newPosition =
+          match.position + 1;
+
+      }
+
+
+      /* =================================================
+         LECTURE NORMALE
+      ================================================= */
+
+      else {
+
+        const maximumAdvance = 4;
+
+        newPosition =
+          Math.min(
+            match.position + 1,
+            currentWord +
+            maximumAdvance
+          );
+
+        newPosition =
+          Math.max(
+            currentWord - 2,
+            newPosition
+          );
+      }
+
+
+      newPosition =
+        Math.max(
+          0,
+          Math.min(
+            words.length - 1,
+            newPosition
+          )
+        );
+
+
+      if (
+        newPosition !==
+        currentWord
+      ) {
+
+        currentWord =
+          newPosition;
+
+        /*
+          On apprend le débit réel.
+        */
+
+        updateReadingSpeed();
+
+        /*
+          On met à jour le jaune,
+          sans déplacement brutal.
+        */
+
+        updateDisplay(false);
+
+
+        /*
+          En cas de saut de phrase,
+          on ne téléporte toujours pas l'écran.
+
+          On accélère simplement temporairement
+          la correction vers la nouvelle position.
+        */
+
+        if (match.jump) {
+
+          currentScrollSpeed =
+            Math.max(
+              currentScrollSpeed,
+              estimatedReadingSpeed
+            );
+        }
+      }
+    };
+
+
+  recognition.onerror =
+    event => {
+
+      if (
+        event.error ===
+        "no-speech"
+      ) {
+
+        return;
+      }
+
+      statusBox.textContent =
+        "Micro : " +
+        event.error;
+    };
 
 
   recognition.onend = () => {
@@ -858,11 +1200,14 @@ if (SpeechRecognition) {
     if (listening) {
 
       /*
-        Chrome peut fermer automatiquement une
-        session de reconnaissance.
+        Certains navigateurs mobiles ferment
+        eux-mêmes la reconnaissance.
 
-        On la relance uniquement si l'utilisateur
-        est toujours en mode lecture.
+        On ne peut pas empêcher tous les sons
+        système associés au micro.
+
+        On évite cependant les relances
+        extrêmement rapides.
       */
 
       setTimeout(() => {
@@ -876,11 +1221,14 @@ if (SpeechRecognition) {
         }
         catch (e) {}
 
-      }, 250);
+      }, 700);
 
     }
 
     else {
+
+      voiceActive = false;
+      targetScrollSpeed = 0;
 
       statusBox.textContent =
         "⏸ Suivi arrêté";
@@ -897,7 +1245,7 @@ if (SpeechRecognition) {
 
 
 /* =========================================================
-   LANCER / ARRÊTER LE SUIVI VOCAL
+   SUIVI VOCAL
 ========================================================= */
 
 voiceBtn.addEventListener(
@@ -914,13 +1262,9 @@ voiceBtn.addEventListener(
     }
 
 
-    /*
-      Si on se trouve encore dans l'éditeur,
-      on construit d'abord le prompteur.
-    */
-
     if (
-      editorScreen.style.display !== "none"
+      editorScreen.style.display !==
+      "none"
     ) {
 
       if (!buildText()) {
@@ -932,15 +1276,13 @@ voiceBtn.addEventListener(
         return;
       }
 
-
       editorScreen.style.display =
         "none";
 
       readerScreen.style.display =
         "block";
 
-      prompter.scrollTop =
-        0;
+      prompter.scrollTop = 0;
 
       updateDisplay(true);
     }
@@ -949,6 +1291,15 @@ voiceBtn.addEventListener(
     if (!listening) {
 
       listening = true;
+
+      voiceActive = false;
+      targetScrollSpeed = 0;
+
+      previousTrackedWord =
+        currentWord;
+
+      previousTrackedTime =
+        performance.now();
 
       try {
         recognition.start();
@@ -960,6 +1311,9 @@ voiceBtn.addEventListener(
     else {
 
       listening = false;
+
+      voiceActive = false;
+      targetScrollSpeed = 0;
 
       try {
         recognition.stop();
@@ -979,6 +1333,9 @@ pauseBtn.addEventListener(
   () => {
 
     listening = false;
+
+    voiceActive = false;
+    targetScrollSpeed = 0;
 
     if (recognition) {
 
@@ -1002,7 +1359,7 @@ pauseBtn.addEventListener(
 
 
 /* =========================================================
-   RETOUR AU DÉBUT
+   DÉBUT
 ========================================================= */
 
 resetBtn.addEventListener(
@@ -1011,6 +1368,13 @@ resetBtn.addEventListener(
 
     currentWord = 0;
     lastScrollWord = -1;
+
+    previousTrackedWord = 0;
+    previousTrackedTime =
+      performance.now();
+
+    targetScrollSpeed = 0;
+    currentScrollSpeed = 0;
 
     prompter.scrollTop = 0;
 
@@ -1023,7 +1387,7 @@ resetBtn.addEventListener(
 
 
 /* =========================================================
-   MODIFIER LE TEXTE
+   MODIFIER
 ========================================================= */
 
 editBtn.addEventListener(
@@ -1031,6 +1395,11 @@ editBtn.addEventListener(
   () => {
 
     listening = false;
+
+    voiceActive = false;
+
+    targetScrollSpeed = 0;
+    currentScrollSpeed = 0;
 
     if (recognition) {
 
@@ -1053,7 +1422,7 @@ editBtn.addEventListener(
 
 
 /* =========================================================
-   TAILLE DU TEXTE
+   TAILLE
 ========================================================= */
 
 fontSize.addEventListener(
@@ -1063,11 +1432,18 @@ fontSize.addEventListener(
     text.style.fontSize =
       fontSize.value + "px";
 
-    setTimeout(() => {
-      scrollToCurrentWord();
-    }, 50);
   }
 );
+
+
+/* =========================================================
+   DÉMARRAGE DE LA BOUCLE FLUIDE
+========================================================= */
+
+animationFrame =
+  requestAnimationFrame(
+    hybridScrollLoop
+  );
 
 </script>
 
