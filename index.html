@@ -1,224 +1,539 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prompteur Radio ISTJ V2</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompteur Radio ISTJ V2</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #111827;
-      color: white;
-    }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #090d16;
+  color: white;
+}
 
-    header {
-      background: #1f2937;
-      padding: 15px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #1f2937;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-    header h1 {
-      margin: 0;
-      font-size: 1.3rem;
-    }
+h1 {
+  font-size: 1.25rem;
+  margin: 0;
+  margin-right: auto;
+}
 
-    .controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 15px;
+  cursor: pointer;
+  color: white;
+}
 
-    button {
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
+#voiceBtn { background: #16a34a; }
+#autoBtn { background: #2563eb; }
+#pauseBtn { background: #f59e0b; }
+#resetBtn { background: #ef4444; }
 
-    #startBtn {
-      background: #22c55e;
-      color: white;
-    }
+.control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+}
 
-    #pauseBtn {
-      background: #f59e0b;
-      color: white;
-    }
+#editor {
+  padding: 16px;
+  background: #f3f4f6;
+}
 
-    #resetBtn {
-      background: #ef4444;
-      color: white;
-    }
+textarea {
+  width: 100%;
+  height: 150px;
+  padding: 14px;
+  font-size: 17px;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  resize: vertical;
+}
 
-    label {
-      font-size: 0.9rem;
-    }
+#status {
+  background: #111827;
+  text-align: center;
+  padding: 8px;
+  font-size: 14px;
+  color: #d1d5db;
+}
 
-    input[type="range"] {
-      vertical-align: middle;
-    }
+#status.listening {
+  color: #86efac;
+}
 
-    #editor {
-      padding: 20px;
-      background: #f3f4f6;
-    }
+#prompter {
+  height: calc(100vh - 300px);
+  min-height: 400px;
+  overflow-y: auto;
+  padding: 42vh 8% 50vh;
+}
 
-    textarea {
-      width: 100%;
-      height: 180px;
-      padding: 15px;
-      font-size: 18px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      resize: vertical;
-    }
+#text {
+  max-width: 1100px;
+  margin: auto;
+  font-size: 48px;
+  line-height: 1.55;
+  text-align: center;
+}
 
-    #prompter {
-      height: calc(100vh - 320px);
-      min-height: 350px;
-      overflow-y: auto;
-      padding: 45vh 8% 50vh;
-      scroll-behavior: auto;
-    }
+.word {
+  transition: color .15s, opacity .15s;
+}
 
-    #text {
-      max-width: 1100px;
-      margin: auto;
-      font-size: 48px;
-      line-height: 1.55;
-      text-align: center;
-      white-space: pre-wrap;
-    }
+.word.read {
+  color: #64748b;
+}
 
-    @media (max-width: 700px) {
-      #text {
-        font-size: 34px;
-      }
+.word.current {
+  color: #facc15;
+}
 
-      #prompter {
-        padding-left: 5%;
-        padding-right: 5%;
-      }
-
-      header {
-        justify-content: center;
-      }
-    }
-  </style>
+@media(max-width:700px) {
+  #text { font-size: 34px; }
+  #prompter { padding-left: 4%; padding-right: 4%; }
+  h1 { width: 100%; }
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <h1>🎙️ Prompteur Radio ISTJ</h1>
 
-  <div class="controls">
-    <button id="startBtn">▶ Démarrer</button>
-    <button id="pauseBtn">⏸ Pause</button>
-    <button id="resetBtn">↩ Revenir au début</button>
+<h1>🎙️ Prompteur Radio ISTJ</h1>
 
-    <label>
-      Vitesse
-      <input id="speed" type="range" min="1" max="10" value="4">
-    </label>
+<button id="voiceBtn">🎤 Suivi vocal</button>
+<button id="autoBtn">▶ Automatique</button>
+<button id="pauseBtn">⏸ Pause</button>
+<button id="resetBtn">↩ Début</button>
 
-    <label>
-      Taille
-      <input id="fontSize" type="range" min="28" max="80" value="48">
-    </label>
-  </div>
+<div class="control">
+Vitesse
+<input id="speed" type="range" min="1" max="10" value="4">
+</div>
+
+<div class="control">
+Taille
+<input id="fontSize" type="range" min="28" max="80" value="48">
+</div>
+
 </header>
 
 <div id="editor">
-  <textarea id="inputText" placeholder="Collez ici le texte de votre chronique..."></textarea>
+<textarea id="inputText"
+placeholder="Collez ici le texte de votre chronique..."></textarea>
+</div>
+
+<div id="status">
+Prêt — collez une chronique puis démarrez le suivi vocal.
 </div>
 
 <div id="prompter">
-  <div id="text">
-    Votre chronique apparaîtra ici.
-  </div>
+<div id="text">
+Votre chronique apparaîtra ici.
+</div>
 </div>
 
 <script>
-  const inputText = document.getElementById("inputText");
-  const text = document.getElementById("text");
-  const prompter = document.getElementById("prompter");
 
-  const startBtn = document.getElementById("startBtn");
-  const pauseBtn = document.getElementById("pauseBtn");
-  const resetBtn = document.getElementById("resetBtn");
+const inputText = document.getElementById("inputText");
+const text = document.getElementById("text");
+const prompter = document.getElementById("prompter");
 
-  const speed = document.getElementById("speed");
-  const fontSize = document.getElementById("fontSize");
+const voiceBtn = document.getElementById("voiceBtn");
+const autoBtn = document.getElementById("autoBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const resetBtn = document.getElementById("resetBtn");
 
-  let scrolling = false;
-  let animationId = null;
-  let lastTime = null;
+const statusBox = document.getElementById("status");
+const speed = document.getElementById("speed");
+const fontSize = document.getElementById("fontSize");
 
-  inputText.addEventListener("input", () => {
-    text.textContent =
-      inputText.value || "Votre chronique apparaîtra ici.";
-  });
+let words = [];
+let currentWord = 0;
 
-  fontSize.addEventListener("input", () => {
-    text.style.fontSize = fontSize.value + "px";
-  });
+let automatic = false;
+let animationId = null;
+let lastTime = null;
 
-  function scroll(timestamp) {
+let recognition = null;
+let listening = false;
 
-    if (!scrolling) return;
 
-    if (lastTime === null) {
-      lastTime = timestamp;
-    }
+/* ---------- TEXTE ---------- */
 
-    const elapsed = timestamp - lastTime;
+function normalize(word) {
+  return word
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}]/gu, "");
+}
 
-    if (elapsed > 16) {
-      const pixels = Number(speed.value) * 0.25;
-      prompter.scrollTop += pixels;
-      lastTime = timestamp;
-    }
+function buildText() {
 
-    animationId = requestAnimationFrame(scroll);
+  const content = inputText.value.trim();
+
+  if (!content) {
+    text.textContent = "Votre chronique apparaîtra ici.";
+    words = [];
+    return;
   }
 
-  startBtn.addEventListener("click", () => {
+  text.innerHTML = "";
 
-    if (!inputText.value.trim()) {
-      alert("Collez d'abord le texte de votre chronique.");
-      return;
+  const rawWords = content.split(/\s+/);
+
+  words = rawWords.map((word, index) => {
+
+    const span = document.createElement("span");
+
+    span.className = "word";
+    span.textContent = word + " ";
+    span.dataset.index = index;
+
+    text.appendChild(span);
+
+    return {
+      original: word,
+      normalized: normalize(word),
+      element: span
+    };
+  });
+
+  currentWord = 0;
+  updateHighlight();
+}
+
+inputText.addEventListener("input", buildText);
+
+
+/* ---------- AFFICHAGE ---------- */
+
+function updateHighlight() {
+
+  words.forEach((word, index) => {
+
+    word.element.classList.remove("read", "current");
+
+    if (index < currentWord)
+      word.element.classList.add("read");
+
+    if (index === currentWord)
+      word.element.classList.add("current");
+  });
+
+  if (words[currentWord]) {
+
+    const target =
+      words[currentWord].element.offsetTop
+      - prompter.clientHeight * 0.45;
+
+    prompter.scrollTo({
+      top: Math.max(0, target),
+      behavior: "smooth"
+    });
+  }
+}
+
+
+/* ---------- RECONNAISSANCE VOCALE ---------- */
+
+const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+if (SpeechRecognition) {
+
+  recognition = new SpeechRecognition();
+
+  recognition.lang = "fr-FR";
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onstart = () => {
+
+    listening = true;
+
+    statusBox.textContent =
+      "🎤 Micro actif — lisez votre chronique.";
+
+    statusBox.classList.add("listening");
+
+    voiceBtn.textContent = "🎤 Écoute en cours";
+  };
+
+
+  recognition.onresult = (event) => {
+
+    let transcript = "";
+
+    for (
+      let i = event.resultIndex;
+      i < event.results.length;
+      i++
+    ) {
+      transcript += event.results[i][0].transcript + " ";
     }
 
-    scrolling = true;
-    lastTime = null;
+    const spokenWords =
+      transcript
+        .split(/\s+/)
+        .map(normalize)
+        .filter(Boolean);
 
-    cancelAnimationFrame(animationId);
-    animationId = requestAnimationFrame(scroll);
-  });
+    if (!spokenWords.length) return;
 
-  pauseBtn.addEventListener("click", () => {
-    scrolling = false;
-    cancelAnimationFrame(animationId);
-  });
+    /*
+      On cherche les mots prononcés dans une petite
+      fenêtre située devant la position actuelle.
+      Cela évite qu'un mot répété plus loin fasse
+      bondir le prompteur.
+    */
 
-  resetBtn.addEventListener("click", () => {
-    scrolling = false;
-    cancelAnimationFrame(animationId);
-    prompter.scrollTop = 0;
-  });
+    spokenWords.forEach(spoken => {
+
+      let found = -1;
+
+      const end =
+        Math.min(currentWord + 12, words.length);
+
+      for (
+        let i = currentWord;
+        i < end;
+        i++
+      ) {
+
+        if (words[i].normalized === spoken) {
+          found = i;
+          break;
+        }
+      }
+
+      if (found !== -1) {
+        currentWord = found + 1;
+      }
+
+    });
+
+    if (currentWord >= words.length)
+      currentWord = words.length - 1;
+
+    updateHighlight();
+  };
+
+
+  recognition.onerror = (event) => {
+
+    statusBox.textContent =
+      "Micro : " + event.error;
+  };
+
+
+  recognition.onend = () => {
+
+    if (listening) {
+
+      try {
+        recognition.start();
+      }
+      catch(e) {}
+
+    } else {
+
+      statusBox.textContent =
+        "Suivi vocal arrêté.";
+
+      statusBox.classList.remove("listening");
+
+      voiceBtn.textContent =
+        "🎤 Suivi vocal";
+    }
+  };
+
+}
+
+
+/* ---------- BOUTON VOCAL ---------- */
+
+voiceBtn.addEventListener("click", () => {
+
+  if (!SpeechRecognition) {
+
+    alert(
+      "La reconnaissance vocale n'est pas disponible dans ce navigateur. Utilisez Chrome."
+    );
+
+    return;
+  }
+
+  if (!inputText.value.trim()) {
+
+    alert(
+      "Collez d'abord le texte de votre chronique."
+    );
+
+    return;
+  }
+
+  buildText();
+
+  automatic = false;
+  cancelAnimationFrame(animationId);
+
+  if (!listening) {
+
+    listening = true;
+
+    try {
+      recognition.start();
+    }
+    catch(e) {}
+
+  } else {
+
+    listening = false;
+    recognition.stop();
+
+  }
+
+});
+
+
+/* ---------- MODE AUTOMATIQUE ---------- */
+
+function autoScroll(timestamp) {
+
+  if (!automatic) return;
+
+  if (lastTime === null)
+    lastTime = timestamp;
+
+  if (timestamp - lastTime > 16) {
+
+    prompter.scrollTop +=
+      Number(speed.value) * 0.25;
+
+    lastTime = timestamp;
+  }
+
+  animationId =
+    requestAnimationFrame(autoScroll);
+}
+
+
+autoBtn.addEventListener("click", () => {
+
+  if (!inputText.value.trim()) {
+
+    alert(
+      "Collez d'abord le texte de votre chronique."
+    );
+
+    return;
+  }
+
+  if (listening) {
+
+    listening = false;
+
+    try {
+      recognition.stop();
+    }
+    catch(e) {}
+
+  }
+
+  automatic = true;
+  lastTime = null;
+
+  cancelAnimationFrame(animationId);
+
+  animationId =
+    requestAnimationFrame(autoScroll);
+
+  statusBox.textContent =
+    "▶ Défilement automatique.";
+});
+
+
+/* ---------- PAUSE ---------- */
+
+pauseBtn.addEventListener("click", () => {
+
+  automatic = false;
+  cancelAnimationFrame(animationId);
+
+  if (listening) {
+
+    listening = false;
+
+    try {
+      recognition.stop();
+    }
+    catch(e) {}
+  }
+
+  statusBox.textContent = "⏸ En pause.";
+});
+
+
+/* ---------- RETOUR DÉBUT ---------- */
+
+resetBtn.addEventListener("click", () => {
+
+  automatic = false;
+  cancelAnimationFrame(animationId);
+
+  if (listening) {
+
+    listening = false;
+
+    try {
+      recognition.stop();
+    }
+    catch(e) {}
+  }
+
+  currentWord = 0;
+  prompter.scrollTop = 0;
+
+  updateHighlight();
+
+  statusBox.textContent =
+    "Revenu au début.";
+});
+
+
+/* ---------- TAILLE ---------- */
+
+fontSize.addEventListener("input", () => {
+
+  text.style.fontSize =
+    fontSize.value + "px";
+
+});
+
 </script>
 
 </body>
