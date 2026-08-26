@@ -8,41 +8,30 @@
 <title>Prompteur vocal</title>
 
 <!--
-  Prompteur vocal
+  Prompteur vocal V4
   © 2026 C. Declerck
   Tous droits réservés.
 -->
 
 <style>
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 :root {
   --bg: #070b14;
   --panel: #101725;
   --panel2: #151e2f;
   --border: #273349;
-
   --text: #f3f6fb;
   --muted: #9aa8bc;
-
   --primary: #4f7cff;
   --primary-hover: #628aff;
-
   --green: #2fc77a;
   --orange: #f0a43c;
   --red: #e95d63;
-
   --current: #ffd84d;
   --read: #7c899d;
 }
-
-
-/* =========================================================
-   BASE
-========================================================= */
 
 html,
 body {
@@ -57,17 +46,15 @@ body {
     "Segoe UI",
     Arial,
     sans-serif;
-
   background: var(--bg);
   color: var(--text);
 }
 
-body {
-  overflow: hidden;
-}
+body { overflow: hidden; }
 
 button,
-textarea {
+textarea,
+input {
   font: inherit;
 }
 
@@ -89,7 +76,7 @@ textarea {
       #070b14 70%
     );
 
-  padding: 35px 22px;
+  padding: 30px 22px;
 }
 
 .app {
@@ -97,26 +84,19 @@ textarea {
   margin: 0 auto;
 }
 
-
-/* ---------- TITRE ---------- */
-
 .brand {
   text-align: center;
-  margin: 12px 0 30px;
+  margin: 8px 0 25px;
 }
 
 .brandIcon {
-  width: 70px;
-  height: 70px;
-
-  margin: 0 auto 14px;
-
-  border-radius: 22px;
-
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 12px;
+  border-radius: 21px;
   display: grid;
   place-items: center;
-
-  font-size: 34px;
+  font-size: 32px;
 
   background:
     linear-gradient(
@@ -131,26 +111,26 @@ textarea {
 
 .brand h1 {
   margin: 0;
-  font-size: clamp(30px, 5vw, 44px);
+  font-size: clamp(30px,5vw,44px);
   letter-spacing: -.7px;
 }
 
 .brand p {
-  margin: 8px 0 0;
+  margin: 7px 0 0;
   color: var(--muted);
-  font-size: 16px;
+  font-size: 15px;
 }
 
 
-/* ---------- CARTE ---------- */
+/* =========================================================
+   CARTE ÉDITEUR
+========================================================= */
 
-.editorCard {
+.editorCard,
+.libraryCard {
   background: rgba(16,23,37,.92);
-
   border: 1px solid var(--border);
-
   border-radius: 20px;
-
   padding: 20px;
 
   box-shadow:
@@ -162,7 +142,6 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-
   margin-bottom: 12px;
 }
 
@@ -170,43 +149,33 @@ textarea {
   font-size: 17px;
 }
 
-.editorTitle span {
+#wordCount {
   color: var(--muted);
   font-size: 13px;
 }
 
 
-/* ---------- TEXTAREA ---------- */
+/* =========================================================
+   TITRE DE LA CHRONIQUE
+========================================================= */
 
-#inputText {
-  display: block;
-
+#scriptTitle {
   width: 100%;
-  min-height: 330px;
+  height: 46px;
+  margin-bottom: 12px;
+  padding: 0 14px;
 
-  resize: vertical;
-
-  border:
-    1px solid var(--border);
-
-  border-radius: 14px;
-
+  border: 1px solid var(--border);
+  border-radius: 11px;
   outline: none;
 
-  padding: 18px;
-
   background: #090f1b;
-
   color: #edf2fa;
 
-  font-size: 18px;
-  line-height: 1.55;
-
-  transition:
-    border-color .2s,
-    box-shadow .2s;
+  font-size: 15px;
 }
 
+#scriptTitle:focus,
 #inputText:focus {
   border-color: #557fff;
 
@@ -214,12 +183,39 @@ textarea {
     0 0 0 3px rgba(79,124,255,.12);
 }
 
+#scriptTitle::placeholder,
 #inputText::placeholder {
   color: #65738a;
 }
 
 
-/* ---------- BAS DE CARTE ---------- */
+/* =========================================================
+   TEXTE
+========================================================= */
+
+#inputText {
+  display: block;
+  width: 100%;
+  min-height: 300px;
+  resize: vertical;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  outline: none;
+
+  padding: 18px;
+
+  background: #090f1b;
+  color: #edf2fa;
+
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   COMMANDES ÉDITEUR
+========================================================= */
 
 .editorFooter {
   display: flex;
@@ -227,8 +223,7 @@ textarea {
   justify-content: space-between;
 
   gap: 15px;
-
-  margin-top: 16px;
+  margin-top: 15px;
 }
 
 .hint {
@@ -237,10 +232,10 @@ textarea {
   line-height: 1.4;
 }
 
-
-/* =========================================================
-   BOUTONS
-========================================================= */
+.editorActions {
+  display: flex;
+  gap: 8px;
+}
 
 button {
   border: 0;
@@ -257,18 +252,30 @@ button:active {
   transform: scale(.97);
 }
 
+#saveBtn {
+  padding: 12px 16px;
+  border-radius: 11px;
+
+  background: #1d704c;
+  color: #baf3d3;
+
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+#saveBtn:hover {
+  background: #25855b;
+}
+
 #launchBtn {
-  min-width: 205px;
-
-  padding: 13px 20px;
-
-  border-radius: 12px;
+  padding: 12px 18px;
+  border-radius: 11px;
 
   background: var(--primary);
   color: white;
 
   font-weight: 650;
-  font-size: 16px;
+  white-space: nowrap;
 
   box-shadow:
     0 9px 25px rgba(79,124,255,.25);
@@ -279,38 +286,146 @@ button:active {
 }
 
 
-/* ---------- COPYRIGHT ---------- */
+/* =========================================================
+   MESSAGE DE SAUVEGARDE
+========================================================= */
+
+#saveMessage {
+  min-height: 20px;
+  margin-top: 9px;
+
+  color: #83deb0;
+  font-size: 12px;
+  text-align: right;
+}
+
+
+/* =========================================================
+   BIBLIOTHÈQUE
+========================================================= */
+
+.libraryCard {
+  margin-top: 18px;
+}
+
+.libraryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.libraryHeader h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.libraryHeader span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#libraryEmpty {
+  padding: 25px 10px;
+  text-align: center;
+
+  color: #738198;
+  font-size: 14px;
+}
+
+.scriptItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px;
+
+  border:
+    1px solid rgba(255,255,255,.07);
+
+  border-radius: 12px;
+
+  background: #0b111d;
+
+  margin-bottom: 8px;
+}
+
+.scriptItem:last-child {
+  margin-bottom: 0;
+}
+
+.scriptInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.scriptName {
+  color: #edf2f8;
+  font-weight: 600;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.scriptMeta {
+  margin-top: 4px;
+  color: #77859a;
+  font-size: 11px;
+}
+
+.scriptButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.openButton,
+.deleteButton {
+  height: 34px;
+  padding: 0 11px;
+  border-radius: 8px;
+
+  font-size: 12px;
+}
+
+.openButton {
+  background: #203458;
+  color: #aec7ff;
+}
+
+.deleteButton {
+  background: #47252a;
+  color: #ff9da2;
+}
+
+
+/* =========================================================
+   COPYRIGHT
+========================================================= */
 
 .copyright {
   text-align: center;
-
-  margin: 22px 0 10px;
+  margin: 21px 0 10px;
 
   color: #65738a;
-
   font-size: 12px;
 }
 
 
 /* =========================================================
-   ÉCRAN DE LECTURE
+   LECTEUR
 ========================================================= */
 
 #readerScreen {
   display: none;
-
   position: fixed;
   inset: 0;
 
   background: #030508;
-
   overflow: hidden;
 }
-
-
-/* =========================================================
-   BARRE DE COMMANDES
-========================================================= */
 
 #readerToolbar {
   position: absolute;
@@ -320,14 +435,12 @@ button:active {
   right: 0;
 
   height: 58px;
-
   z-index: 100;
 
   display: flex;
   align-items: center;
 
   gap: 7px;
-
   padding: 7px 12px;
 
   background:
@@ -345,25 +458,21 @@ button:active {
 
   margin-right: auto;
 
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .toolbarButton {
   height: 38px;
-
   padding: 0 12px;
 
   border-radius: 9px;
 
   background: #1b2535;
-
   color: #dce4f0;
 
   font-size: 13px;
-}
-
-.toolbarButton:hover {
-  background: #263349;
 }
 
 #pauseBtn {
@@ -383,7 +492,7 @@ button:active {
 
 
 /* =========================================================
-   TAILLE DU TEXTE
+   TAILLE
 ========================================================= */
 
 .fontControl {
@@ -393,7 +502,6 @@ button:active {
   height: 38px;
 
   background: #151e2c;
-
   border-radius: 9px;
 
   overflow: hidden;
@@ -404,29 +512,22 @@ button:active {
   height: 38px;
 
   background: transparent;
-
   color: #e7edf7;
 
   font-weight: 650;
 }
 
-.fontButton:hover {
-  background: #263349;
-}
-
 #fontLabel {
   min-width: 42px;
-
   text-align: center;
 
   color: #aeb9ca;
-
   font-size: 12px;
 }
 
 
 /* =========================================================
-   ÉTAT MICRO
+   ÉTAT
 ========================================================= */
 
 #status {
@@ -435,28 +536,24 @@ button:active {
   top: 70px;
   left: 50%;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 
   z-index: 50;
 
   display: flex;
   align-items: center;
-
   gap: 7px;
 
   padding: 6px 12px;
 
   border-radius: 20px;
 
-  background:
-    rgba(14,20,31,.88);
+  background: rgba(14,20,31,.88);
 
   border:
     1px solid rgba(255,255,255,.08);
 
   color: #aeb9ca;
-
   font-size: 12px;
 
   pointer-events: none;
@@ -467,7 +564,6 @@ button:active {
   height: 7px;
 
   border-radius: 50%;
-
   background: #7b8799;
 }
 
@@ -498,7 +594,6 @@ button:active {
   overflow-y: auto;
 
   scrollbar-width: none;
-
   overscroll-behavior: none;
 }
 
@@ -508,7 +603,6 @@ button:active {
 
 #text {
   max-width: 1120px;
-
   margin: 0 auto;
 
   padding:
@@ -517,19 +611,15 @@ button:active {
     55vh;
 
   font-size: 46px;
-
   line-height: 1.52;
 
   text-align: center;
 
   overflow-wrap: break-word;
-
-  letter-spacing: .1px;
 }
 
 .word {
   display: inline;
-
   color: #edf2f7;
 
   transition:
@@ -549,7 +639,7 @@ button:active {
 
 
 /* =========================================================
-   LIGNE DE FOCUS TRÈS DISCRÈTE
+   GUIDE
 ========================================================= */
 
 #focusGuide {
@@ -584,18 +674,16 @@ button:active {
   display: none;
 
   position: fixed;
-
   inset: 0;
 
   z-index: 1000;
 
   place-items: center;
 
-  background:
-    rgba(3,5,8,.94);
+  background: rgba(3,5,8,.94);
 
   font-size:
-    clamp(100px, 22vw, 220px);
+    clamp(100px,22vw,220px);
 
   font-weight: 750;
 
@@ -631,49 +719,46 @@ button:active {
 
 
 /* =========================================================
-   RESPONSIVE TABLETTE
+   TABLETTE
 ========================================================= */
 
 @media (max-width: 800px) {
 
   #editorScreen {
-    padding:
-      22px 14px;
+    padding: 20px 13px;
   }
 
   .brand {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
 
   .brandIcon {
-    width: 58px;
-    height: 58px;
+    width: 55px;
+    height: 55px;
 
-    border-radius: 18px;
+    border-radius: 17px;
 
-    font-size: 28px;
+    font-size: 27px;
   }
 
   .brand h1 {
-    font-size: 30px;
+    font-size: 29px;
   }
 
-  .editorCard {
-    padding: 15px;
+  .editorCard,
+  .libraryCard {
+    padding: 14px;
   }
 
   #inputText {
-    min-height: 280px;
-
+    min-height: 260px;
     font-size: 16px;
   }
 
   #readerToolbar {
     height: 52px;
 
-    padding:
-      6px 7px;
-
+    padding: 6px 7px;
     gap: 4px;
   }
 
@@ -684,8 +769,7 @@ button:active {
   .toolbarButton {
     height: 36px;
 
-    padding:
-      0 9px;
+    padding: 0 9px;
 
     font-size: 12px;
   }
@@ -713,87 +797,82 @@ button:active {
 
 
 /* =========================================================
-   RESPONSIVE TÉLÉPHONE
+   TÉLÉPHONE
 ========================================================= */
 
 @media (max-width: 560px) {
 
   #editorScreen {
-    padding:
-      15px 10px;
+    padding: 13px 9px;
   }
 
   .brand {
-    margin:
-      3px 0 15px;
+    margin: 2px 0 14px;
   }
 
   .brandIcon {
-    width: 48px;
-    height: 48px;
+    width: 47px;
+    height: 47px;
 
-    border-radius: 15px;
+    border-radius: 14px;
 
-    font-size: 23px;
+    font-size: 22px;
 
-    margin-bottom: 8px;
+    margin-bottom: 7px;
   }
 
   .brand h1 {
-    font-size: 26px;
+    font-size: 25px;
   }
 
   .brand p {
     font-size: 13px;
   }
 
-  .editorCard {
+  .editorCard,
+  .libraryCard {
     border-radius: 15px;
-
     padding: 11px;
   }
 
-  .editorTitle span {
-    display: none;
-  }
-
   #inputText {
-    min-height: 250px;
-
+    min-height: 230px;
     font-size: 15px;
-
     padding: 13px;
   }
 
   .editorFooter {
     flex-direction: column;
-
     align-items: stretch;
+  }
+
+  .editorActions {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
   }
 
   .hint {
     text-align: center;
   }
 
-  #launchBtn {
-    width: 100%;
+  .scriptItem {
+    align-items: flex-start;
   }
 
-
-  /* BARRE MOBILE */
-
-  #readerToolbar {
-    justify-content: center;
+  .scriptButtons {
+    flex-direction: column;
   }
 
   .toolbarTitle {
     display: none;
   }
 
-  .toolbarButton {
-    padding:
-      0 7px;
+  #readerToolbar {
+    justify-content: center;
+  }
 
+  .toolbarButton {
+    padding: 0 7px;
     font-size: 11px;
   }
 
@@ -807,13 +886,11 @@ button:active {
 
   #fullscreenBtn {
     width: 36px;
-
     padding: 0;
   }
 
   #text {
     font-size: 24px;
-
     line-height: 1.45;
 
     padding-left: 3.5%;
@@ -822,9 +899,7 @@ button:active {
 
   #status {
     font-size: 10px;
-
-    padding:
-      5px 9px;
+    padding: 5px 9px;
   }
 }
 
@@ -836,7 +911,7 @@ button:active {
 
 
 <!-- =======================================================
-     ÉCRAN DE PRÉPARATION
+     PRÉPARATION
 ======================================================= -->
 
 <section id="editorScreen">
@@ -863,7 +938,7 @@ button:active {
       <div class="editorTitle">
 
         <strong>
-          Votre texte
+          Préparer un texte
         </strong>
 
         <span id="wordCount">
@@ -871,6 +946,14 @@ button:active {
         </span>
 
       </div>
+
+
+      <input
+        id="scriptTitle"
+        type="text"
+        maxlength="80"
+        placeholder="Titre de la chronique"
+      >
 
 
       <textarea
@@ -882,17 +965,52 @@ button:active {
       <div class="editorFooter">
 
         <div class="hint">
-          Le défilement démarre avec votre voix,
-          s'arrête lorsque vous faites une pause
-          et reprend automatiquement.
+          Vous pouvez enregistrer cette chronique
+          sur cet appareil pour la retrouver plus tard.
         </div>
 
 
-        <button id="launchBtn">
-          🎙️ Lancer le prompteur
-        </button>
+        <div class="editorActions">
+
+          <button id="saveBtn">
+            💾 Enregistrer
+          </button>
+
+          <button id="launchBtn">
+            🎙️ Lancer le prompteur
+          </button>
+
+        </div>
 
       </div>
+
+
+      <div id="saveMessage"></div>
+
+    </div>
+
+
+
+    <!-- ===================================================
+         BIBLIOTHÈQUE
+    =================================================== -->
+
+    <div class="libraryCard">
+
+      <div class="libraryHeader">
+
+        <h2>
+          📚 Mes textes
+        </h2>
+
+        <span>
+          Enregistrés sur cet appareil
+        </span>
+
+      </div>
+
+
+      <div id="libraryList"></div>
 
     </div>
 
@@ -908,7 +1026,7 @@ button:active {
 
 
 <!-- =======================================================
-     ÉCRAN DE LECTURE
+     LECTEUR
 ======================================================= -->
 
 <section id="readerScreen">
@@ -916,7 +1034,10 @@ button:active {
 
   <div id="readerToolbar">
 
-    <div class="toolbarTitle">
+    <div
+      id="readerTitle"
+      class="toolbarTitle"
+    >
       Prompteur vocal
     </div>
 
@@ -950,7 +1071,6 @@ button:active {
       <button
         id="fontMinus"
         class="fontButton"
-        title="Réduire le texte"
       >
         A−
       </button>
@@ -962,7 +1082,6 @@ button:active {
       <button
         id="fontPlus"
         class="fontButton"
-        title="Agrandir le texte"
       >
         A+
       </button>
@@ -1031,14 +1150,29 @@ const editorScreen =
 const readerScreen =
   document.getElementById("readerScreen");
 
+const scriptTitle =
+  document.getElementById("scriptTitle");
+
 const inputText =
   document.getElementById("inputText");
 
 const wordCount =
   document.getElementById("wordCount");
 
+const saveBtn =
+  document.getElementById("saveBtn");
+
+const saveMessage =
+  document.getElementById("saveMessage");
+
+const libraryList =
+  document.getElementById("libraryList");
+
 const launchBtn =
   document.getElementById("launchBtn");
+
+const readerTitle =
+  document.getElementById("readerTitle");
 
 const text =
   document.getElementById("text");
@@ -1094,7 +1228,6 @@ let voiceActive = false;
 
 let lastVoiceActivity = 0;
 
-let animationFrame = null;
 let previousFrameTime = 0;
 
 let targetScrollSpeed = 0;
@@ -1109,9 +1242,11 @@ let currentFontSize = 46;
 
 let countdownRunning = false;
 
+let currentSavedId = null;
+
 
 /* =========================================================
-   PARAMÈTRES DU MOTEUR HYBRIDE
+   PARAMÈTRES DU MOTEUR V3
 ========================================================= */
 
 const SILENCE_DELAY = 950;
@@ -1119,6 +1254,417 @@ const SILENCE_DELAY = 950;
 const SPEED_SMOOTHING = 0.055;
 
 const MAX_CORRECTION_PER_FRAME = 1.2;
+
+
+/* =========================================================
+   STOCKAGE LOCAL
+========================================================= */
+
+const STORAGE_KEY =
+  "prompteur_vocal_scripts_v4";
+
+
+function getSavedScripts() {
+
+  try {
+
+    const data =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    if (!data) {
+      return [];
+    }
+
+    const parsed =
+      JSON.parse(data);
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+
+  }
+
+  catch (error) {
+
+    return [];
+  }
+}
+
+
+function storeScripts(scripts) {
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(scripts)
+  );
+}
+
+
+/* =========================================================
+   AFFICHAGE BIBLIOTHÈQUE
+========================================================= */
+
+function renderLibrary() {
+
+  const scripts =
+    getSavedScripts();
+
+  libraryList.innerHTML = "";
+
+
+  if (!scripts.length) {
+
+    const empty =
+      document.createElement("div");
+
+    empty.id =
+      "libraryEmpty";
+
+    empty.textContent =
+      "Aucun texte enregistré pour le moment.";
+
+    libraryList.appendChild(
+      empty
+    );
+
+    return;
+  }
+
+
+  scripts
+    .sort(
+      (a,b) =>
+        b.updatedAt -
+        a.updatedAt
+    )
+    .forEach(
+      script => {
+
+        const item =
+          document.createElement(
+            "div"
+          );
+
+        item.className =
+          "scriptItem";
+
+
+        const info =
+          document.createElement(
+            "div"
+          );
+
+        info.className =
+          "scriptInfo";
+
+
+        const name =
+          document.createElement(
+            "div"
+          );
+
+        name.className =
+          "scriptName";
+
+        name.textContent =
+          script.title;
+
+
+        const meta =
+          document.createElement(
+            "div"
+          );
+
+        meta.className =
+          "scriptMeta";
+
+
+        const totalWords =
+          script.text
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .length;
+
+
+        const date =
+          new Date(
+            script.updatedAt
+          );
+
+
+        meta.textContent =
+          totalWords +
+          (totalWords > 1
+            ? " mots"
+            : " mot") +
+          " • " +
+          date.toLocaleDateString(
+            "fr-FR"
+          );
+
+
+        info.appendChild(name);
+        info.appendChild(meta);
+
+
+        const buttons =
+          document.createElement(
+            "div"
+          );
+
+        buttons.className =
+          "scriptButtons";
+
+
+        const open =
+          document.createElement(
+            "button"
+          );
+
+        open.className =
+          "openButton";
+
+        open.textContent =
+          "Ouvrir";
+
+
+        open.addEventListener(
+          "click",
+          () => {
+
+            scriptTitle.value =
+              script.title;
+
+            inputText.value =
+              script.text;
+
+            currentSavedId =
+              script.id;
+
+            updateWordCount();
+
+            saveMessage.textContent =
+              "Texte chargé.";
+
+            window.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
+        );
+
+
+        const remove =
+          document.createElement(
+            "button"
+          );
+
+        remove.className =
+          "deleteButton";
+
+        remove.textContent =
+          "Supprimer";
+
+
+        remove.addEventListener(
+          "click",
+          () => {
+
+            const confirmed =
+              confirm(
+                'Supprimer "' +
+                script.title +
+                '" ?'
+              );
+
+            if (!confirmed) {
+              return;
+            }
+
+
+            const remaining =
+              getSavedScripts()
+                .filter(
+                  item =>
+                    item.id !==
+                    script.id
+                );
+
+
+            storeScripts(
+              remaining
+            );
+
+
+            if (
+              currentSavedId ===
+              script.id
+            ) {
+
+              currentSavedId =
+                null;
+            }
+
+
+            renderLibrary();
+
+            saveMessage.textContent =
+              "Texte supprimé.";
+          }
+        );
+
+
+        buttons.appendChild(open);
+        buttons.appendChild(remove);
+
+
+        item.appendChild(info);
+        item.appendChild(buttons);
+
+
+        libraryList.appendChild(
+          item
+        );
+      }
+    );
+}
+
+
+/* =========================================================
+   ENREGISTRER
+========================================================= */
+
+saveBtn.addEventListener(
+  "click",
+  () => {
+
+    const title =
+      scriptTitle.value.trim();
+
+    const content =
+      inputText.value.trim();
+
+
+    if (!content) {
+
+      alert(
+        "Écrivez ou collez d'abord un texte."
+      );
+
+      return;
+    }
+
+
+    if (!title) {
+
+      alert(
+        "Donnez un titre à cette chronique."
+      );
+
+      scriptTitle.focus();
+
+      return;
+    }
+
+
+    const scripts =
+      getSavedScripts();
+
+    const now =
+      Date.now();
+
+
+    if (currentSavedId) {
+
+      const existing =
+        scripts.find(
+          item =>
+            item.id ===
+            currentSavedId
+        );
+
+
+      if (existing) {
+
+        existing.title =
+          title;
+
+        existing.text =
+          content;
+
+        existing.updatedAt =
+          now;
+
+      }
+
+      else {
+
+        currentSavedId =
+          null;
+      }
+    }
+
+
+    if (!currentSavedId) {
+
+      const newScript = {
+
+        id:
+          "script_" +
+          now +
+          "_" +
+          Math.random()
+            .toString(36)
+            .slice(2,8),
+
+        title:
+          title,
+
+        text:
+          content,
+
+        createdAt:
+          now,
+
+        updatedAt:
+          now
+      };
+
+
+      scripts.push(
+        newScript
+      );
+
+
+      currentSavedId =
+        newScript.id;
+    }
+
+
+    try {
+
+      storeScripts(
+        scripts
+      );
+
+      renderLibrary();
+
+      saveMessage.textContent =
+        "✓ Texte enregistré sur cet appareil.";
+
+    }
+
+    catch (error) {
+
+      alert(
+        "Impossible d'enregistrer le texte sur cet appareil."
+      );
+    }
+  }
+);
 
 
 /* =========================================================
@@ -1137,12 +1683,29 @@ function updateWordCount() {
 
   wordCount.textContent =
     total +
-    (total > 1 ? " mots" : " mot");
+    (total > 1
+      ? " mots"
+      : " mot");
 }
+
 
 inputText.addEventListener(
   "input",
-  updateWordCount
+  () => {
+
+    updateWordCount();
+
+    saveMessage.textContent = "";
+  }
+);
+
+
+scriptTitle.addEventListener(
+  "input",
+  () => {
+
+    saveMessage.textContent = "";
+  }
 );
 
 
@@ -1175,18 +1738,22 @@ function buildText() {
   const content =
     inputText.value.trim();
 
+
   if (!content) {
     return false;
   }
 
+
   text.innerHTML = "";
+
 
   const rawWords =
     content.split(/\s+/);
 
+
   words =
     rawWords.map(
-      (rawWord, index) => {
+      (rawWord,index) => {
 
         const span =
           document.createElement(
@@ -1206,7 +1773,9 @@ function buildText() {
           span
         );
 
+
         return {
+
           original:
             rawWord,
 
@@ -1221,6 +1790,7 @@ function buildText() {
       }
     );
 
+
   currentWord = 0;
 
   previousTrackedWord = 0;
@@ -1229,16 +1799,19 @@ function buildText() {
     performance.now();
 
   targetScrollSpeed = 0;
+
   currentScrollSpeed = 0;
 
+
   updateDisplay(true);
+
 
   return true;
 }
 
 
 /* =========================================================
-   AFFICHAGE
+   AFFICHAGE DU SUIVI
 ========================================================= */
 
 function updateDisplay(
@@ -1249,6 +1822,7 @@ function updateDisplay(
     return;
   }
 
+
   for (
     let i = 0;
     i < words.length;
@@ -1258,29 +1832,32 @@ function updateDisplay(
     const element =
       words[i].element;
 
+
     element.classList.remove(
       "read",
       "current"
     );
 
-    if (
-      i < currentWord
-    ) {
+
+    if (i < currentWord) {
+
       element.classList.add(
         "read"
       );
     }
 
-    if (
-      i === currentWord
-    ) {
+
+    if (i === currentWord) {
+
       element.classList.add(
         "current"
       );
     }
   }
 
+
   if (forcePosition) {
+
     positionImmediately();
   }
 }
@@ -1295,13 +1872,16 @@ function positionImmediately() {
   const item =
     words[currentWord];
 
+
   if (!item) {
     return;
   }
 
+
   const desired =
     prompter.clientHeight *
     0.43;
+
 
   const target =
     Math.max(
@@ -1309,6 +1889,7 @@ function positionImmediately() {
       item.element.offsetTop -
       desired
     );
+
 
   prompter.scrollTop =
     target;
@@ -1324,9 +1905,11 @@ function updateReadingSpeed() {
   const now =
     performance.now();
 
+
   const elapsed =
     now -
     previousTrackedTime;
+
 
   const wordDifference =
     currentWord -
@@ -1351,6 +1934,7 @@ function updateReadingSpeed() {
       const calculatedSpeed =
         wordsPerSecond * 13;
 
+
       estimatedReadingSpeed =
         estimatedReadingSpeed *
         0.75 +
@@ -1361,6 +1945,7 @@ function updateReadingSpeed() {
 
     previousTrackedWord =
       currentWord;
+
 
     previousTrackedTime =
       now;
@@ -1376,8 +1961,10 @@ function markVoiceActivity() {
 
   voiceActive = true;
 
+
   lastVoiceActivity =
     performance.now();
+
 
   targetScrollSpeed =
     estimatedReadingSpeed;
@@ -1385,14 +1972,17 @@ function markVoiceActivity() {
 
 
 /* =========================================================
-   BOUCLE DE DÉFILEMENT HYBRIDE
+   DÉFILEMENT HYBRIDE
 ========================================================= */
 
 function hybridScrollLoop(time) {
 
   if (!previousFrameTime) {
-    previousFrameTime = time;
+
+    previousFrameTime =
+      time;
   }
+
 
   const delta =
     Math.min(
@@ -1400,6 +1990,7 @@ function hybridScrollLoop(time) {
       time -
       previousFrameTime
     );
+
 
   previousFrameTime =
     time;
@@ -1417,9 +2008,12 @@ function hybridScrollLoop(time) {
       SILENCE_DELAY
     ) {
 
-      voiceActive = false;
+      voiceActive =
+        false;
 
-      targetScrollSpeed = 0;
+
+      targetScrollSpeed =
+        0;
     }
 
 
@@ -1438,7 +2032,8 @@ function hybridScrollLoop(time) {
       ) < 0.15
     ) {
 
-      currentScrollSpeed = 0;
+      currentScrollSpeed =
+        0;
     }
 
 
@@ -1446,14 +2041,14 @@ function hybridScrollLoop(time) {
       currentScrollSpeed *
       (delta / 1000);
 
+
     prompter.scrollTop +=
       movement;
 
 
-    /* ---------- RECALAGE DOUX ---------- */
-
     const item =
       words[currentWord];
+
 
     if (item) {
 
@@ -1461,13 +2056,16 @@ function hybridScrollLoop(time) {
         prompter.clientHeight *
         0.43;
 
+
       const actualPosition =
         item.element.offsetTop -
         prompter.scrollTop;
 
+
       const difference =
         actualPosition -
         desiredPosition;
+
 
       const deadZone =
         prompter.clientHeight *
@@ -1483,6 +2081,7 @@ function hybridScrollLoop(time) {
           difference *
           0.012;
 
+
         correction =
           Math.max(
             -MAX_CORRECTION_PER_FRAME,
@@ -1492,6 +2091,7 @@ function hybridScrollLoop(time) {
             )
           );
 
+
         prompter.scrollTop +=
           correction;
       }
@@ -1499,15 +2099,14 @@ function hybridScrollLoop(time) {
   }
 
 
-  animationFrame =
-    requestAnimationFrame(
-      hybridScrollLoop
-    );
+  requestAnimationFrame(
+    hybridScrollLoop
+  );
 }
 
 
 /* =========================================================
-   RECHERCHE DE POSITION
+   RECHERCHE DU TEXTE
 ========================================================= */
 
 function findBestPosition(
@@ -1518,6 +2117,7 @@ function findBestPosition(
     !spokenWords.length ||
     !words.length
   ) {
+
     return null;
   }
 
@@ -1526,13 +2126,12 @@ function findBestPosition(
     spokenWords.slice(-6);
 
 
-  /* ---------- RECHERCHE LOCALE ---------- */
-
   const localStart =
     Math.max(
       0,
       currentWord - 4
     );
+
 
   const localEnd =
     Math.min(
@@ -1540,8 +2139,13 @@ function findBestPosition(
       currentWord + 8
     );
 
-  let bestPosition = null;
-  let bestScore = 0;
+
+  let bestPosition =
+    null;
+
+
+  let bestScore =
+    0;
 
 
   for (
@@ -1573,6 +2177,7 @@ function findBestPosition(
           offset
         ];
 
+
       const textIndex =
         candidate -
         offset;
@@ -1581,6 +2186,7 @@ function findBestPosition(
       if (
         textIndex < 0
       ) {
+
         continue;
       }
 
@@ -1611,6 +2217,7 @@ function findBestPosition(
       bestScore =
         score;
 
+
       bestPosition =
         candidate;
     }
@@ -1618,10 +2225,12 @@ function findBestPosition(
 
 
   if (
-    bestPosition !== null
+    bestPosition !==
+    null
   ) {
 
     return {
+
       position:
         bestPosition,
 
@@ -1633,8 +2242,10 @@ function findBestPosition(
 
   /* ---------- RATTRAPAGE ---------- */
 
+
   const recoveryStart =
     currentWord + 9;
+
 
   const recoveryEnd =
     Math.min(
@@ -1642,10 +2253,13 @@ function findBestPosition(
       currentWord + 60
     );
 
+
   let recoveryPosition =
     null;
 
-  let recoveryScore = 0;
+
+  let recoveryScore =
+    0;
 
 
   for (
@@ -1677,6 +2291,7 @@ function findBestPosition(
           offset
         ];
 
+
       const textIndex =
         candidate -
         offset;
@@ -1686,6 +2301,7 @@ function findBestPosition(
         textIndex <
         recoveryStart
       ) {
+
         continue;
       }
 
@@ -1711,6 +2327,7 @@ function findBestPosition(
       recoveryScore =
         score;
 
+
       recoveryPosition =
         candidate;
     }
@@ -1723,6 +2340,7 @@ function findBestPosition(
   ) {
 
     return {
+
       position:
         recoveryPosition,
 
@@ -1737,7 +2355,7 @@ function findBestPosition(
 
 
 /* =========================================================
-   RECONNAISSANCE VOCALE
+   SPEECH RECOGNITION
 ========================================================= */
 
 const SpeechRecognition =
@@ -1750,14 +2368,18 @@ if (SpeechRecognition) {
   recognition =
     new SpeechRecognition();
 
+
   recognition.lang =
     "fr-FR";
+
 
   recognition.continuous =
     true;
 
+
   recognition.interimResults =
     true;
+
 
   recognition.maxAlternatives =
     1;
@@ -1768,19 +2390,26 @@ if (SpeechRecognition) {
 
       listening = true;
 
-      voiceActive = false;
+      voiceActive =
+        false;
+
 
       lastVoiceActivity =
         performance.now();
 
-      targetScrollSpeed = 0;
+
+      targetScrollSpeed =
+        0;
+
 
       statusText.textContent =
         "Écoute en cours";
 
+
       statusBox.classList.add(
         "listening"
       );
+
 
       pauseBtn.textContent =
         "⏸ Pause";
@@ -1825,6 +2454,7 @@ if (SpeechRecognition) {
       if (
         !spokenWords.length
       ) {
+
         return;
       }
 
@@ -1841,6 +2471,7 @@ if (SpeechRecognition) {
       if (
         match === null
       ) {
+
         return;
       }
 
@@ -1860,6 +2491,7 @@ if (SpeechRecognition) {
 
         const maximumAdvance =
           4;
+
 
         newPosition =
           Math.min(
@@ -1902,7 +2534,9 @@ if (SpeechRecognition) {
         currentWord =
           newPosition;
 
+
         updateReadingSpeed();
+
 
         updateDisplay(false);
 
@@ -1926,6 +2560,7 @@ if (SpeechRecognition) {
         event.error ===
         "no-speech"
       ) {
+
         return;
       }
 
@@ -1941,42 +2576,47 @@ if (SpeechRecognition) {
 
       if (listening) {
 
-        /*
-          On espace volontairement
-          les redémarrages pour les
-          appareils Android plus anciens.
-        */
-
         setTimeout(
           () => {
 
             if (!listening) {
+
               return;
             }
 
+
             try {
+
               recognition.start();
+
             }
 
             catch (e) {}
 
           },
+
           700
         );
       }
 
       else {
 
-        voiceActive = false;
+        voiceActive =
+          false;
 
-        targetScrollSpeed = 0;
+
+        targetScrollSpeed =
+          0;
+
 
         statusText.textContent =
           "En pause";
 
+
         statusBox.classList.remove(
           "listening"
         );
+
 
         pauseBtn.textContent =
           "▶ Reprendre";
@@ -1986,7 +2626,7 @@ if (SpeechRecognition) {
 
 
 /* =========================================================
-   DÉMARRAGE RÉEL DU MICRO
+   DÉMARRER LE MICRO
 ========================================================= */
 
 function startRecognition() {
@@ -2001,21 +2641,30 @@ function startRecognition() {
   }
 
 
-  listening = true;
+  listening =
+    true;
 
-  voiceActive = false;
 
-  targetScrollSpeed = 0;
+  voiceActive =
+    false;
+
+
+  targetScrollSpeed =
+    0;
+
 
   previousTrackedWord =
     currentWord;
+
 
   previousTrackedTime =
     performance.now();
 
 
   try {
+
     recognition.start();
+
   }
 
   catch (e) {}
@@ -2029,10 +2678,14 @@ function startRecognition() {
 async function runCountdown() {
 
   if (countdownRunning) {
+
     return;
   }
 
-  countdownRunning = true;
+
+  countdownRunning =
+    true;
+
 
   countdown.classList.add(
     "show"
@@ -2041,16 +2694,19 @@ async function runCountdown() {
 
   for (
     const number of
-    ["3", "2", "1"]
+    ["3","2","1"]
   ) {
 
     countNumber.textContent =
       number;
 
+
     countNumber.style.animation =
       "none";
 
+
     void countNumber.offsetWidth;
+
 
     countNumber.style.animation =
       "countPulse .65s ease";
@@ -2070,23 +2726,24 @@ async function runCountdown() {
     "show"
   );
 
-  countdownRunning = false;
+
+  countdownRunning =
+    false;
+
 
   startRecognition();
 }
 
 
 /* =========================================================
-   LANCER LE PROMPTEUR
+   LANCER
 ========================================================= */
 
 launchBtn.addEventListener(
   "click",
   () => {
 
-    if (
-      !SpeechRecognition
-    ) {
+    if (!SpeechRecognition) {
 
       alert(
         "Le suivi vocal n'est pas disponible dans ce navigateur. Essayez Chrome ou Edge."
@@ -2106,25 +2763,32 @@ launchBtn.addEventListener(
     }
 
 
+    const title =
+      scriptTitle.value.trim();
+
+
+    readerTitle.textContent =
+      title ||
+      "Prompteur vocal";
+
+
     editorScreen.style.display =
       "none";
+
 
     readerScreen.style.display =
       "block";
 
 
-    /*
-      On attend que l'écran soit
-      réellement affiché avant
-      de calculer sa position.
-    */
-
     requestAnimationFrame(
       () => {
 
-        prompter.scrollTop = 0;
+        prompter.scrollTop =
+          0;
+
 
         updateDisplay(true);
+
 
         runCountdown();
       }
@@ -2143,17 +2807,24 @@ pauseBtn.addEventListener(
 
     if (listening) {
 
-      listening = false;
+      listening =
+        false;
 
-      voiceActive = false;
 
-      targetScrollSpeed = 0;
+      voiceActive =
+        false;
+
+
+      targetScrollSpeed =
+        0;
 
 
       if (recognition) {
 
         try {
+
           recognition.stop();
+
         }
 
         catch (e) {}
@@ -2163,9 +2834,11 @@ pauseBtn.addEventListener(
       statusText.textContent =
         "En pause";
 
+
       statusBox.classList.remove(
         "listening"
       );
+
 
       pauseBtn.textContent =
         "▶ Reprendre";
@@ -2176,6 +2849,7 @@ pauseBtn.addEventListener(
 
       startRecognition();
 
+
       pauseBtn.textContent =
         "⏸ Pause";
     }
@@ -2184,27 +2858,39 @@ pauseBtn.addEventListener(
 
 
 /* =========================================================
-   RETOUR AU DÉBUT
+   DÉBUT
 ========================================================= */
 
 resetBtn.addEventListener(
   "click",
   () => {
 
-    currentWord = 0;
+    currentWord =
+      0;
 
-    previousTrackedWord = 0;
+
+    previousTrackedWord =
+      0;
+
 
     previousTrackedTime =
       performance.now();
 
-    targetScrollSpeed = 0;
 
-    currentScrollSpeed = 0;
+    targetScrollSpeed =
+      0;
 
-    prompter.scrollTop = 0;
+
+    currentScrollSpeed =
+      0;
+
+
+    prompter.scrollTop =
+      0;
+
 
     updateDisplay(true);
+
 
     statusText.textContent =
       listening
@@ -2222,19 +2908,28 @@ editBtn.addEventListener(
   "click",
   () => {
 
-    listening = false;
+    listening =
+      false;
 
-    voiceActive = false;
 
-    targetScrollSpeed = 0;
+    voiceActive =
+      false;
 
-    currentScrollSpeed = 0;
+
+    targetScrollSpeed =
+      0;
+
+
+    currentScrollSpeed =
+      0;
 
 
     if (recognition) {
 
       try {
+
         recognition.stop();
+
       }
 
       catch (e) {}
@@ -2244,6 +2939,7 @@ editBtn.addEventListener(
     readerScreen.style.display =
       "none";
 
+
     editorScreen.style.display =
       "block";
   }
@@ -2251,7 +2947,7 @@ editBtn.addEventListener(
 
 
 /* =========================================================
-   TAILLE DU TEXTE
+   TAILLE
 ========================================================= */
 
 function applyFontSize() {
@@ -2326,26 +3022,9 @@ fullscreenBtn.addEventListener(
 
     }
 
-    catch (e) {
-
-      /*
-        Certains navigateurs mobiles
-        ne permettent pas le plein écran.
-        Ce n'est pas bloquant.
-      */
-    }
+    catch (e) {}
   }
 );
-
-
-/* =========================================================
-   BOUCLE DU MOTEUR
-========================================================= */
-
-animationFrame =
-  requestAnimationFrame(
-    hybridScrollLoop
-  );
 
 
 /* =========================================================
@@ -2353,7 +3032,14 @@ animationFrame =
 ========================================================= */
 
 updateWordCount();
+
 applyFontSize();
+
+renderLibrary();
+
+requestAnimationFrame(
+  hybridScrollLoop
+);
 
 </script>
 
