@@ -3,148 +3,502 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prompteur Radio ISTJ</title>
+<meta name="theme-color" content="#0b1020">
+
+<title>Prompteur vocal</title>
+
+<!--
+  Prompteur vocal
+  © 2026 C. Declerck
+  Tous droits réservés.
+-->
 
 <style>
-* { box-sizing: border-box; }
 
-html, body {
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #070b14;
+  --panel: #101725;
+  --panel2: #151e2f;
+  --border: #273349;
+
+  --text: #f3f6fb;
+  --muted: #9aa8bc;
+
+  --primary: #4f7cff;
+  --primary-hover: #628aff;
+
+  --green: #2fc77a;
+  --orange: #f0a43c;
+  --red: #e95d63;
+
+  --current: #ffd84d;
+  --read: #7c899d;
+}
+
+
+/* =========================================================
+   BASE
+========================================================= */
+
+html,
+body {
   margin: 0;
   width: 100%;
   height: 100%;
-  font-family: Arial, sans-serif;
-  background: #05070b;
-  color: white;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
   overflow: hidden;
 }
 
-/* =========================
-   BARRE SUPÉRIEURE
-========================= */
+button,
+textarea {
+  font: inherit;
+}
 
-header {
+
+/* =========================================================
+   ÉCRAN DE PRÉPARATION
+========================================================= */
+
+#editorScreen {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  min-height: 62px;
-  z-index: 100;
-  background: #1f2937;
+  inset: 0;
+  overflow-y: auto;
+
+  background:
+    radial-gradient(
+      circle at 50% -10%,
+      #172544 0,
+      #0b1220 32%,
+      #070b14 70%
+    );
+
+  padding: 35px 22px;
+}
+
+.app {
+  width: min(100%, 1050px);
+  margin: 0 auto;
+}
+
+
+/* ---------- TITRE ---------- */
+
+.brand {
+  text-align: center;
+  margin: 12px 0 30px;
+}
+
+.brandIcon {
+  width: 70px;
+  height: 70px;
+
+  margin: 0 auto 14px;
+
+  border-radius: 22px;
+
+  display: grid;
+  place-items: center;
+
+  font-size: 34px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #4f7cff,
+      #6b55e8
+    );
+
+  box-shadow:
+    0 14px 40px rgba(79,124,255,.25);
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 44px);
+  letter-spacing: -.7px;
+}
+
+.brand p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+
+/* ---------- CARTE ---------- */
+
+.editorCard {
+  background: rgba(16,23,37,.92);
+
+  border: 1px solid var(--border);
+
+  border-radius: 20px;
+
+  padding: 20px;
+
+  box-shadow:
+    0 22px 60px rgba(0,0,0,.3);
+}
+
+.editorTitle {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 9px 14px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin-bottom: 12px;
 }
 
-header h1 {
-  margin: 0 auto 0 0;
-  font-size: 20px;
-  white-space: nowrap;
+.editorTitle strong {
+  font-size: 17px;
 }
+
+.editorTitle span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+
+/* ---------- TEXTAREA ---------- */
+
+#inputText {
+  display: block;
+
+  width: 100%;
+  min-height: 330px;
+
+  resize: vertical;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 14px;
+
+  outline: none;
+
+  padding: 18px;
+
+  background: #090f1b;
+
+  color: #edf2fa;
+
+  font-size: 18px;
+  line-height: 1.55;
+
+  transition:
+    border-color .2s,
+    box-shadow .2s;
+}
+
+#inputText:focus {
+  border-color: #557fff;
+
+  box-shadow:
+    0 0 0 3px rgba(79,124,255,.12);
+}
+
+#inputText::placeholder {
+  color: #65738a;
+}
+
+
+/* ---------- BAS DE CARTE ---------- */
+
+.editorFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-top: 16px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   BOUTONS
+========================================================= */
 
 button {
   border: 0;
-  border-radius: 8px;
-  padding: 9px 13px;
-  font-size: 14px;
   cursor: pointer;
+  user-select: none;
+
+  transition:
+    transform .12s,
+    background .2s,
+    opacity .2s;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+#launchBtn {
+  min-width: 205px;
+
+  padding: 13px 20px;
+
+  border-radius: 12px;
+
+  background: var(--primary);
   color: white;
-  white-space: nowrap;
+
+  font-weight: 650;
+  font-size: 16px;
+
+  box-shadow:
+    0 9px 25px rgba(79,124,255,.25);
 }
 
-#voiceBtn { background: #16a34a; }
-#pauseBtn { background: #d97706; }
-#resetBtn { background: #dc2626; }
-#editBtn { background: #2563eb; }
-
-.control {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
+#launchBtn:hover {
+  background: var(--primary-hover);
 }
 
-input[type="range"] {
-  width: 90px;
+
+/* ---------- COPYRIGHT ---------- */
+
+.copyright {
+  text-align: center;
+
+  margin: 22px 0 10px;
+
+  color: #65738a;
+
+  font-size: 12px;
 }
 
-/* =========================
-   ÉDITEUR
-========================= */
 
-#editorScreen {
-  position: absolute;
-  top: 62px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #f3f4f6;
-  padding: 18px;
-  overflow: auto;
-}
-
-#editorScreen h2 {
-  margin: 0 0 10px;
-  color: #111827;
-}
-
-#inputText {
-  width: 100%;
-  height: calc(100vh - 190px);
-  min-height: 300px;
-  padding: 18px;
-  font-size: 18px;
-  line-height: 1.5;
-  border: 1px solid #bbb;
-  border-radius: 10px;
-  resize: none;
-}
-
-#editorHelp {
-  color: #4b5563;
-  margin: 8px 0 0;
-  font-size: 14px;
-}
-
-/* =========================
-   PROMPTEUR
-========================= */
+/* =========================================================
+   ÉCRAN DE LECTURE
+========================================================= */
 
 #readerScreen {
   display: none;
-  position: absolute;
-  top: 62px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #05070b;
+
+  position: fixed;
+  inset: 0;
+
+  background: #030508;
+
   overflow: hidden;
 }
 
-#status {
+
+/* =========================================================
+   BARRE DE COMMANDES
+========================================================= */
+
+#readerToolbar {
   position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  padding: 5px 12px;
-  border-radius: 20px;
-  background: rgba(31,41,55,.85);
-  color: #d1d5db;
-  font-size: 13px;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 58px;
+
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 7px 12px;
+
+  background:
+    rgba(12,17,27,.96);
+
+  border-bottom:
+    1px solid rgba(255,255,255,.07);
+
+  backdrop-filter: blur(10px);
+}
+
+.toolbarTitle {
+  font-weight: 650;
+  font-size: 15px;
+
+  margin-right: auto;
+
   white-space: nowrap;
 }
 
-#status.listening {
-  color: #86efac;
+.toolbarButton {
+  height: 38px;
+
+  padding: 0 12px;
+
+  border-radius: 9px;
+
+  background: #1b2535;
+
+  color: #dce4f0;
+
+  font-size: 13px;
 }
+
+.toolbarButton:hover {
+  background: #263349;
+}
+
+#pauseBtn {
+  background: #49351d;
+  color: #ffc96e;
+}
+
+#resetBtn {
+  background: #47252a;
+  color: #ff9da2;
+}
+
+#editBtn {
+  background: #203458;
+  color: #a9c3ff;
+}
+
+
+/* =========================================================
+   TAILLE DU TEXTE
+========================================================= */
+
+.fontControl {
+  display: flex;
+  align-items: center;
+
+  height: 38px;
+
+  background: #151e2c;
+
+  border-radius: 9px;
+
+  overflow: hidden;
+}
+
+.fontButton {
+  width: 42px;
+  height: 38px;
+
+  background: transparent;
+
+  color: #e7edf7;
+
+  font-weight: 650;
+}
+
+.fontButton:hover {
+  background: #263349;
+}
+
+#fontLabel {
+  min-width: 42px;
+
+  text-align: center;
+
+  color: #aeb9ca;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   ÉTAT MICRO
+========================================================= */
+
+#status {
+  position: absolute;
+
+  top: 70px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  z-index: 50;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  background:
+    rgba(14,20,31,.88);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  color: #aeb9ca;
+
+  font-size: 12px;
+
+  pointer-events: none;
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #7b8799;
+}
+
+#status.listening {
+  color: #9ae6bd;
+}
+
+#status.listening .statusDot {
+  background: var(--green);
+
+  box-shadow:
+    0 0 9px rgba(47,199,122,.7);
+}
+
+
+/* =========================================================
+   PROMPTEUR
+========================================================= */
 
 #prompter {
   position: absolute;
-  inset: 0;
+
+  top: 58px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
   overflow-y: auto;
+
   scrollbar-width: none;
+
   overscroll-behavior: none;
 }
 
@@ -153,156 +507,516 @@ input[type="range"] {
 }
 
 #text {
-  max-width: 1100px;
+  max-width: 1120px;
+
   margin: 0 auto;
-  padding: 36vh 6% 55vh;
+
+  padding:
+    35vh
+    6%
+    55vh;
+
   font-size: 46px;
-  line-height: 1.55;
+
+  line-height: 1.52;
+
   text-align: center;
+
   overflow-wrap: break-word;
+
+  letter-spacing: .1px;
 }
 
 .word {
   display: inline;
-  color: #f8fafc;
+
+  color: #edf2f7;
+
+  transition:
+    color .16s;
 }
 
 .word.read {
-  color: #64748b;
+  color: var(--read);
 }
 
 .word.current {
-  color: #facc15;
+  color: var(--current);
+
+  text-shadow:
+    0 0 15px rgba(255,216,77,.12);
 }
 
-/* =========================
-   TABLETTE
-========================= */
+
+/* =========================================================
+   LIGNE DE FOCUS TRÈS DISCRÈTE
+========================================================= */
+
+#focusGuide {
+  position: absolute;
+
+  z-index: 5;
+
+  left: 8%;
+  right: 8%;
+
+  top: 43%;
+
+  height: 1px;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.055),
+      transparent
+    );
+}
+
+
+/* =========================================================
+   COMPTE À REBOURS
+========================================================= */
+
+#countdown {
+  display: none;
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  place-items: center;
+
+  background:
+    rgba(3,5,8,.94);
+
+  font-size:
+    clamp(100px, 22vw, 220px);
+
+  font-weight: 750;
+
+  color: white;
+}
+
+#countdown.show {
+  display: grid;
+}
+
+#countNumber {
+  animation:
+    countPulse .65s ease;
+}
+
+@keyframes countPulse {
+
+  0% {
+    transform: scale(.75);
+    opacity: 0;
+  }
+
+  35% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(.94);
+    opacity: .85;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE TABLETTE
+========================================================= */
 
 @media (max-width: 800px) {
 
-  header {
-    min-height: 54px;
-    padding: 6px 8px;
-    gap: 5px;
+  #editorScreen {
+    padding:
+      22px 14px;
   }
 
-  header h1 {
+  .brand {
+    margin-bottom: 20px;
+  }
+
+  .brandIcon {
+    width: 58px;
+    height: 58px;
+
+    border-radius: 18px;
+
+    font-size: 28px;
+  }
+
+  .brand h1 {
+    font-size: 30px;
+  }
+
+  .editorCard {
+    padding: 15px;
+  }
+
+  #inputText {
+    min-height: 280px;
+
     font-size: 16px;
   }
 
-  button {
-    padding: 7px 9px;
+  #readerToolbar {
+    height: 52px;
+
+    padding:
+      6px 7px;
+
+    gap: 4px;
+  }
+
+  .toolbarTitle {
+    font-size: 13px;
+  }
+
+  .toolbarButton {
+    height: 36px;
+
+    padding:
+      0 9px;
+
     font-size: 12px;
   }
 
-  .control {
-    font-size: 11px;
+  .fontControl,
+  .fontButton {
+    height: 36px;
   }
 
-  input[type="range"] {
-    width: 65px;
+  #prompter {
+    top: 52px;
   }
 
-  #editorScreen,
-  #readerScreen {
-    top: 54px;
+  #status {
+    top: 62px;
   }
 
   #text {
     font-size: 30px;
-    line-height: 1.48;
+
     padding-left: 4%;
     padding-right: 4%;
   }
-
-  #status {
-    font-size: 11px;
-  }
 }
 
-/* =========================
-   TÉLÉPHONE
-========================= */
 
-@media (max-width: 520px) {
+/* =========================================================
+   RESPONSIVE TÉLÉPHONE
+========================================================= */
 
-  header h1 {
+@media (max-width: 560px) {
+
+  #editorScreen {
+    padding:
+      15px 10px;
+  }
+
+  .brand {
+    margin:
+      3px 0 15px;
+  }
+
+  .brandIcon {
+    width: 48px;
+    height: 48px;
+
+    border-radius: 15px;
+
+    font-size: 23px;
+
+    margin-bottom: 8px;
+  }
+
+  .brand h1 {
+    font-size: 26px;
+  }
+
+  .brand p {
+    font-size: 13px;
+  }
+
+  .editorCard {
+    border-radius: 15px;
+
+    padding: 11px;
+  }
+
+  .editorTitle span {
     display: none;
   }
 
-  header {
+  #inputText {
+    min-height: 250px;
+
+    font-size: 15px;
+
+    padding: 13px;
+  }
+
+  .editorFooter {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .hint {
+    text-align: center;
+  }
+
+  #launchBtn {
+    width: 100%;
+  }
+
+
+  /* BARRE MOBILE */
+
+  #readerToolbar {
     justify-content: center;
+  }
+
+  .toolbarTitle {
+    display: none;
+  }
+
+  .toolbarButton {
+    padding:
+      0 7px;
+
+    font-size: 11px;
+  }
+
+  .fontButton {
+    width: 34px;
+  }
+
+  #fontLabel {
+    display: none;
+  }
+
+  #fullscreenBtn {
+    width: 36px;
+
+    padding: 0;
   }
 
   #text {
     font-size: 24px;
+
     line-height: 1.45;
+
+    padding-left: 3.5%;
+    padding-right: 3.5%;
   }
 
-  input[type="range"] {
-    width: 55px;
+  #status {
+    font-size: 10px;
+
+    padding:
+      5px 9px;
   }
 }
+
 </style>
 </head>
 
+
 <body>
 
-<header>
 
-<h1>🎙️ Radio ISTJ</h1>
+<!-- =======================================================
+     ÉCRAN DE PRÉPARATION
+======================================================= -->
 
-<button id="voiceBtn">🎤 Suivi vocal</button>
-<button id="pauseBtn">⏸ Pause</button>
-<button id="resetBtn">↩ Début</button>
-<button id="editBtn">✏️ Modifier</button>
+<section id="editorScreen">
 
-<div class="control">
-  Taille
-  <input
-    id="fontSize"
-    type="range"
-    min="20"
-    max="70"
-    value="46"
-  >
-</div>
+  <div class="app">
 
-</header>
+    <div class="brand">
 
+      <div class="brandIcon">
+        🎙️
+      </div>
 
-<!-- ÉDITEUR -->
+      <h1>Prompteur vocal</h1>
 
-<div id="editorScreen">
+      <p>
+        Votre texte suit naturellement votre voix.
+      </p>
 
-  <h2>Préparer la chronique</h2>
-
-  <textarea
-    id="inputText"
-    placeholder="Collez ici le texte de votre chronique..."
-  ></textarea>
-
-  <p id="editorHelp">
-    Une fois le texte prêt, cliquez sur « Suivi vocal ».
-  </p>
-
-</div>
+    </div>
 
 
-<!-- LECTURE -->
+    <div class="editorCard">
 
-<div id="readerScreen">
+      <div class="editorTitle">
+
+        <strong>
+          Votre texte
+        </strong>
+
+        <span id="wordCount">
+          0 mot
+        </span>
+
+      </div>
+
+
+      <textarea
+        id="inputText"
+        placeholder="Collez ou écrivez ici le texte à lire..."
+      ></textarea>
+
+
+      <div class="editorFooter">
+
+        <div class="hint">
+          Le défilement démarre avec votre voix,
+          s'arrête lorsque vous faites une pause
+          et reprend automatiquement.
+        </div>
+
+
+        <button id="launchBtn">
+          🎙️ Lancer le prompteur
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="copyright">
+      © 2026 C. Declerck — Tous droits réservés.
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =======================================================
+     ÉCRAN DE LECTURE
+======================================================= -->
+
+<section id="readerScreen">
+
+
+  <div id="readerToolbar">
+
+    <div class="toolbarTitle">
+      Prompteur vocal
+    </div>
+
+
+    <button
+      id="pauseBtn"
+      class="toolbarButton"
+    >
+      ⏸ Pause
+    </button>
+
+
+    <button
+      id="resetBtn"
+      class="toolbarButton"
+    >
+      ↩ Début
+    </button>
+
+
+    <button
+      id="editBtn"
+      class="toolbarButton"
+    >
+      ✏️ Modifier
+    </button>
+
+
+    <div class="fontControl">
+
+      <button
+        id="fontMinus"
+        class="fontButton"
+        title="Réduire le texte"
+      >
+        A−
+      </button>
+
+      <span id="fontLabel">
+        46
+      </span>
+
+      <button
+        id="fontPlus"
+        class="fontButton"
+        title="Agrandir le texte"
+      >
+        A+
+      </button>
+
+    </div>
+
+
+    <button
+      id="fullscreenBtn"
+      class="toolbarButton"
+      title="Plein écran"
+    >
+      ⛶
+    </button>
+
+  </div>
+
 
   <div id="status">
-    Prêt
+
+    <span class="statusDot"></span>
+
+    <span id="statusText">
+      Prêt
+    </span>
+
   </div>
 
+
+  <div id="focusGuide"></div>
+
+
   <div id="prompter">
+
     <div id="text"></div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =======================================================
+     COMPTE À REBOURS
+======================================================= -->
+
+<div id="countdown">
+
+  <div id="countNumber">
+    3
   </div>
 
 </div>
+
 
 
 <script>
@@ -320,6 +1034,12 @@ const readerScreen =
 const inputText =
   document.getElementById("inputText");
 
+const wordCount =
+  document.getElementById("wordCount");
+
+const launchBtn =
+  document.getElementById("launchBtn");
+
 const text =
   document.getElementById("text");
 
@@ -329,8 +1049,8 @@ const prompter =
 const statusBox =
   document.getElementById("status");
 
-const voiceBtn =
-  document.getElementById("voiceBtn");
+const statusText =
+  document.getElementById("statusText");
 
 const pauseBtn =
   document.getElementById("pauseBtn");
@@ -341,8 +1061,23 @@ const resetBtn =
 const editBtn =
   document.getElementById("editBtn");
 
-const fontSize =
-  document.getElementById("fontSize");
+const fullscreenBtn =
+  document.getElementById("fullscreenBtn");
+
+const fontMinus =
+  document.getElementById("fontMinus");
+
+const fontPlus =
+  document.getElementById("fontPlus");
+
+const fontLabel =
+  document.getElementById("fontLabel");
+
+const countdown =
+  document.getElementById("countdown");
+
+const countNumber =
+  document.getElementById("countNumber");
 
 
 /* =========================================================
@@ -355,12 +1090,6 @@ let currentWord = 0;
 let recognition = null;
 let listening = false;
 
-let lastScrollWord = -1;
-
-/*
-  MODE HYBRIDE
-*/
-
 let voiceActive = false;
 
 let lastVoiceActivity = 0;
@@ -368,47 +1097,53 @@ let lastVoiceActivity = 0;
 let animationFrame = null;
 let previousFrameTime = 0;
 
-/*
-  Vitesse du mouvement en pixels / seconde.
-  Elle va apprendre progressivement le rythme du lecteur.
-*/
-
 let targetScrollSpeed = 0;
 let currentScrollSpeed = 0;
 
 let estimatedReadingSpeed = 24;
 
-/*
-  Informations utilisées pour estimer
-  le rythme réel de lecture.
-*/
-
 let previousTrackedWord = 0;
 let previousTrackedTime = 0;
 
+let currentFontSize = 46;
+
+let countdownRunning = false;
+
 
 /* =========================================================
-   PARAMÈTRES DU MODE HYBRIDE
+   PARAMÈTRES DU MOTEUR HYBRIDE
 ========================================================= */
-
-/*
-  Temps de silence avant arrêt du défilement.
-*/
 
 const SILENCE_DELAY = 950;
 
-/*
-  Accélération / ralentissement progressifs.
-*/
-
 const SPEED_SMOOTHING = 0.055;
 
-/*
-  Correction maximale automatique vers le mot jaune.
-  Très faible volontairement pour éviter les bonds.
-*/
-
 const MAX_CORRECTION_PER_FRAME = 1.2;
+
+
+/* =========================================================
+   COMPTEUR DE MOTS
+========================================================= */
+
+function updateWordCount() {
+
+  const value =
+    inputText.value.trim();
+
+  const total =
+    value
+      ? value.split(/\s+/).length
+      : 0;
+
+  wordCount.textContent =
+    total +
+    (total > 1 ? " mots" : " mot");
+}
+
+inputText.addEventListener(
+  "input",
+  updateWordCount
+);
 
 
 /* =========================================================
@@ -420,9 +1155,14 @@ function normalizeWord(value) {
   return value
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\p{L}\p{N}]/gu, "");
-
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^\p{L}\p{N}]/gu,
+      ""
+    );
 }
 
 
@@ -444,32 +1184,49 @@ function buildText() {
   const rawWords =
     content.split(/\s+/);
 
-  words = rawWords.map(
-    (rawWord, index) => {
+  words =
+    rawWords.map(
+      (rawWord, index) => {
 
-      const span =
-        document.createElement("span");
+        const span =
+          document.createElement(
+            "span"
+          );
 
-      span.className = "word";
-      span.dataset.index = index;
-      span.textContent = rawWord + " ";
+        span.className =
+          "word";
 
-      text.appendChild(span);
+        span.dataset.index =
+          index;
 
-      return {
-        original: rawWord,
-        normalized: normalizeWord(rawWord),
-        element: span
-      };
+        span.textContent =
+          rawWord + " ";
 
-    }
-  );
+        text.appendChild(
+          span
+        );
+
+        return {
+          original:
+            rawWord,
+
+          normalized:
+            normalizeWord(
+              rawWord
+            ),
+
+          element:
+            span
+        };
+      }
+    );
 
   currentWord = 0;
-  lastScrollWord = -1;
 
   previousTrackedWord = 0;
-  previousTrackedTime = performance.now();
+
+  previousTrackedTime =
+    performance.now();
 
   targetScrollSpeed = 0;
   currentScrollSpeed = 0;
@@ -481,12 +1238,16 @@ function buildText() {
 
 
 /* =========================================================
-   AFFICHAGE DES MOTS
+   AFFICHAGE
 ========================================================= */
 
-function updateDisplay(forceScroll = false) {
+function updateDisplay(
+  forcePosition = false
+) {
 
-  if (!words.length) return;
+  if (!words.length) {
+    return;
+  }
 
   for (
     let i = 0;
@@ -502,30 +1263,31 @@ function updateDisplay(forceScroll = false) {
       "current"
     );
 
-    if (i < currentWord) {
-      element.classList.add("read");
+    if (
+      i < currentWord
+    ) {
+      element.classList.add(
+        "read"
+      );
     }
 
-    if (i === currentWord) {
-      element.classList.add("current");
+    if (
+      i === currentWord
+    ) {
+      element.classList.add(
+        "current"
+      );
     }
   }
 
-  /*
-    Le mot jaune ne commande plus directement
-    chaque mouvement.
-
-    Il sert d'ancre au défilement continu.
-  */
-
-  if (forceScroll) {
+  if (forcePosition) {
     positionImmediately();
   }
 }
 
 
 /* =========================================================
-   POSITION INITIALE
+   POSITION
 ========================================================= */
 
 function positionImmediately() {
@@ -533,25 +1295,28 @@ function positionImmediately() {
   const item =
     words[currentWord];
 
-  if (!item) return;
+  if (!item) {
+    return;
+  }
 
   const desired =
-    prompter.clientHeight * 0.43;
+    prompter.clientHeight *
+    0.43;
 
   const target =
     Math.max(
       0,
-      item.element.offsetTop - desired
+      item.element.offsetTop -
+      desired
     );
 
-  prompter.scrollTop = target;
-
-  lastScrollWord = currentWord;
+  prompter.scrollTop =
+    target;
 }
 
 
 /* =========================================================
-   ESTIMATION DU RYTHME DE LECTURE
+   ESTIMATION DU RYTHME
 ========================================================= */
 
 function updateReadingSpeed() {
@@ -560,15 +1325,13 @@ function updateReadingSpeed() {
     performance.now();
 
   const elapsed =
-    now - previousTrackedTime;
+    now -
+    previousTrackedTime;
 
   const wordDifference =
-    currentWord - previousTrackedWord;
+    currentWord -
+    previousTrackedWord;
 
-  /*
-    On n'actualise le rythme que si plusieurs mots
-    ont réellement été parcourus.
-  */
 
   if (
     wordDifference >= 2 &&
@@ -579,29 +1342,22 @@ function updateReadingSpeed() {
       wordDifference /
       (elapsed / 1000);
 
-    /*
-      On évite les estimations absurdes dues
-      à une reconnaissance momentanément mauvaise.
-    */
 
     if (
       wordsPerSecond > 0.7 &&
       wordsPerSecond < 6
     ) {
 
-      /*
-        Conversion approximative en vitesse visuelle.
-        La vitesse réelle sera ensuite corrigée
-        doucement grâce à la position du mot jaune.
-      */
-
       const calculatedSpeed =
         wordsPerSecond * 13;
 
       estimatedReadingSpeed =
-        estimatedReadingSpeed * 0.75 +
-        calculatedSpeed * 0.25;
+        estimatedReadingSpeed *
+        0.75 +
+        calculatedSpeed *
+        0.25;
     }
+
 
     previousTrackedWord =
       currentWord;
@@ -613,7 +1369,7 @@ function updateReadingSpeed() {
 
 
 /* =========================================================
-   DÉTECTION DE PAROLE
+   ACTIVITÉ VOCALE
 ========================================================= */
 
 function markVoiceActivity() {
@@ -622,12 +1378,6 @@ function markVoiceActivity() {
 
   lastVoiceActivity =
     performance.now();
-
-  /*
-    Tant que la personne parle,
-    le défilement vise la vitesse
-    correspondant à son rythme.
-  */
 
   targetScrollSpeed =
     estimatedReadingSpeed;
@@ -640,19 +1390,6 @@ function markVoiceActivity() {
 
 function hybridScrollLoop(time) {
 
-  if (!listening) {
-
-    animationFrame =
-      requestAnimationFrame(
-        hybridScrollLoop
-      );
-
-    previousFrameTime = time;
-
-    return;
-  }
-
-
   if (!previousFrameTime) {
     previousFrameTime = time;
   }
@@ -660,122 +1397,104 @@ function hybridScrollLoop(time) {
   const delta =
     Math.min(
       50,
-      time - previousFrameTime
+      time -
+      previousFrameTime
     );
 
-  previousFrameTime = time;
+  previousFrameTime =
+    time;
 
 
-  /* =====================================================
-     SILENCE
-  ===================================================== */
+  if (listening) {
 
-  const silenceDuration =
-    performance.now() -
-    lastVoiceActivity;
-
-  if (
-    silenceDuration >
-    SILENCE_DELAY
-  ) {
-
-    voiceActive = false;
-    targetScrollSpeed = 0;
-  }
-
-
-  /* =====================================================
-     ACCÉLÉRATION / RALENTISSEMENT PROGRESSIFS
-  ===================================================== */
-
-  currentScrollSpeed +=
-    (
-      targetScrollSpeed -
-      currentScrollSpeed
-    ) *
-    SPEED_SMOOTHING;
-
-
-  /*
-    Si on est presque arrêté,
-    on passe réellement à zéro.
-  */
-
-  if (
-    !voiceActive &&
-    Math.abs(currentScrollSpeed) < 0.15
-  ) {
-
-    currentScrollSpeed = 0;
-  }
-
-
-  /* =====================================================
-     DÉFILEMENT CONTINU
-  ===================================================== */
-
-  const movement =
-    currentScrollSpeed *
-    (delta / 1000);
-
-  prompter.scrollTop += movement;
-
-
-  /* =====================================================
-     CORRECTION DOUCE AVEC LE MOT JAUNE
-  ===================================================== */
-
-  const item =
-    words[currentWord];
-
-  if (item) {
-
-    const desiredPosition =
-      prompter.clientHeight * 0.43;
-
-    const actualPosition =
-      item.element.offsetTop -
-      prompter.scrollTop;
-
-    const difference =
-      actualPosition -
-      desiredPosition;
-
-
-    /*
-      Zone morte :
-      tant que le mot jaune reste raisonnablement
-      proche de sa position idéale, on ne corrige rien.
-    */
-
-    const deadZone =
-      prompter.clientHeight * 0.12;
+    const silenceDuration =
+      performance.now() -
+      lastVoiceActivity;
 
 
     if (
-      Math.abs(difference) >
-      deadZone
+      silenceDuration >
+      SILENCE_DELAY
     ) {
 
-      /*
-        Correction très progressive.
-        Aucun scrollTo brutal.
-      */
+      voiceActive = false;
 
-      let correction =
-        difference * 0.012;
+      targetScrollSpeed = 0;
+    }
 
-      correction =
-        Math.max(
-          -MAX_CORRECTION_PER_FRAME,
-          Math.min(
-            MAX_CORRECTION_PER_FRAME,
-            correction
-          )
-        );
 
-      prompter.scrollTop +=
-        correction;
+    currentScrollSpeed +=
+      (
+        targetScrollSpeed -
+        currentScrollSpeed
+      ) *
+      SPEED_SMOOTHING;
+
+
+    if (
+      !voiceActive &&
+      Math.abs(
+        currentScrollSpeed
+      ) < 0.15
+    ) {
+
+      currentScrollSpeed = 0;
+    }
+
+
+    const movement =
+      currentScrollSpeed *
+      (delta / 1000);
+
+    prompter.scrollTop +=
+      movement;
+
+
+    /* ---------- RECALAGE DOUX ---------- */
+
+    const item =
+      words[currentWord];
+
+    if (item) {
+
+      const desiredPosition =
+        prompter.clientHeight *
+        0.43;
+
+      const actualPosition =
+        item.element.offsetTop -
+        prompter.scrollTop;
+
+      const difference =
+        actualPosition -
+        desiredPosition;
+
+      const deadZone =
+        prompter.clientHeight *
+        0.12;
+
+
+      if (
+        Math.abs(difference) >
+        deadZone
+      ) {
+
+        let correction =
+          difference *
+          0.012;
+
+        correction =
+          Math.max(
+            -MAX_CORRECTION_PER_FRAME,
+            Math.min(
+              MAX_CORRECTION_PER_FRAME,
+              correction
+            )
+          );
+
+        prompter.scrollTop +=
+          correction;
+      }
     }
   }
 
@@ -802,13 +1521,12 @@ function findBestPosition(
     return null;
   }
 
+
   const recentSpoken =
     spokenWords.slice(-6);
 
 
-  /* =====================================================
-     1. RECHERCHE NORMALE
-  ===================================================== */
+  /* ---------- RECHERCHE LOCALE ---------- */
 
   const localStart =
     Math.max(
@@ -827,16 +1545,24 @@ function findBestPosition(
 
 
   for (
-    let candidate = localStart;
-    candidate <= localEnd;
+    let candidate =
+      localStart;
+
+    candidate <=
+      localEnd;
+
     candidate++
   ) {
 
     let score = 0;
 
+
     for (
       let offset = 0;
-      offset < recentSpoken.length;
+
+      offset <
+        recentSpoken.length;
+
       offset++
     ) {
 
@@ -848,13 +1574,21 @@ function findBestPosition(
         ];
 
       const textIndex =
-        candidate - offset;
+        candidate -
+        offset;
 
-      if (textIndex < 0) continue;
+
+      if (
+        textIndex < 0
+      ) {
+        continue;
+      }
+
 
       if (
         words[textIndex] &&
-        words[textIndex].normalized ===
+        words[textIndex]
+          .normalized ===
         spoken
       ) {
 
@@ -874,24 +1608,30 @@ function findBestPosition(
       )
     ) {
 
-      bestScore = score;
-      bestPosition = candidate;
+      bestScore =
+        score;
+
+      bestPosition =
+        candidate;
     }
   }
 
 
-  if (bestPosition !== null) {
+  if (
+    bestPosition !== null
+  ) {
 
     return {
-      position: bestPosition,
-      jump: false
+      position:
+        bestPosition,
+
+      jump:
+        false
     };
   }
 
 
-  /* =====================================================
-     2. RATTRAPAGE APRÈS SAUT DE PHRASE
-  ===================================================== */
+  /* ---------- RATTRAPAGE ---------- */
 
   const recoveryStart =
     currentWord + 9;
@@ -902,21 +1642,31 @@ function findBestPosition(
       currentWord + 60
     );
 
-  let recoveryPosition = null;
+  let recoveryPosition =
+    null;
+
   let recoveryScore = 0;
 
 
   for (
-    let candidate = recoveryStart;
-    candidate <= recoveryEnd;
+    let candidate =
+      recoveryStart;
+
+    candidate <=
+      recoveryEnd;
+
     candidate++
   ) {
 
     let score = 0;
 
+
     for (
       let offset = 0;
-      offset < recentSpoken.length;
+
+      offset <
+        recentSpoken.length;
+
       offset++
     ) {
 
@@ -928,7 +1678,9 @@ function findBestPosition(
         ];
 
       const textIndex =
-        candidate - offset;
+        candidate -
+        offset;
+
 
       if (
         textIndex <
@@ -937,9 +1689,11 @@ function findBestPosition(
         continue;
       }
 
+
       if (
         words[textIndex] &&
-        words[textIndex].normalized ===
+        words[textIndex]
+          .normalized ===
         spoken
       ) {
 
@@ -950,22 +1704,30 @@ function findBestPosition(
 
     if (
       score >= 3 &&
-      score > recoveryScore
+      score >
+        recoveryScore
     ) {
 
-      recoveryScore = score;
-      recoveryPosition = candidate;
+      recoveryScore =
+        score;
+
+      recoveryPosition =
+        candidate;
     }
   }
 
 
   if (
-    recoveryPosition !== null
+    recoveryPosition !==
+    null
   ) {
 
     return {
-      position: recoveryPosition,
-      jump: true
+      position:
+        recoveryPosition,
+
+      jump:
+        true
     };
   }
 
@@ -1001,32 +1763,28 @@ if (SpeechRecognition) {
     1;
 
 
-  recognition.onstart = () => {
+  recognition.onstart =
+    () => {
 
-    listening = true;
+      listening = true;
 
-    /*
-      On ne fait pas encore défiler tant
-      qu'aucune parole n'a été détectée.
-    */
+      voiceActive = false;
 
-    voiceActive = false;
+      lastVoiceActivity =
+        performance.now();
 
-    lastVoiceActivity =
-      performance.now();
+      targetScrollSpeed = 0;
 
-    targetScrollSpeed = 0;
+      statusText.textContent =
+        "Écoute en cours";
 
-    statusBox.textContent =
-      "🎤 Écoute en cours";
+      statusBox.classList.add(
+        "listening"
+      );
 
-    statusBox.classList.add(
-      "listening"
-    );
-
-    voiceBtn.textContent =
-      "🎤 Écoute";
-  };
+      pauseBtn.textContent =
+        "⏸ Pause";
+    };
 
 
   recognition.onresult =
@@ -1036,14 +1794,19 @@ if (SpeechRecognition) {
 
 
       for (
-        let i = event.resultIndex;
-        i < event.results.length;
+        let i =
+          event.resultIndex;
+
+        i <
+          event.results.length;
+
         i++
       ) {
 
         transcript +=
           event.results[i][0]
-            .transcript + " ";
+            .transcript +
+          " ";
       }
 
 
@@ -1051,19 +1814,20 @@ if (SpeechRecognition) {
         transcript
           .trim()
           .split(/\s+/)
-          .map(normalizeWord)
-          .filter(Boolean);
+          .map(
+            normalizeWord
+          )
+          .filter(
+            Boolean
+          );
 
 
-      if (!spokenWords.length) {
+      if (
+        !spokenWords.length
+      ) {
         return;
       }
 
-
-      /*
-        Dès que le moteur reçoit de la parole,
-        le défilement peut fonctionner.
-      */
 
       markVoiceActivity();
 
@@ -1074,16 +1838,9 @@ if (SpeechRecognition) {
         );
 
 
-      if (match === null) {
-
-        /*
-          Même si le texte n'a pas encore été
-          reconnu précisément, on sait que
-          l'élève est en train de parler.
-
-          Le défilement reste donc doux.
-        */
-
+      if (
+        match === null
+      ) {
         return;
       }
 
@@ -1091,36 +1848,34 @@ if (SpeechRecognition) {
       let newPosition;
 
 
-      /* =================================================
-         SAUT DE PHRASE
-      ================================================= */
-
       if (match.jump) {
 
         newPosition =
-          match.position + 1;
+          match.position +
+          1;
 
       }
 
-
-      /* =================================================
-         LECTURE NORMALE
-      ================================================= */
-
       else {
 
-        const maximumAdvance = 4;
+        const maximumAdvance =
+          4;
 
         newPosition =
           Math.min(
-            match.position + 1,
+            match.position +
+            1,
+
             currentWord +
             maximumAdvance
           );
 
+
         newPosition =
           Math.max(
-            currentWord - 2,
+            currentWord -
+            2,
+
             newPosition
           );
       }
@@ -1129,8 +1884,11 @@ if (SpeechRecognition) {
       newPosition =
         Math.max(
           0,
+
           Math.min(
-            words.length - 1,
+            words.length -
+            1,
+
             newPosition
           )
         );
@@ -1144,27 +1902,10 @@ if (SpeechRecognition) {
         currentWord =
           newPosition;
 
-        /*
-          On apprend le débit réel.
-        */
-
         updateReadingSpeed();
-
-        /*
-          On met à jour le jaune,
-          sans déplacement brutal.
-        */
 
         updateDisplay(false);
 
-
-        /*
-          En cas de saut de phrase,
-          on ne téléporte toujours pas l'écran.
-
-          On accélère simplement temporairement
-          la correction vers la nouvelle position.
-        */
 
         if (match.jump) {
 
@@ -1185,74 +1926,167 @@ if (SpeechRecognition) {
         event.error ===
         "no-speech"
       ) {
-
         return;
       }
 
-      statusBox.textContent =
+
+      statusText.textContent =
         "Micro : " +
         event.error;
     };
 
 
-  recognition.onend = () => {
+  recognition.onend =
+    () => {
 
-    if (listening) {
+      if (listening) {
 
-      /*
-        Certains navigateurs mobiles ferment
-        eux-mêmes la reconnaissance.
+        /*
+          On espace volontairement
+          les redémarrages pour les
+          appareils Android plus anciens.
+        */
 
-        On ne peut pas empêcher tous les sons
-        système associés au micro.
+        setTimeout(
+          () => {
 
-        On évite cependant les relances
-        extrêmement rapides.
-      */
+            if (!listening) {
+              return;
+            }
 
-      setTimeout(() => {
+            try {
+              recognition.start();
+            }
 
-        if (!listening) {
-          return;
-        }
+            catch (e) {}
 
-        try {
-          recognition.start();
-        }
-        catch (e) {}
+          },
+          700
+        );
+      }
 
-      }, 700);
+      else {
 
-    }
+        voiceActive = false;
 
-    else {
+        targetScrollSpeed = 0;
 
-      voiceActive = false;
-      targetScrollSpeed = 0;
+        statusText.textContent =
+          "En pause";
 
-      statusBox.textContent =
-        "⏸ Suivi arrêté";
+        statusBox.classList.remove(
+          "listening"
+        );
 
-      statusBox.classList.remove(
-        "listening"
-      );
-
-      voiceBtn.textContent =
-        "🎤 Suivi vocal";
-    }
-  };
+        pauseBtn.textContent =
+          "▶ Reprendre";
+      }
+    };
 }
 
 
 /* =========================================================
-   SUIVI VOCAL
+   DÉMARRAGE RÉEL DU MICRO
 ========================================================= */
 
-voiceBtn.addEventListener(
+function startRecognition() {
+
+  if (!SpeechRecognition) {
+
+    alert(
+      "Le suivi vocal n'est pas disponible dans ce navigateur. Essayez Chrome ou Edge."
+    );
+
+    return;
+  }
+
+
+  listening = true;
+
+  voiceActive = false;
+
+  targetScrollSpeed = 0;
+
+  previousTrackedWord =
+    currentWord;
+
+  previousTrackedTime =
+    performance.now();
+
+
+  try {
+    recognition.start();
+  }
+
+  catch (e) {}
+}
+
+
+/* =========================================================
+   COMPTE À REBOURS
+========================================================= */
+
+async function runCountdown() {
+
+  if (countdownRunning) {
+    return;
+  }
+
+  countdownRunning = true;
+
+  countdown.classList.add(
+    "show"
+  );
+
+
+  for (
+    const number of
+    ["3", "2", "1"]
+  ) {
+
+    countNumber.textContent =
+      number;
+
+    countNumber.style.animation =
+      "none";
+
+    void countNumber.offsetWidth;
+
+    countNumber.style.animation =
+      "countPulse .65s ease";
+
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          750
+        )
+    );
+  }
+
+
+  countdown.classList.remove(
+    "show"
+  );
+
+  countdownRunning = false;
+
+  startRecognition();
+}
+
+
+/* =========================================================
+   LANCER LE PROMPTEUR
+========================================================= */
+
+launchBtn.addEventListener(
   "click",
   () => {
 
-    if (!SpeechRecognition) {
+    if (
+      !SpeechRecognition
+    ) {
 
       alert(
         "Le suivi vocal n'est pas disponible dans ce navigateur. Essayez Chrome ou Edge."
@@ -1262,104 +2096,95 @@ voiceBtn.addEventListener(
     }
 
 
-    if (
-      editorScreen.style.display !==
-      "none"
-    ) {
+    if (!buildText()) {
 
-      if (!buildText()) {
+      alert(
+        "Écrivez ou collez d'abord un texte."
+      );
 
-        alert(
-          "Collez d'abord le texte de votre chronique."
-        );
-
-        return;
-      }
-
-      editorScreen.style.display =
-        "none";
-
-      readerScreen.style.display =
-        "block";
-
-      prompter.scrollTop = 0;
-
-      updateDisplay(true);
+      return;
     }
 
 
-    if (!listening) {
+    editorScreen.style.display =
+      "none";
 
-      listening = true;
+    readerScreen.style.display =
+      "block";
 
-      voiceActive = false;
-      targetScrollSpeed = 0;
 
-      previousTrackedWord =
-        currentWord;
+    /*
+      On attend que l'écran soit
+      réellement affiché avant
+      de calculer sa position.
+    */
 
-      previousTrackedTime =
-        performance.now();
+    requestAnimationFrame(
+      () => {
 
-      try {
-        recognition.start();
+        prompter.scrollTop = 0;
+
+        updateDisplay(true);
+
+        runCountdown();
       }
-      catch (e) {}
-
-    }
-
-    else {
-
-      listening = false;
-
-      voiceActive = false;
-      targetScrollSpeed = 0;
-
-      try {
-        recognition.stop();
-      }
-      catch (e) {}
-    }
+    );
   }
 );
 
 
 /* =========================================================
-   PAUSE
+   PAUSE / REPRISE
 ========================================================= */
 
 pauseBtn.addEventListener(
   "click",
   () => {
 
-    listening = false;
+    if (listening) {
 
-    voiceActive = false;
-    targetScrollSpeed = 0;
+      listening = false;
 
-    if (recognition) {
+      voiceActive = false;
 
-      try {
-        recognition.stop();
+      targetScrollSpeed = 0;
+
+
+      if (recognition) {
+
+        try {
+          recognition.stop();
+        }
+
+        catch (e) {}
       }
-      catch (e) {}
+
+
+      statusText.textContent =
+        "En pause";
+
+      statusBox.classList.remove(
+        "listening"
+      );
+
+      pauseBtn.textContent =
+        "▶ Reprendre";
+
     }
 
-    statusBox.textContent =
-      "⏸ En pause";
+    else {
 
-    statusBox.classList.remove(
-      "listening"
-    );
+      startRecognition();
 
-    voiceBtn.textContent =
-      "🎤 Suivi vocal";
+      pauseBtn.textContent =
+        "⏸ Pause";
+    }
   }
 );
 
 
 /* =========================================================
-   DÉBUT
+   RETOUR AU DÉBUT
 ========================================================= */
 
 resetBtn.addEventListener(
@@ -1367,21 +2192,24 @@ resetBtn.addEventListener(
   () => {
 
     currentWord = 0;
-    lastScrollWord = -1;
 
     previousTrackedWord = 0;
+
     previousTrackedTime =
       performance.now();
 
     targetScrollSpeed = 0;
+
     currentScrollSpeed = 0;
 
     prompter.scrollTop = 0;
 
     updateDisplay(true);
 
-    statusBox.textContent =
-      "↩ Revenu au début";
+    statusText.textContent =
+      listening
+      ? "Écoute en cours"
+      : "Au début";
   }
 );
 
@@ -1399,51 +2227,133 @@ editBtn.addEventListener(
     voiceActive = false;
 
     targetScrollSpeed = 0;
+
     currentScrollSpeed = 0;
+
 
     if (recognition) {
 
       try {
         recognition.stop();
       }
+
       catch (e) {}
     }
+
 
     readerScreen.style.display =
       "none";
 
     editorScreen.style.display =
       "block";
-
-    voiceBtn.textContent =
-      "🎤 Suivi vocal";
   }
 );
 
 
 /* =========================================================
-   TAILLE
+   TAILLE DU TEXTE
 ========================================================= */
 
-fontSize.addEventListener(
-  "input",
+function applyFontSize() {
+
+  currentFontSize =
+    Math.max(
+      20,
+      Math.min(
+        70,
+        currentFontSize
+      )
+    );
+
+
+  text.style.fontSize =
+    currentFontSize +
+    "px";
+
+
+  fontLabel.textContent =
+    currentFontSize;
+}
+
+
+fontMinus.addEventListener(
+  "click",
   () => {
 
-    text.style.fontSize =
-      fontSize.value + "px";
+    currentFontSize -= 2;
 
+    applyFontSize();
+  }
+);
+
+
+fontPlus.addEventListener(
+  "click",
+  () => {
+
+    currentFontSize += 2;
+
+    applyFontSize();
   }
 );
 
 
 /* =========================================================
-   DÉMARRAGE DE LA BOUCLE FLUIDE
+   PLEIN ÉCRAN
+========================================================= */
+
+fullscreenBtn.addEventListener(
+  "click",
+  async () => {
+
+    try {
+
+      if (
+        !document.fullscreenElement
+      ) {
+
+        await document
+          .documentElement
+          .requestFullscreen();
+
+      }
+
+      else {
+
+        await document
+          .exitFullscreen();
+      }
+
+    }
+
+    catch (e) {
+
+      /*
+        Certains navigateurs mobiles
+        ne permettent pas le plein écran.
+        Ce n'est pas bloquant.
+      */
+    }
+  }
+);
+
+
+/* =========================================================
+   BOUCLE DU MOTEUR
 ========================================================= */
 
 animationFrame =
   requestAnimationFrame(
     hybridScrollLoop
   );
+
+
+/* =========================================================
+   INITIALISATION
+========================================================= */
+
+updateWordCount();
+applyFontSize();
 
 </script>
 
