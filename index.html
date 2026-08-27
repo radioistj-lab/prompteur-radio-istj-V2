@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.4
+  Prompteur vocal V5.5
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -1715,6 +1715,231 @@ window.addEventListener(
   }
 }
 
+
+/* =========================================================
+   V5.5 — IMPORT, AUTOSAUVEGARDE, MODES ET PROGRESSION
+========================================================= */
+
+.documentImportRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+#importDocumentBtn,
+#historyBtn {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 9px;
+  background: #1e293b;
+  color: #dbeafe;
+  border: 1px solid #334155;
+  font-size: 12px;
+}
+
+#importDocumentBtn:hover,
+#historyBtn:hover:not(:disabled) {
+  background: #273449;
+}
+
+#historyBtn:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+#documentFileInput {
+  display: none;
+}
+
+.documentImportNote {
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.readingModeButtons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+}
+
+.readingModeButton {
+  min-height: 40px;
+  padding: 7px 8px;
+  border-radius: 9px;
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  font-size: 12px;
+}
+
+.readingModeButton.active {
+  background: #2563eb;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.speedHelp {
+  margin-top: 8px;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+#readerProgress {
+  position: absolute;
+  z-index: 90;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  background: rgba(15,23,42,.96);
+  border-top: 1px solid rgba(148,163,184,.14);
+  backdrop-filter: blur(10px);
+}
+
+#progressRange {
+  flex: 1;
+  min-width: 0;
+  accent-color: #2563eb;
+}
+
+#progressLabel {
+  min-width: 48px;
+  text-align: right;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+#prompter {
+  bottom: 46px;
+}
+
+.historyModal {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2,6,23,.78);
+}
+
+.historyModal[hidden] {
+  display: none !important;
+}
+
+.historyDialog {
+  width: min(620px, 100%);
+  max-height: min(76vh, 700px);
+  overflow-y: auto;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  box-shadow: 0 24px 70px rgba(0,0,0,.55);
+}
+
+.historyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+
+.historyHeader h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+#closeHistoryBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 11px;
+  border: 1px solid #273449;
+  background: #111c2f;
+}
+
+.historyInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.historyInfo strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.historyInfo span {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.restoreHistoryBtn {
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: white;
+  font-size: 11px;
+}
+
+.historyEmpty {
+  padding: 22px 8px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+@media (max-width: 560px) {
+  .documentImportRow {
+    align-items: stretch;
+  }
+
+  #importDocumentBtn {
+    width: 100%;
+  }
+
+  #readerProgress {
+    min-height: 42px;
+    padding: 5px 8px;
+  }
+
+  #prompter {
+    bottom: 42px;
+  }
+
+  #progressLabel {
+    min-width: 42px;
+    font-size: 10px;
+  }
+}
+
 </style>
 </head>
 
@@ -1789,6 +2014,28 @@ window.addEventListener(
       </div>
 
 
+      <div class="documentImportRow">
+
+        <button id="importDocumentBtn">
+          📄 Importer TXT, DOCX ou PDF
+        </button>
+
+        <input
+          id="documentFileInput"
+          type="file"
+          accept=".txt,text/plain,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf"
+        >
+
+        <span
+          id="documentImportStatus"
+          class="documentImportNote"
+        >
+          Le texte est extrait localement. Les PDF scannés sans texte ne sont pas pris en charge.
+        </span>
+
+      </div>
+
+
       <input
         id="scriptTitle"
         type="text"
@@ -1812,6 +2059,13 @@ window.addEventListener(
 
 
         <div class="editorActions">
+
+          <button
+            id="historyBtn"
+            disabled
+          >
+            🕘 Historique
+          </button>
 
           <button id="saveBtn">
             💾 Enregistrer
@@ -2021,6 +2275,40 @@ window.addEventListener(
           <div class="settingHeader">
 
             <span>
+              Position de lecture
+            </span>
+
+            <span
+              id="settingsFocusPositionValue"
+              class="settingValue"
+            >
+              43 %
+            </span>
+
+          </div>
+
+          <input
+            id="settingsFocusPositionRange"
+            class="settingRange"
+            type="range"
+            min="25"
+            max="70"
+            step="1"
+            value="43"
+          >
+
+          <div class="speedHelp">
+            Haut ← position du mot suivi → Bas
+          </div>
+
+        </div>
+
+
+        <div class="settingGroup">
+
+          <div class="settingHeader">
+
+            <span>
               Alignement
             </span>
 
@@ -2067,6 +2355,75 @@ window.addEventListener(
           <div id="settingsPreviewText">
             Votre texte apparaîtra ainsi dans le prompteur.
           </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="settingsSection">
+
+        <h3>
+          Mode de lecture
+        </h3>
+
+        <div class="settingGroup">
+
+          <div class="readingModeButtons">
+
+            <button
+              id="settingsVoiceModeBtn"
+              class="readingModeButton active"
+            >
+              🎙️ Suivi vocal
+            </button>
+
+            <button
+              id="settingsSpeedModeBtn"
+              class="readingModeButton"
+            >
+              ▶ Vitesse fixe
+            </button>
+
+          </div>
+
+          <div class="speedHelp">
+            Le mode Vitesse fixe reste utilisable lorsque la reconnaissance vocale est moins précise ou indisponible.
+          </div>
+
+        </div>
+
+        <div class="settingGroup">
+
+          <div class="settingHeader">
+
+            <span>
+              Vitesse
+            </span>
+
+            <span
+              id="settingsWpmValue"
+              class="settingValue"
+            >
+              150 mots/min
+            </span>
+
+          </div>
+
+          <input
+            id="settingsWpmRange"
+            class="settingRange"
+            type="range"
+            min="80"
+            max="240"
+            step="5"
+            value="150"
+          >
+
+          <div
+            id="settingsDurationEstimate"
+            class="settingsStatus"
+          ></div>
 
         </div>
 
@@ -2154,8 +2511,9 @@ window.addEventListener(
           Une fois l'application installée ou mise en cache,
           l'interface et les textes enregistrés peuvent rester disponibles
           sans connexion. Le suivi vocal repose toutefois sur le service
-          de reconnaissance du navigateur et peut nécessiter Internet
-          selon l'appareil.
+          de reconnaissance du navigateur et peut être moins précis
+          sans Internet selon l'appareil. Le mode Vitesse fixe reste
+          entièrement utilisable hors connexion.
         </div>
 
       </div>
@@ -2171,7 +2529,7 @@ window.addEventListener(
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.4</span>
+            <span id="appVersionLabel">Version V5.5</span>
           </div>
 
           <button
@@ -2460,6 +2818,91 @@ window.addEventListener(
     </div>
 
 
+    <div class="settingGroup">
+
+      <div class="settingHeader">
+
+        <span>
+          Position de lecture
+        </span>
+
+        <span
+          id="focusPositionValue"
+          class="settingValue"
+        >
+          43 %
+        </span>
+
+      </div>
+
+      <input
+        id="focusPositionRange"
+        class="settingRange"
+        type="range"
+        min="25"
+        max="70"
+        step="1"
+        value="43"
+      >
+
+    </div>
+
+
+    <div class="settingGroup">
+
+      <div class="settingHeader">
+        <span>Mode de lecture</span>
+      </div>
+
+      <div class="readingModeButtons">
+
+        <button
+          id="displayVoiceModeBtn"
+          class="readingModeButton active"
+        >
+          🎙️ Voix
+        </button>
+
+        <button
+          id="displaySpeedModeBtn"
+          class="readingModeButton"
+        >
+          ▶ Vitesse
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="settingGroup">
+
+      <div class="settingHeader">
+
+        <span>Vitesse</span>
+
+        <span
+          id="displayWpmValue"
+          class="settingValue"
+        >
+          150 mots/min
+        </span>
+
+      </div>
+
+      <input
+        id="displayWpmRange"
+        class="settingRange"
+        type="range"
+        min="80"
+        max="240"
+        step="5"
+        value="150"
+      >
+
+    </div>
+
+
     <button id="resetDisplayBtn">
       ↩ Réglages par défaut
     </button>
@@ -2488,8 +2931,61 @@ window.addEventListener(
 
   </div>
 
+
+  <div id="readerProgress">
+
+    <input
+      id="progressRange"
+      type="range"
+      min="0"
+      max="100"
+      step="0.1"
+      value="0"
+      aria-label="Progression dans le texte"
+    >
+
+    <span id="progressLabel">
+      0 %
+    </span>
+
+  </div>
+
 </section>
 
+
+
+<!-- =======================================================
+     HISTORIQUE DU TEXTE
+======================================================= -->
+
+<div
+  id="historyModal"
+  class="historyModal"
+  hidden
+>
+
+  <div class="historyDialog">
+
+    <div class="historyHeader">
+
+      <h2>
+        🕘 Versions précédentes
+      </h2>
+
+      <button
+        id="closeHistoryBtn"
+        aria-label="Fermer"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div id="historyList"></div>
+
+  </div>
+
+</div>
 
 
 <!-- =======================================================
@@ -2555,6 +3051,18 @@ const inputText =
 
 const wordCount =
   document.getElementById("wordCount");
+
+const importDocumentBtn =
+  document.getElementById("importDocumentBtn");
+
+const documentFileInput =
+  document.getElementById("documentFileInput");
+
+const documentImportStatus =
+  document.getElementById("documentImportStatus");
+
+const historyBtn =
+  document.getElementById("historyBtn");
 
 const saveBtn =
   document.getElementById("saveBtn");
@@ -2647,6 +3155,60 @@ const alignmentButtons =
 
 const resetDisplayBtn =
   document.getElementById("resetDisplayBtn");
+
+const focusPositionRange =
+  document.getElementById("focusPositionRange");
+
+const focusPositionValue =
+  document.getElementById("focusPositionValue");
+
+const settingsFocusPositionRange =
+  document.getElementById("settingsFocusPositionRange");
+
+const settingsFocusPositionValue =
+  document.getElementById("settingsFocusPositionValue");
+
+const settingsVoiceModeBtn =
+  document.getElementById("settingsVoiceModeBtn");
+
+const settingsSpeedModeBtn =
+  document.getElementById("settingsSpeedModeBtn");
+
+const settingsWpmRange =
+  document.getElementById("settingsWpmRange");
+
+const settingsWpmValue =
+  document.getElementById("settingsWpmValue");
+
+const settingsDurationEstimate =
+  document.getElementById("settingsDurationEstimate");
+
+const displayVoiceModeBtn =
+  document.getElementById("displayVoiceModeBtn");
+
+const displaySpeedModeBtn =
+  document.getElementById("displaySpeedModeBtn");
+
+const displayWpmRange =
+  document.getElementById("displayWpmRange");
+
+const displayWpmValue =
+  document.getElementById("displayWpmValue");
+
+const progressRange =
+  document.getElementById("progressRange");
+
+const progressLabel =
+  document.getElementById("progressLabel");
+
+const historyModal =
+  document.getElementById("historyModal");
+
+const historyList =
+  document.getElementById("historyList");
+
+const closeHistoryBtn =
+  document.getElementById("closeHistoryBtn");
 
 const homeTabButtons =
   document.querySelectorAll(
@@ -2771,6 +3333,18 @@ let currentTextWidth = 88;
 
 let currentAlignment = "center";
 
+let currentFocusPosition = 43;
+
+let readingMode = "voice";
+
+let fixedWpm = 150;
+
+let speedModeActive = false;
+
+let fixedWordProgress = 0;
+
+let autosaveTimer = null;
+
 let mirrorMode = false;
 
 let countdownRunning = false;
@@ -2781,7 +3355,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.4";
+const APP_VERSION = "5.5";
 
 const TAB_ID =
   "tab_" +
@@ -2792,7 +3366,7 @@ const TAB_ID =
     .slice(2,10);
 
 const MICRO_LOCK_KEY =
-  "prompteur_vocal_micro_lock_v54";
+  "prompteur_vocal_micro_lock_v55";
 
 const MICRO_LOCK_MAX_AGE = 5000;
 
@@ -2828,6 +3402,13 @@ const DISPLAY_STORAGE_KEY =
 
 const GENERAL_STORAGE_KEY =
   "prompteur_vocal_general_v5";
+
+const DRAFT_STORAGE_KEY =
+  "prompteur_vocal_draft_v55";
+
+const HISTORY_LIMIT = 5;
+
+const AUTOSAVE_DELAY = 700;
 
 
 function getSavedScripts() {
@@ -2963,7 +3544,13 @@ function saveGeneralSettings() {
   const settings = {
 
     keepAwake:
-      keepAwakeEnabled
+      keepAwakeEnabled,
+
+    readingMode:
+      readingMode,
+
+    fixedWpm:
+      fixedWpm
   };
 
 
@@ -3006,6 +3593,34 @@ function loadGeneralSettings() {
       keepAwakeEnabled =
         settings.keepAwake;
     }
+
+
+    if (
+      ["voice","speed"].includes(
+        settings.readingMode
+      )
+    ) {
+
+      readingMode =
+        settings.readingMode;
+    }
+
+
+    if (
+      Number.isFinite(
+        settings.fixedWpm
+      )
+    ) {
+
+      fixedWpm =
+        Math.max(
+          80,
+          Math.min(
+            240,
+            settings.fixedWpm
+          )
+        );
+    }
   }
 
   catch (error) {}
@@ -3044,13 +3659,22 @@ function exportBackup() {
         currentTextWidth,
 
       alignment:
-        currentAlignment
+        currentAlignment,
+
+      focusPosition:
+        currentFocusPosition
     },
 
     generalSettings: {
 
       keepAwake:
-        keepAwakeEnabled
+        keepAwakeEnabled,
+
+      readingMode:
+        readingMode,
+
+      fixedWpm:
+        fixedWpm
     }
   };
 
@@ -3273,6 +3897,23 @@ async function importBackup(file) {
       }
 
 
+      if (
+        Number.isFinite(
+          display.focusPosition
+        )
+      ) {
+
+        currentFocusPosition =
+          Math.max(
+            25,
+            Math.min(
+              70,
+              display.focusPosition
+            )
+          );
+      }
+
+
       applyDisplaySettings();
     }
 
@@ -3289,7 +3930,24 @@ async function importBackup(file) {
       keepAwakeToggle.checked =
         keepAwakeEnabled;
 
+      if (
+        ["voice","speed"].includes(
+          backup.generalSettings.readingMode
+        )
+      ) {
+        readingMode = backup.generalSettings.readingMode;
+      }
+
+      if (
+        Number.isFinite(
+          backup.generalSettings.fixedWpm
+        )
+      ) {
+        fixedWpm = Math.max(80,Math.min(240,backup.generalSettings.fixedWpm));
+      }
+
       saveGeneralSettings();
+      applyReadingSettings(false);
     }
 
 
@@ -3867,7 +4525,10 @@ function saveDisplaySettings() {
       currentTextWidth,
 
     alignment:
-      currentAlignment
+      currentAlignment,
+
+    focusPosition:
+      currentFocusPosition
   };
 
 
@@ -3963,6 +4624,23 @@ function loadDisplaySettings() {
 
       currentAlignment =
         settings.alignment;
+    }
+
+
+    if (
+      Number.isFinite(
+        settings.focusPosition
+      )
+    ) {
+
+      currentFocusPosition =
+        Math.max(
+          25,
+          Math.min(
+            70,
+            settings.focusPosition
+          )
+        );
     }
 
   }
@@ -4109,6 +4787,25 @@ function applyDisplaySettings(
     currentAlignment;
 
 
+  focusPositionRange.value =
+    currentFocusPosition;
+
+  focusPositionValue.textContent =
+    currentFocusPosition +
+    " %";
+
+  settingsFocusPositionRange.value =
+    currentFocusPosition;
+
+  settingsFocusPositionValue.textContent =
+    currentFocusPosition +
+    " %";
+
+  document.getElementById("focusGuide").style.top =
+    currentFocusPosition +
+    "%";
+
+
   if (save) {
 
     saveDisplaySettings();
@@ -4183,6 +4880,24 @@ settingsAlignmentButtons.forEach(
 );
 
 
+settingsFocusPositionRange.addEventListener(
+  "input",
+  () => {
+
+    currentFocusPosition =
+      Number(
+        settingsFocusPositionRange.value
+      );
+
+    applyDisplaySettings();
+
+    if (words.length) {
+      positionImmediately();
+    }
+  }
+);
+
+
 settingsResetDisplayBtn.addEventListener(
   "click",
   () => {
@@ -4196,9 +4911,768 @@ settingsResetDisplayBtn.addEventListener(
     currentAlignment =
       "center";
 
+    currentFocusPosition = 43;
+
 
     applyDisplaySettings();
   }
+);
+
+
+/* =========================================================
+   V5.5 — MODE DE LECTURE ET DURÉE
+========================================================= */
+
+function getTextWordCount() {
+
+  const value =
+    inputText.value.trim();
+
+  return value
+    ? value.split(/\s+/).length
+    : 0;
+}
+
+
+function formatEstimatedDuration(
+  wordTotal,
+  wpm = fixedWpm
+) {
+
+  if (!wordTotal) {
+    return "0 s";
+  }
+
+  const seconds =
+    Math.max(
+      1,
+      Math.round(
+        wordTotal /
+        Math.max(1,wpm) *
+        60
+      )
+    );
+
+  const minutes =
+    Math.floor(
+      seconds / 60
+    );
+
+  const remaining =
+    seconds % 60;
+
+  if (!minutes) {
+    return remaining + " s";
+  }
+
+  return (
+    minutes +
+    " min " +
+    String(remaining)
+      .padStart(2,"0") +
+    " s"
+  );
+}
+
+
+function updateDurationEstimate() {
+
+  const total =
+    getTextWordCount();
+
+  const duration =
+    formatEstimatedDuration(
+      total,
+      fixedWpm
+    );
+
+  settingsDurationEstimate.textContent =
+    total
+      ? "Durée estimée du texte : " +
+        duration +
+        " à " +
+        fixedWpm +
+        " mots/min."
+      : "La durée apparaîtra dès qu'un texte sera saisi.";
+}
+
+
+function applyReadingSettings(
+  save = true
+) {
+
+  const voiceActiveMode =
+    readingMode === "voice";
+
+  settingsVoiceModeBtn.classList.toggle(
+    "active",
+    voiceActiveMode
+  );
+
+  settingsSpeedModeBtn.classList.toggle(
+    "active",
+    !voiceActiveMode
+  );
+
+  displayVoiceModeBtn.classList.toggle(
+    "active",
+    voiceActiveMode
+  );
+
+  displaySpeedModeBtn.classList.toggle(
+    "active",
+    !voiceActiveMode
+  );
+
+  settingsWpmRange.value =
+    fixedWpm;
+
+  displayWpmRange.value =
+    fixedWpm;
+
+  settingsWpmValue.textContent =
+    fixedWpm +
+    " mots/min";
+
+  displayWpmValue.textContent =
+    fixedWpm +
+    " mots/min";
+
+  updateDurationEstimate();
+  updateWordCount();
+
+  if (save) {
+    saveGeneralSettings();
+  }
+}
+
+
+function setReadingMode(mode) {
+
+  if (
+    !["voice","speed"].includes(mode)
+  ) {
+    return;
+  }
+
+  readingMode = mode;
+  applyReadingSettings();
+}
+
+
+settingsVoiceModeBtn.addEventListener(
+  "click",
+  () => setReadingMode("voice")
+);
+
+settingsSpeedModeBtn.addEventListener(
+  "click",
+  () => setReadingMode("speed")
+);
+
+
+displayVoiceModeBtn.addEventListener(
+  "click",
+  () => setReadingMode("voice")
+);
+
+displaySpeedModeBtn.addEventListener(
+  "click",
+  () => setReadingMode("speed")
+);
+
+
+settingsWpmRange.addEventListener(
+  "input",
+  () => {
+
+    fixedWpm =
+      Number(
+        settingsWpmRange.value
+      );
+
+    applyReadingSettings();
+  }
+);
+
+
+displayWpmRange.addEventListener(
+  "input",
+  () => {
+
+    fixedWpm =
+      Number(
+        displayWpmRange.value
+      );
+
+    applyReadingSettings();
+  }
+);
+
+
+/* =========================================================
+   V5.5 — RÉGLAGES PROPRES AU TEXTE
+========================================================= */
+
+function getCurrentScriptSettings() {
+
+  return {
+    fontSize: currentFontSize,
+    lineHeight: currentLineHeight,
+    textWidth: currentTextWidth,
+    alignment: currentAlignment,
+    focusPosition: currentFocusPosition,
+    readingMode: readingMode,
+    fixedWpm: fixedWpm
+  };
+}
+
+
+function applyScriptSettings(settings) {
+
+  if (!settings || typeof settings !== "object") {
+    return;
+  }
+
+  if (Number.isFinite(settings.fontSize)) {
+    currentFontSize =
+      Math.max(34,Math.min(70,settings.fontSize));
+  }
+
+  if (Number.isFinite(settings.lineHeight)) {
+    currentLineHeight =
+      Math.max(1.2,Math.min(2,settings.lineHeight));
+  }
+
+  if (Number.isFinite(settings.textWidth)) {
+    currentTextWidth =
+      Math.max(45,Math.min(96,settings.textWidth));
+  }
+
+  if (["left","center","justify"].includes(settings.alignment)) {
+    currentAlignment = settings.alignment;
+  }
+
+  if (Number.isFinite(settings.focusPosition)) {
+    currentFocusPosition =
+      Math.max(25,Math.min(70,settings.focusPosition));
+  }
+
+  if (["voice","speed"].includes(settings.readingMode)) {
+    readingMode = settings.readingMode;
+  }
+
+  if (Number.isFinite(settings.fixedWpm)) {
+    fixedWpm =
+      Math.max(80,Math.min(240,settings.fixedWpm));
+  }
+
+  applyDisplaySettings(false);
+  applyReadingSettings(false);
+}
+
+
+function settingsAreDifferent(a,b) {
+
+  return JSON.stringify(a || {}) !==
+         JSON.stringify(b || {});
+}
+
+
+/* =========================================================
+   V5.5 — AUTOSAUVEGARDE DU BROUILLON
+========================================================= */
+
+function clearDraft() {
+
+  try {
+    localStorage.removeItem(
+      DRAFT_STORAGE_KEY
+    );
+  }
+  catch (error) {}
+}
+
+
+function saveDraft() {
+
+  autosaveTimer = null;
+
+  const title =
+    scriptTitle.value;
+
+  const content =
+    inputText.value;
+
+  if (!title.trim() && !content.trim()) {
+    clearDraft();
+    return;
+  }
+
+  const draft = {
+    title,
+    text: content,
+    savedId: currentSavedId,
+    settings: getCurrentScriptSettings(),
+    updatedAt: Date.now()
+  };
+
+  try {
+
+    localStorage.setItem(
+      DRAFT_STORAGE_KEY,
+      JSON.stringify(draft)
+    );
+
+    saveMessage.textContent =
+      "✓ Brouillon sauvegardé automatiquement.";
+  }
+  catch (error) {}
+}
+
+
+function scheduleDraftAutosave() {
+
+  if (autosaveTimer) {
+    clearTimeout(autosaveTimer);
+  }
+
+  autosaveTimer =
+    setTimeout(
+      saveDraft,
+      AUTOSAVE_DELAY
+    );
+}
+
+
+function restoreDraftIfAvailable() {
+
+  try {
+
+    const raw =
+      localStorage.getItem(
+        DRAFT_STORAGE_KEY
+      );
+
+    if (!raw) {
+      return;
+    }
+
+    const draft =
+      JSON.parse(raw);
+
+    if (
+      !draft ||
+      typeof draft.text !== "string"
+    ) {
+      return;
+    }
+
+    scriptTitle.value =
+      typeof draft.title === "string"
+        ? draft.title
+        : "";
+
+    inputText.value =
+      draft.text;
+
+    currentSavedId =
+      typeof draft.savedId === "string"
+        ? draft.savedId
+        : null;
+
+    applyScriptSettings(
+      draft.settings
+    );
+
+    updateWordCount();
+    updateHistoryButton();
+
+    const date =
+      new Date(
+        draft.updatedAt || Date.now()
+      );
+
+    saveMessage.textContent =
+      "Brouillon récupéré — " +
+      date.toLocaleTimeString(
+        "fr-FR",
+        {hour:"2-digit",minute:"2-digit"}
+      ) +
+      ".";
+  }
+  catch (error) {}
+}
+
+
+/* =========================================================
+   V5.5 — HISTORIQUE DES 5 DERNIÈRES VERSIONS
+========================================================= */
+
+function updateHistoryButton() {
+
+  historyBtn.disabled =
+    !currentSavedId;
+}
+
+
+function renderHistory() {
+
+  historyList.innerHTML = "";
+
+  if (!currentSavedId) {
+
+    historyList.innerHTML =
+      '<div class="historyEmpty">Enregistrez d’abord ce texte pour créer un historique.</div>';
+
+    return;
+  }
+
+  const script =
+    getSavedScripts().find(
+      item => item.id === currentSavedId
+    );
+
+  const history =
+    script && Array.isArray(script.history)
+      ? script.history
+      : [];
+
+  if (!history.length) {
+
+    historyList.innerHTML =
+      '<div class="historyEmpty">Aucune version précédente pour ce texte.</div>';
+
+    return;
+  }
+
+  history
+    .slice(0,HISTORY_LIMIT)
+    .forEach((version,index) => {
+
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "historyItem";
+
+      const info =
+        document.createElement("div");
+
+      info.className =
+        "historyInfo";
+
+      const name =
+        document.createElement("strong");
+
+      name.textContent =
+        version.title ||
+        "Version précédente";
+
+      const meta =
+        document.createElement("span");
+
+      const date =
+        new Date(
+          version.savedAt || Date.now()
+        );
+
+      const count =
+        typeof version.text === "string"
+          ? version.text.trim().split(/\s+/).filter(Boolean).length
+          : 0;
+
+      meta.textContent =
+        date.toLocaleString("fr-FR") +
+        " • " +
+        count +
+        (count > 1 ? " mots" : " mot");
+
+      info.appendChild(name);
+      info.appendChild(meta);
+
+      const restore =
+        document.createElement("button");
+
+      restore.className =
+        "restoreHistoryBtn";
+
+      restore.textContent =
+        "Restaurer";
+
+      restore.addEventListener(
+        "click",
+        () => {
+
+          scriptTitle.value =
+            version.title || "";
+
+          inputText.value =
+            version.text || "";
+
+          applyScriptSettings(
+            version.settings
+          );
+
+          updateWordCount();
+          scheduleDraftAutosave();
+
+          historyModal.hidden = true;
+
+          saveMessage.textContent =
+            "Version restaurée. Cliquez sur Enregistrer pour la conserver.";
+        }
+      );
+
+      item.appendChild(info);
+      item.appendChild(restore);
+      historyList.appendChild(item);
+    });
+}
+
+
+historyBtn.addEventListener(
+  "click",
+  () => {
+    renderHistory();
+    historyModal.hidden = false;
+  }
+);
+
+
+closeHistoryBtn.addEventListener(
+  "click",
+  () => {
+    historyModal.hidden = true;
+  }
+);
+
+
+historyModal.addEventListener(
+  "click",
+  event => {
+    if (event.target === historyModal) {
+      historyModal.hidden = true;
+    }
+  }
+);
+
+
+/* =========================================================
+   V5.5 — IMPORT TXT / DOCX / PDF TEXTE
+========================================================= */
+
+const MAMMOTH_URL =
+  "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.10.0/mammoth.browser.min.js";
+
+const PDFJS_URL =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+
+const PDFJS_WORKER_URL =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
+function loadExternalScript(url,globalName) {
+
+  if (window[globalName]) {
+    return Promise.resolve(
+      window[globalName]
+    );
+  }
+
+  return new Promise((resolve,reject) => {
+
+    const existing =
+      Array.from(document.scripts).find(
+        script => script.src === url
+      );
+
+    const script =
+      existing ||
+      document.createElement("script");
+
+    const onReady = () => {
+      if (window[globalName]) {
+        resolve(window[globalName]);
+      }
+      else {
+        reject(new Error("Bibliothèque indisponible"));
+      }
+    };
+
+    script.addEventListener(
+      "load",
+      onReady,
+      {once:true}
+    );
+
+    script.addEventListener(
+      "error",
+      () => reject(new Error("Chargement impossible")),
+      {once:true}
+    );
+
+    if (!existing) {
+      script.src = url;
+      script.crossOrigin = "anonymous";
+      document.head.appendChild(script);
+    }
+    else if (window[globalName]) {
+      onReady();
+    }
+  });
+}
+
+
+async function extractTextFromDocument(file) {
+
+  const name =
+    file.name.toLowerCase();
+
+  if (name.endsWith(".txt")) {
+    return await file.text();
+  }
+
+  if (name.endsWith(".docx")) {
+
+    const mammothLib =
+      window.mammoth ||
+      await loadExternalScript(
+        MAMMOTH_URL,
+        "mammoth"
+      );
+
+    const buffer =
+      await file.arrayBuffer();
+
+    const result =
+      await mammothLib.extractRawText({
+        arrayBuffer: buffer
+      });
+
+    return result.value || "";
+  }
+
+  if (name.endsWith(".pdf")) {
+
+    const pdfLib =
+      window.pdfjsLib ||
+      await loadExternalScript(
+        PDFJS_URL,
+        "pdfjsLib"
+      );
+
+    pdfLib.GlobalWorkerOptions.workerSrc =
+      PDFJS_WORKER_URL;
+
+    const buffer =
+      await file.arrayBuffer();
+
+    const pdf =
+      await pdfLib
+        .getDocument({data:buffer})
+        .promise;
+
+    const pages = [];
+
+    for (
+      let pageNumber = 1;
+      pageNumber <= pdf.numPages;
+      pageNumber++
+    ) {
+
+      const page =
+        await pdf.getPage(pageNumber);
+
+      const content =
+        await page.getTextContent();
+
+      const pageText =
+        content.items
+          .map(item => item.str || "")
+          .join(" ")
+          .replace(/\s+/g," ")
+          .trim();
+
+      if (pageText) {
+        pages.push(pageText);
+      }
+    }
+
+    return pages.join("\n\n");
+  }
+
+  throw new Error(
+    "Format non pris en charge"
+  );
+}
+
+
+async function importDocument(file) {
+
+  if (!file) {
+    return;
+  }
+
+  documentImportStatus.textContent =
+    "Import en cours…";
+
+  try {
+
+    const extracted =
+      (await extractTextFromDocument(file))
+        .replace(/\r\n/g,"\n")
+        .trim();
+
+    if (!extracted) {
+      throw new Error(
+        "Aucun texte détecté. Si le PDF est un scan, un OCR serait nécessaire."
+      );
+    }
+
+    inputText.value =
+      extracted;
+
+    if (!scriptTitle.value.trim()) {
+      scriptTitle.value =
+        file.name.replace(/\.[^.]+$/," ").trim();
+    }
+
+    currentSavedId = null;
+    updateHistoryButton();
+    updateWordCount();
+    scheduleDraftAutosave();
+    showHomeTab("prepare");
+
+    documentImportStatus.textContent =
+      "✓ Document importé : " +
+      getTextWordCount() +
+      " mots.";
+  }
+  catch (error) {
+
+    documentImportStatus.textContent =
+      "Import impossible : " +
+      (error.message || "erreur inconnue") +
+      ".";
+  }
+  finally {
+    documentFileInput.value = "";
+  }
+}
+
+
+importDocumentBtn.addEventListener(
+  "click",
+  () => documentFileInput.click()
+);
+
+
+documentFileInput.addEventListener(
+  "change",
+  () => importDocument(
+    documentFileInput.files[0]
+  )
 );
 
 
@@ -4208,10 +5682,18 @@ settingsResetDisplayBtn.addEventListener(
 
 function createNewText() {
 
+  clearDraft();
+
   scriptTitle.value = "";
   inputText.value = "";
   currentSavedId = null;
 
+  loadDisplaySettings();
+  loadGeneralSettings();
+  applyDisplaySettings(false);
+  applyReadingSettings(false);
+
+  updateHistoryButton();
   updateWordCount();
 
   saveMessage.textContent =
@@ -4404,6 +5886,13 @@ function renderLibrary() {
             currentSavedId =
               script.id;
 
+            clearDraft();
+
+            applyScriptSettings(
+              script.settings
+            );
+
+            updateHistoryButton();
             updateWordCount();
 
             saveMessage.textContent =
@@ -4460,6 +5949,12 @@ function renderLibrary() {
               text:
                 script.text,
 
+              settings:
+                script.settings ||
+                getCurrentScriptSettings(),
+
+              history: [],
+
               createdAt:
                 now,
 
@@ -4484,6 +5979,13 @@ function renderLibrary() {
             currentSavedId =
               copy.id;
 
+            clearDraft();
+
+            applyScriptSettings(
+              copy.settings
+            );
+
+            updateHistoryButton();
             updateWordCount();
 
             saveMessage.textContent =
@@ -4634,11 +6136,45 @@ saveBtn.addEventListener(
 
       if (existing) {
 
+        const newSettings =
+          getCurrentScriptSettings();
+
+        if (
+          existing.title !== title ||
+          existing.text !== content ||
+          settingsAreDifferent(
+            existing.settings,
+            newSettings
+          )
+        ) {
+
+          const history =
+            Array.isArray(existing.history)
+              ? existing.history
+              : [];
+
+          history.unshift({
+            title: existing.title,
+            text: existing.text,
+            settings: existing.settings || null,
+            savedAt: existing.updatedAt || now
+          });
+
+          existing.history =
+            history.slice(
+              0,
+              HISTORY_LIMIT
+            );
+        }
+
         existing.title =
           title;
 
         existing.text =
           content;
+
+        existing.settings =
+          newSettings;
 
         existing.updatedAt =
           now;
@@ -4671,6 +6207,11 @@ saveBtn.addEventListener(
         text:
           content,
 
+        settings:
+          getCurrentScriptSettings(),
+
+        history: [],
+
         createdAt:
           now,
 
@@ -4697,6 +6238,9 @@ saveBtn.addEventListener(
 
       renderLibrary();
 
+      clearDraft();
+      updateHistoryButton();
+
       saveMessage.textContent =
         "✓ Texte enregistré sur cet appareil.";
 
@@ -4718,19 +6262,33 @@ saveBtn.addEventListener(
 
 function updateWordCount() {
 
-  const value =
-    inputText.value.trim();
-
   const total =
-    value
-      ? value.split(/\s+/).length
-      : 0;
+    getTextWordCount();
+
+  if (!total) {
+
+    wordCount.textContent =
+      "0 mot";
+
+    updateDurationEstimate();
+    return;
+  }
 
   wordCount.textContent =
     total +
     (total > 1
       ? " mots"
-      : " mot");
+      : " mot") +
+    " • env. " +
+    formatEstimatedDuration(
+      total,
+      fixedWpm
+    ) +
+    " à " +
+    fixedWpm +
+    " mots/min";
+
+  updateDurationEstimate();
 }
 
 
@@ -4741,6 +6299,8 @@ inputText.addEventListener(
     updateWordCount();
 
     saveMessage.textContent = "";
+
+    scheduleDraftAutosave();
   }
 );
 
@@ -4750,6 +6310,8 @@ scriptTitle.addEventListener(
   () => {
 
     saveMessage.textContent = "";
+
+    scheduleDraftAutosave();
   }
 );
 
@@ -4838,6 +6400,8 @@ function buildText() {
 
   currentWord = 0;
 
+  fixedWordProgress = 0;
+
   previousTrackedWord = 0;
 
   previousTrackedTime =
@@ -4901,6 +6465,9 @@ function updateDisplay(
   }
 
 
+  updateProgressUI();
+
+
   if (forcePosition) {
 
     positionImmediately();
@@ -4925,7 +6492,7 @@ function positionImmediately() {
 
   const desired =
     prompter.clientHeight *
-    0.43;
+    (currentFocusPosition / 100);
 
 
   const target =
@@ -5020,25 +6587,200 @@ function markVoiceActivity() {
    DÉFILEMENT HYBRIDE
 ========================================================= */
 
+function getFixedScrollSpeed() {
+
+  if (words.length < 2) {
+    return 0;
+  }
+
+  const first =
+    words[0].element.offsetTop;
+
+  const last =
+    words[words.length - 1]
+      .element.offsetTop;
+
+  const travel =
+    Math.max(
+      prompter.clientHeight * 0.7,
+      last - first
+    );
+
+  const seconds =
+    Math.max(
+      1,
+      words.length /
+      fixedWpm *
+      60
+    );
+
+  return travel / seconds;
+}
+
+
+function updateProgressUI() {
+
+  if (!words.length) {
+    progressRange.value = 0;
+    progressLabel.textContent = "0 %";
+    return;
+  }
+
+  const percent =
+    words.length <= 1
+      ? 100
+      : currentWord /
+        (words.length - 1) *
+        100;
+
+  progressRange.value =
+    Math.max(0,Math.min(100,percent));
+
+  progressLabel.textContent =
+    Math.round(percent) +
+    " %";
+}
+
+
+function pauseActiveReading(
+  reason = "En pause"
+) {
+
+  if (speedModeActive) {
+    speedModeActive = false;
+  }
+
+  if (listening) {
+
+    releaseMicroLock();
+
+    listening = false;
+    voiceActive = false;
+    targetScrollSpeed = 0;
+
+    if (recognition) {
+      try {
+        recognition.stop();
+      }
+      catch (e) {}
+    }
+  }
+
+  currentScrollSpeed = 0;
+  statusText.textContent = reason;
+  statusBox.classList.remove("listening");
+  pauseBtn.textContent = "▶ Reprendre";
+}
+
+
+function startFixedSpeed() {
+
+  releaseMicroLock();
+
+  listening = false;
+  voiceActive = true;
+  speedModeActive = true;
+
+  fixedWordProgress =
+    Math.max(
+      fixedWordProgress,
+      currentWord
+    );
+
+  targetScrollSpeed =
+    getFixedScrollSpeed();
+
+  statusText.textContent =
+    "Vitesse fixe — " +
+    fixedWpm +
+    " mots/min";
+
+  statusBox.classList.add(
+    "listening"
+  );
+
+  pauseBtn.textContent =
+    "⏸ Pause";
+}
+
+
+function startSelectedReadingMode() {
+
+  if (readingMode === "speed") {
+    startFixedSpeed();
+  }
+  else {
+    startRecognition();
+  }
+}
+
+
 function hybridScrollLoop(time) {
 
   if (!previousFrameTime) {
-
-    previousFrameTime =
-      time;
+    previousFrameTime = time;
   }
-
 
   const delta =
     Math.min(
       50,
-      time -
-      previousFrameTime
+      time - previousFrameTime
     );
 
+  previousFrameTime = time;
 
-  previousFrameTime =
-    time;
+
+  if (speedModeActive) {
+
+    fixedWordProgress +=
+      fixedWpm /
+      60 *
+      (delta / 1000);
+
+    const nextWord =
+      Math.min(
+        words.length - 1,
+        Math.floor(
+          fixedWordProgress
+        )
+      );
+
+    if (
+      Number.isFinite(nextWord) &&
+      nextWord !== currentWord
+    ) {
+
+      currentWord = nextWord;
+      updateDisplay(false);
+    }
+
+    targetScrollSpeed =
+      getFixedScrollSpeed();
+
+    if (
+      words.length &&
+      fixedWordProgress >=
+        words.length - 1
+    ) {
+
+      fixedWordProgress =
+        words.length - 1;
+
+      speedModeActive = false;
+      targetScrollSpeed = 0;
+      currentScrollSpeed = 0;
+
+      statusText.textContent =
+        "Fin du texte";
+
+      statusBox.classList.remove(
+        "listening"
+      );
+
+      pauseBtn.textContent =
+        "▶ Reprendre";
+    }
+  }
 
 
   if (listening) {
@@ -5047,20 +6789,21 @@ function hybridScrollLoop(time) {
       performance.now() -
       lastVoiceActivity;
 
-
     if (
       silenceDuration >
       SILENCE_DELAY
     ) {
 
-      voiceActive =
-        false;
-
-
-      targetScrollSpeed =
-        0;
+      voiceActive = false;
+      targetScrollSpeed = 0;
     }
+  }
 
+
+  if (
+    listening ||
+    speedModeActive
+  ) {
 
     currentScrollSpeed +=
       (
@@ -5069,53 +6812,40 @@ function hybridScrollLoop(time) {
       ) *
       SPEED_SMOOTHING;
 
-
     if (
+      listening &&
       !voiceActive &&
-      Math.abs(
-        currentScrollSpeed
-      ) < 0.15
+      Math.abs(currentScrollSpeed) < 0.15
     ) {
-
-      currentScrollSpeed =
-        0;
+      currentScrollSpeed = 0;
     }
-
 
     const movement =
       currentScrollSpeed *
       (delta / 1000);
 
-
-    prompter.scrollTop +=
-      movement;
-
+    prompter.scrollTop += movement;
 
     const item =
       words[currentWord];
-
 
     if (item) {
 
       const desiredPosition =
         prompter.clientHeight *
-        0.43;
-
+        (currentFocusPosition / 100);
 
       const actualPosition =
         item.element.offsetTop -
         prompter.scrollTop;
 
-
       const difference =
         actualPosition -
         desiredPosition;
 
-
       const deadZone =
         prompter.clientHeight *
         0.12;
-
 
       if (
         Math.abs(difference) >
@@ -5123,9 +6853,7 @@ function hybridScrollLoop(time) {
       ) {
 
         let correction =
-          difference *
-          0.012;
-
+          difference * 0.012;
 
         correction =
           Math.max(
@@ -5136,13 +6864,11 @@ function hybridScrollLoop(time) {
             )
           );
 
-
         prompter.scrollTop +=
           correction;
       }
     }
   }
-
 
   requestAnimationFrame(
     hybridScrollLoop
@@ -5802,7 +7528,7 @@ async function runCountdown() {
     false;
 
 
-  startRecognition();
+  startSelectedReadingMode();
 }
 
 
@@ -5815,6 +7541,7 @@ launchBtn.addEventListener(
   () => {
 
     if (
+      readingMode === "voice" &&
       isMicroUsedByAnotherTab()
     ) {
 
@@ -5826,10 +7553,13 @@ launchBtn.addEventListener(
     }
 
 
-    if (!SpeechRecognition) {
+    if (
+      readingMode === "voice" &&
+      !SpeechRecognition
+    ) {
 
       alert(
-        "Le suivi vocal n'est pas disponible dans ce navigateur. Essayez Chrome ou Edge."
+        "Le suivi vocal n'est pas disponible dans ce navigateur. Vous pouvez utiliser le mode Vitesse fixe dans Paramètres."
       );
 
       return;
@@ -5905,55 +7635,23 @@ pauseBtn.addEventListener(
   "click",
   () => {
 
-    if (listening) {
+    if (
+      listening ||
+      speedModeActive
+    ) {
 
-      releaseMicroLock();
-
-      listening =
-        false;
-
-
-      voiceActive =
-        false;
-
-
-      targetScrollSpeed =
-        0;
-
-
-      if (recognition) {
-
-        try {
-
-          recognition.stop();
-
-        }
-
-        catch (e) {}
-      }
-
-
-      statusText.textContent =
-        "En pause";
-
-
-      statusBox.classList.remove(
-        "listening"
+      pauseActiveReading(
+        "En pause"
       );
-
-
-      pauseBtn.textContent =
-        "▶ Reprendre";
-
     }
-
     else {
 
-      startRecognition();
-
-
-      pauseBtn.textContent =
-        "⏸ Pause";
+      if (readingMode === "speed") {
+        startFixedSpeed();
+      }
+      else {
+        startRecognition();
+      }
     }
   }
 );
@@ -5968,6 +7666,9 @@ resetBtn.addEventListener(
   () => {
 
     currentWord =
+      0;
+
+    fixedWordProgress =
       0;
 
 
@@ -5994,10 +7695,14 @@ resetBtn.addEventListener(
     updateDisplay(true);
 
 
+    updateProgressUI();
+
     statusText.textContent =
-      listening
-      ? "Écoute en cours"
-      : "Au début";
+      speedModeActive
+      ? "Vitesse fixe — " + fixedWpm + " mots/min"
+      : listening
+        ? "Écoute en cours"
+        : "Au début";
   }
 );
 
@@ -6011,6 +7716,9 @@ editBtn.addEventListener(
   () => {
 
     releaseMicroLock();
+
+    speedModeActive =
+      false;
 
     listening =
       false;
@@ -6117,48 +7825,12 @@ displayBtn.addEventListener(
 
     if (
       willOpen &&
-      listening
+      (listening || speedModeActive)
     ) {
 
-      listening =
-        false;
-
-
-      voiceActive =
-        false;
-
-
-      targetScrollSpeed =
-        0;
-
-
-      currentScrollSpeed =
-        0;
-
-
-      if (recognition) {
-
-        try {
-
-          recognition.stop();
-
-        }
-
-        catch (e) {}
-      }
-
-
-      statusText.textContent =
-        "En pause — réglages d'affichage";
-
-
-      statusBox.classList.remove(
-        "listening"
+      pauseActiveReading(
+        "En pause — réglages d'affichage"
       );
-
-
-      pauseBtn.textContent =
-        "▶ Reprendre";
     }
 
 
@@ -6263,6 +7935,24 @@ alignmentButtons.forEach(
 );
 
 
+focusPositionRange.addEventListener(
+  "input",
+  () => {
+
+    currentFocusPosition =
+      Number(
+        focusPositionRange.value
+      );
+
+    applyDisplaySettings();
+
+    if (words.length) {
+      positionImmediately();
+    }
+  }
+);
+
+
 resetDisplayBtn.addEventListener(
   "click",
   () => {
@@ -6276,8 +7966,57 @@ resetDisplayBtn.addEventListener(
     currentAlignment =
       "center";
 
+    currentFocusPosition = 43;
+
 
     applyDisplaySettings();
+  }
+);
+
+
+/* =========================================================
+   BARRE DE PROGRESSION
+========================================================= */
+
+progressRange.addEventListener(
+  "input",
+  () => {
+
+    if (!words.length) {
+      return;
+    }
+
+    if (
+      listening ||
+      speedModeActive
+    ) {
+
+      pauseActiveReading(
+        "En pause — position modifiée"
+      );
+    }
+
+    const percent =
+      Number(
+        progressRange.value
+      ) / 100;
+
+    currentWord =
+      Math.max(
+        0,
+        Math.min(
+          words.length - 1,
+          Math.round(
+            percent *
+            (words.length - 1)
+          )
+        )
+      );
+
+    fixedWordProgress =
+      currentWord;
+
+    updateDisplay(true);
   }
 );
 
@@ -6399,6 +8138,12 @@ keepAwakeToggle.checked =
 loadDisplaySettings();
 
 applyDisplaySettings(false);
+
+applyReadingSettings(false);
+
+restoreDraftIfAvailable();
+
+updateHistoryButton();
 
 applyMirrorMode();
 

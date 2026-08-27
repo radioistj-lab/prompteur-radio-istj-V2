@@ -1,7 +1,7 @@
 {
   "name": "Prompteur vocal",
   "short_name": "Prompteur",
-  "description": "Prompteur vocal avec suivi de lecture, bibliothèque locale et mode miroir.",
+  "description": "Prompteur vocal avec suivi de lecture, vitesse fixe, import de documents, bibliothèque locale et mode miroir.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

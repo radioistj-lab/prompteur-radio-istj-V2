@@ -1,9 +1,9 @@
 /*
-  Prompteur vocal — Service Worker V5.4
+  Prompteur vocal — Service Worker V5.5
   © 2026 C. Declerck
 */
 
-const CACHE_NAME = "prompteur-vocal-v5.4";
+const CACHE_NAME = "prompteur-vocal-v5.5";
 
 const BASE_URL = new URL("./", self.location.href);
 
@@ -83,7 +83,10 @@ self.addEventListener("fetch", event => {
         if (
           response &&
           response.status === 200 &&
-          response.type === "basic"
+          (
+            response.type === "basic" ||
+            response.type === "cors"
+          )
         ) {
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
