@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.1
+  Prompteur vocal V5.5.2
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -2014,7 +2014,7 @@ button:active {
             id="settingsFontSizeRange"
             class="settingRange"
             type="range"
-            min="34"
+            min="20"
             max="70"
             step="2"
             value="46"
@@ -2342,7 +2342,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.1</span>
+            <span id="appVersionLabel">Version V5.5.2</span>
           </div>
 
           <button
@@ -2523,7 +2523,7 @@ button:active {
         id="fontSizeRange"
         class="settingRange"
         type="range"
-        min="34"
+        min="20"
         max="70"
         step="2"
         value="46"
@@ -3168,7 +3168,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.1";
+const APP_VERSION = "5.5.2";
 
 const TAB_ID =
   "tab_" +
@@ -3840,7 +3840,7 @@ async function importBackup(file) {
 
         currentFontSize =
           Math.max(
-            34,
+            20,
             Math.min(
               70,
               display.fontSize
@@ -4573,7 +4573,7 @@ function loadDisplaySettings() {
 
       currentFontSize =
         Math.max(
-          34,
+          20,
           Math.min(
             70,
             settings.fontSize
@@ -4762,9 +4762,9 @@ function applyDisplaySettings(
 
   /*
     L'aperçu doit suivre toute la plage,
-    y compris sous 34 px. L'ancienne
-    borne à 18 px donnait l'impression
-    que le curseur ne faisait plus rien.
+    y compris pour les petites tailles,
+    afin que le curseur reste cohérent
+    avec le texte réellement affiché.
   */
 
   settingsPreviewText.style.fontSize =
@@ -5137,7 +5137,7 @@ function applyScriptSettings(settings) {
 
   if (Number.isFinite(settings.fontSize)) {
     currentFontSize =
-      Math.max(34,Math.min(70,settings.fontSize));
+      Math.max(20,Math.min(70,settings.fontSize));
   }
 
   if (Number.isFinite(settings.lineHeight)) {
@@ -7786,7 +7786,7 @@ fontMinus.addEventListener(
 
     currentFontSize =
       Math.max(
-        34,
+        20,
         currentFontSize - 2
       );
 
