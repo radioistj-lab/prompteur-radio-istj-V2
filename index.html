@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5
+  Prompteur vocal V5.5.1
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -401,193 +401,6 @@ button:active {
   background: #7F1D1D;
   color: #FECACA;
 }
-
-
-/* =========================================================
-   PROTECTION CONTRE DEUX ONGLETS AU MICRO
-========================================================= */
-
-function readMicroLock() {
-
-  try {
-
-    const raw =
-      localStorage.getItem(
-        MICRO_LOCK_KEY
-      );
-
-    if (!raw) {
-      return null;
-    }
-
-    return JSON.parse(raw);
-  }
-
-  catch (error) {
-    return null;
-  }
-}
-
-
-function isMicroUsedByAnotherTab() {
-
-  const lock =
-    readMicroLock();
-
-  if (!lock) {
-    return false;
-  }
-
-  if (
-    lock.tabId === TAB_ID
-  ) {
-    return false;
-  }
-
-  const age =
-    Date.now() -
-    Number(lock.timestamp || 0);
-
-  if (age > MICRO_LOCK_MAX_AGE) {
-
-    try {
-      localStorage.removeItem(
-        MICRO_LOCK_KEY
-      );
-    }
-    catch (error) {}
-
-    return false;
-  }
-
-  return true;
-}
-
-
-function refreshMicroLock() {
-
-  try {
-
-    localStorage.setItem(
-      MICRO_LOCK_KEY,
-      JSON.stringify({
-        tabId: TAB_ID,
-        timestamp: Date.now()
-      })
-    );
-  }
-
-  catch (error) {}
-}
-
-
-function acquireMicroLock() {
-
-  if (
-    isMicroUsedByAnotherTab()
-  ) {
-    return false;
-  }
-
-  refreshMicroLock();
-
-  if (microLockTimer) {
-    clearInterval(
-      microLockTimer
-    );
-  }
-
-  microLockTimer =
-    setInterval(
-      refreshMicroLock,
-      2000
-    );
-
-  return true;
-}
-
-
-function releaseMicroLock() {
-
-  if (microLockTimer) {
-
-    clearInterval(
-      microLockTimer
-    );
-
-    microLockTimer = null;
-  }
-
-  const lock =
-    readMicroLock();
-
-  if (
-    lock &&
-    lock.tabId === TAB_ID
-  ) {
-
-    try {
-      localStorage.removeItem(
-        MICRO_LOCK_KEY
-      );
-    }
-    catch (error) {}
-  }
-}
-
-
-window.addEventListener(
-  "pagehide",
-  releaseMicroLock
-);
-
-
-window.addEventListener(
-  "beforeunload",
-  releaseMicroLock
-);
-
-
-window.addEventListener(
-  "storage",
-  event => {
-
-    if (
-      event.key !== MICRO_LOCK_KEY ||
-      !listening
-    ) {
-      return;
-    }
-
-    const lock =
-      readMicroLock();
-
-    if (
-      lock &&
-      lock.tabId !== TAB_ID
-    ) {
-
-      listening = false;
-      voiceActive = false;
-      targetScrollSpeed = 0;
-
-      try {
-        recognition.stop();
-      }
-      catch (error) {}
-
-      statusText.textContent =
-        "Micro utilisé dans un autre onglet";
-
-      statusBox.classList.remove(
-        "listening"
-      );
-
-      pauseBtn.textContent =
-        "▶ Reprendre";
-    }
-  }
-);
 
 
 /* =========================================================
@@ -2529,7 +2342,7 @@ window.addEventListener(
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5</span>
+            <span id="appVersionLabel">Version V5.5.1</span>
           </div>
 
           <button
@@ -3355,7 +3168,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5";
+const APP_VERSION = "5.5.1";
 
 const TAB_ID =
   "tab_" +
@@ -3366,7 +3179,7 @@ const TAB_ID =
     .slice(2,10);
 
 const MICRO_LOCK_KEY =
-  "prompteur_vocal_micro_lock_v55";
+  "prompteur_vocal_micro_lock_v551";
 
 const MICRO_LOCK_MAX_AGE = 5000;
 
@@ -3377,6 +3190,194 @@ let keepAwakeEnabled = true;
 let wakeLock = null;
 
 let deferredInstallPrompt = null;
+
+
+/* =========================================================
+   PROTECTION CONTRE DEUX ONGLETS AU MICRO
+========================================================= */
+
+function readMicroLock() {
+
+  try {
+
+    const raw =
+      localStorage.getItem(
+        MICRO_LOCK_KEY
+      );
+
+    if (!raw) {
+      return null;
+    }
+
+    return JSON.parse(raw);
+  }
+
+  catch (error) {
+    return null;
+  }
+}
+
+
+function isMicroUsedByAnotherTab() {
+
+  const lock =
+    readMicroLock();
+
+  if (!lock) {
+    return false;
+  }
+
+  if (
+    lock.tabId === TAB_ID
+  ) {
+    return false;
+  }
+
+  const age =
+    Date.now() -
+    Number(lock.timestamp || 0);
+
+  if (age > MICRO_LOCK_MAX_AGE) {
+
+    try {
+      localStorage.removeItem(
+        MICRO_LOCK_KEY
+      );
+    }
+    catch (error) {}
+
+    return false;
+  }
+
+  return true;
+}
+
+
+function refreshMicroLock() {
+
+  try {
+
+    localStorage.setItem(
+      MICRO_LOCK_KEY,
+      JSON.stringify({
+        tabId: TAB_ID,
+        timestamp: Date.now()
+      })
+    );
+  }
+
+  catch (error) {}
+}
+
+
+function acquireMicroLock() {
+
+  if (
+    isMicroUsedByAnotherTab()
+  ) {
+    return false;
+  }
+
+  refreshMicroLock();
+
+  if (microLockTimer) {
+    clearInterval(
+      microLockTimer
+    );
+  }
+
+  microLockTimer =
+    setInterval(
+      refreshMicroLock,
+      2000
+    );
+
+  return true;
+}
+
+
+function releaseMicroLock() {
+
+  if (microLockTimer) {
+
+    clearInterval(
+      microLockTimer
+    );
+
+    microLockTimer = null;
+  }
+
+  const lock =
+    readMicroLock();
+
+  if (
+    lock &&
+    lock.tabId === TAB_ID
+  ) {
+
+    try {
+      localStorage.removeItem(
+        MICRO_LOCK_KEY
+      );
+    }
+    catch (error) {}
+  }
+}
+
+
+window.addEventListener(
+  "pagehide",
+  releaseMicroLock
+);
+
+
+window.addEventListener(
+  "beforeunload",
+  releaseMicroLock
+);
+
+
+window.addEventListener(
+  "storage",
+  event => {
+
+    if (
+      event.key !== MICRO_LOCK_KEY ||
+      !listening
+    ) {
+      return;
+    }
+
+    const lock =
+      readMicroLock();
+
+    if (
+      lock &&
+      lock.tabId !== TAB_ID
+    ) {
+
+      listening = false;
+      voiceActive = false;
+      targetScrollSpeed = 0;
+
+      try {
+        recognition.stop();
+      }
+      catch (error) {}
+
+      statusText.textContent =
+        "Micro utilisé dans un autre onglet";
+
+      statusBox.classList.remove(
+        "listening"
+      );
+
+      pauseBtn.textContent =
+        "▶ Reprendre";
+    }
+  }
+);
+
 
 
 /* =========================================================
