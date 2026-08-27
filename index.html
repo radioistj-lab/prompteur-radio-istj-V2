@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.3
+  Prompteur vocal V5.4
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -404,6 +404,193 @@ button:active {
 
 
 /* =========================================================
+   PROTECTION CONTRE DEUX ONGLETS AU MICRO
+========================================================= */
+
+function readMicroLock() {
+
+  try {
+
+    const raw =
+      localStorage.getItem(
+        MICRO_LOCK_KEY
+      );
+
+    if (!raw) {
+      return null;
+    }
+
+    return JSON.parse(raw);
+  }
+
+  catch (error) {
+    return null;
+  }
+}
+
+
+function isMicroUsedByAnotherTab() {
+
+  const lock =
+    readMicroLock();
+
+  if (!lock) {
+    return false;
+  }
+
+  if (
+    lock.tabId === TAB_ID
+  ) {
+    return false;
+  }
+
+  const age =
+    Date.now() -
+    Number(lock.timestamp || 0);
+
+  if (age > MICRO_LOCK_MAX_AGE) {
+
+    try {
+      localStorage.removeItem(
+        MICRO_LOCK_KEY
+      );
+    }
+    catch (error) {}
+
+    return false;
+  }
+
+  return true;
+}
+
+
+function refreshMicroLock() {
+
+  try {
+
+    localStorage.setItem(
+      MICRO_LOCK_KEY,
+      JSON.stringify({
+        tabId: TAB_ID,
+        timestamp: Date.now()
+      })
+    );
+  }
+
+  catch (error) {}
+}
+
+
+function acquireMicroLock() {
+
+  if (
+    isMicroUsedByAnotherTab()
+  ) {
+    return false;
+  }
+
+  refreshMicroLock();
+
+  if (microLockTimer) {
+    clearInterval(
+      microLockTimer
+    );
+  }
+
+  microLockTimer =
+    setInterval(
+      refreshMicroLock,
+      2000
+    );
+
+  return true;
+}
+
+
+function releaseMicroLock() {
+
+  if (microLockTimer) {
+
+    clearInterval(
+      microLockTimer
+    );
+
+    microLockTimer = null;
+  }
+
+  const lock =
+    readMicroLock();
+
+  if (
+    lock &&
+    lock.tabId === TAB_ID
+  ) {
+
+    try {
+      localStorage.removeItem(
+        MICRO_LOCK_KEY
+      );
+    }
+    catch (error) {}
+  }
+}
+
+
+window.addEventListener(
+  "pagehide",
+  releaseMicroLock
+);
+
+
+window.addEventListener(
+  "beforeunload",
+  releaseMicroLock
+);
+
+
+window.addEventListener(
+  "storage",
+  event => {
+
+    if (
+      event.key !== MICRO_LOCK_KEY ||
+      !listening
+    ) {
+      return;
+    }
+
+    const lock =
+      readMicroLock();
+
+    if (
+      lock &&
+      lock.tabId !== TAB_ID
+    ) {
+
+      listening = false;
+      voiceActive = false;
+      targetScrollSpeed = 0;
+
+      try {
+        recognition.stop();
+      }
+      catch (error) {}
+
+      statusText.textContent =
+        "Micro utilisé dans un autre onglet";
+
+      statusBox.classList.remove(
+        "listening"
+      );
+
+      pauseBtn.textContent =
+        "▶ Reprendre";
+    }
+  }
+);
+
+
+/* =========================================================
    NAVIGATION ACCUEIL
 ========================================================= */
 
@@ -473,6 +660,64 @@ button:active {
 
 #importFileInput {
   display: none;
+}
+
+.libraryPrimaryButton {
+  background: #2563EB;
+  color: #F8FAFC;
+}
+
+.libraryPrimaryButton:hover {
+  background: #3B82F6;
+}
+
+.librarySearchWrap {
+  min-height: 38px;
+  flex: 1 1 230px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 0 11px;
+
+  border: 1px solid #334155;
+  border-radius: 9px;
+
+  background: #0F172A;
+  color: #CBD5E1;
+}
+
+#librarySearchInput {
+  width: 100%;
+  min-width: 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+  color: #F8FAFC;
+
+  font-size: 13px;
+}
+
+#librarySearchInput::placeholder {
+  color: #94A3B8;
+}
+
+.duplicateButton {
+  height: 34px;
+  padding: 0 11px;
+  border-radius: 8px;
+
+  background: #334155;
+  color: #E2E8F0;
+
+  font-size: 12px;
+}
+
+.duplicateButton:hover {
+  background: #475569;
 }
 
 
@@ -1152,6 +1397,102 @@ button:active {
 
 
 /* =========================================================
+   VERSION ET MISE À JOUR
+========================================================= */
+
+.appInfoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.appInfoRow strong {
+  display: block;
+  font-size: 14px;
+}
+
+.appInfoRow span {
+  display: block;
+  margin-top: 4px;
+  color: #CBD5E1;
+  font-size: 12px;
+}
+
+.compactActionButton {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.updateBanner {
+  position: fixed;
+  z-index: 2000;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+
+  width: min(92vw, 560px);
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 11px 10px 14px;
+
+  border: 1px solid #3B82F6;
+  border-radius: 12px;
+
+  background: #1E293B;
+  color: #F8FAFC;
+
+  box-shadow: 0 18px 45px rgba(0,0,0,.45);
+
+  font-size: 13px;
+}
+
+.updateBanner[hidden] {
+  display: none !important;
+}
+
+.updateBanner span {
+  flex: 1;
+}
+
+#applyUpdateBtn {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #2563EB;
+  color: #F8FAFC;
+  font-weight: 650;
+}
+
+.updateDismissButton {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #334155;
+  color: #CBD5E1;
+}
+
+@media (max-width: 560px) {
+  .appInfoRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .compactActionButton {
+    width: 100%;
+  }
+
+  .updateBanner {
+    bottom: 10px;
+    width: calc(100vw - 18px);
+  }
+}
+
+
+/* =========================================================
    TABLETTE
 ========================================================= */
 
@@ -1515,6 +1856,23 @@ button:active {
       <div class="libraryTools">
 
         <button
+          id="newTextBtn"
+          class="libraryToolButton libraryPrimaryButton"
+        >
+          ＋ Nouveau texte
+        </button>
+
+        <div class="librarySearchWrap">
+          <span aria-hidden="true">🔎</span>
+          <input
+            id="librarySearchInput"
+            type="search"
+            placeholder="Rechercher un texte…"
+            autocomplete="off"
+          >
+        </div>
+
+        <button
           id="exportLibraryBtn"
           class="libraryToolButton"
         >
@@ -1589,7 +1947,7 @@ button:active {
             id="settingsFontSizeRange"
             class="settingRange"
             type="range"
-            min="20"
+            min="34"
             max="70"
             step="2"
             value="46"
@@ -1802,6 +2160,38 @@ button:active {
 
       </div>
 
+
+      <div class="settingsSection">
+
+        <h3>
+          Application
+        </h3>
+
+        <div class="appInfoRow">
+
+          <div>
+            <strong>Prompteur vocal</strong>
+            <span id="appVersionLabel">Version V5.4</span>
+          </div>
+
+          <button
+            id="checkUpdateBtn"
+            class="settingsActionButton compactActionButton"
+          >
+            🔄 Vérifier les mises à jour
+          </button>
+
+        </div>
+
+        <div
+          id="updateStatus"
+          class="settingsStatus"
+        >
+          Application à jour.
+        </div>
+
+      </div>
+
     </div>
 
 
@@ -1962,7 +2352,7 @@ button:active {
         id="fontSizeRange"
         class="settingRange"
         type="range"
-        min="20"
+        min="34"
         max="70"
         step="2"
         value="46"
@@ -2103,6 +2493,35 @@ button:active {
 
 
 <!-- =======================================================
+     MISE À JOUR PWA
+======================================================= -->
+
+<div
+  id="updateBanner"
+  class="updateBanner"
+  hidden
+>
+
+  <span>
+    Une mise à jour est disponible.
+  </span>
+
+  <button id="applyUpdateBtn">
+    Mettre à jour
+  </button>
+
+  <button
+    id="dismissUpdateBtn"
+    class="updateDismissButton"
+    aria-label="Fermer"
+  >
+    ✕
+  </button>
+
+</div>
+
+
+<!-- =======================================================
      COMPTE À REBOURS
 ======================================================= -->
 
@@ -2145,6 +2564,12 @@ const saveMessage =
 
 const libraryList =
   document.getElementById("libraryList");
+
+const newTextBtn =
+  document.getElementById("newTextBtn");
+
+const librarySearchInput =
+  document.getElementById("librarySearchInput");
 
 const launchBtn =
   document.getElementById("launchBtn");
@@ -2289,6 +2714,24 @@ const installStatus =
 const connectionStatus =
   document.getElementById("connectionStatus");
 
+const appVersionLabel =
+  document.getElementById("appVersionLabel");
+
+const checkUpdateBtn =
+  document.getElementById("checkUpdateBtn");
+
+const updateStatus =
+  document.getElementById("updateStatus");
+
+const updateBanner =
+  document.getElementById("updateBanner");
+
+const applyUpdateBtn =
+  document.getElementById("applyUpdateBtn");
+
+const dismissUpdateBtn =
+  document.getElementById("dismissUpdateBtn");
+
 const countdown =
   document.getElementById("countdown");
 
@@ -2333,6 +2776,27 @@ let mirrorMode = false;
 let countdownRunning = false;
 
 let currentSavedId = null;
+
+let serviceWorkerRegistration = null;
+let waitingServiceWorker = null;
+let reloadingForUpdate = false;
+
+const APP_VERSION = "5.4";
+
+const TAB_ID =
+  "tab_" +
+  Date.now() +
+  "_" +
+  Math.random()
+    .toString(36)
+    .slice(2,10);
+
+const MICRO_LOCK_KEY =
+  "prompteur_vocal_micro_lock_v54";
+
+const MICRO_LOCK_MAX_AGE = 5000;
+
+let microLockTimer = null;
 
 let keepAwakeEnabled = true;
 
@@ -2751,7 +3215,7 @@ async function importBackup(file) {
 
         currentFontSize =
           Math.max(
-            20,
+            34,
             Math.min(
               70,
               display.fontSize
@@ -3143,22 +3607,208 @@ window.addEventListener(
 );
 
 
+function showUpdateAvailable(
+  worker
+) {
+
+  waitingServiceWorker =
+    worker;
+
+  updateBanner.hidden =
+    false;
+
+  updateStatus.textContent =
+    "Une nouvelle version est disponible.";
+
+  updateStatus.className =
+    "settingsStatus online";
+}
+
+
+function watchServiceWorkerRegistration(
+  registration
+) {
+
+  serviceWorkerRegistration =
+    registration;
+
+  if (
+    registration.waiting &&
+    navigator.serviceWorker.controller
+  ) {
+
+    showUpdateAvailable(
+      registration.waiting
+    );
+  }
+
+  registration.addEventListener(
+    "updatefound",
+    () => {
+
+      const installingWorker =
+        registration.installing;
+
+      if (!installingWorker) {
+        return;
+      }
+
+      installingWorker.addEventListener(
+        "statechange",
+        () => {
+
+          if (
+            installingWorker.state ===
+              "installed" &&
+            navigator.serviceWorker.controller
+          ) {
+
+            showUpdateAvailable(
+              installingWorker
+            );
+          }
+        }
+      );
+    }
+  );
+}
+
+
 if (
   "serviceWorker" in navigator
 ) {
 
   window.addEventListener(
     "load",
+    async () => {
+
+      try {
+
+        const registration =
+          await navigator
+            .serviceWorker
+            .register(
+              "./sw.js"
+            );
+
+        watchServiceWorkerRegistration(
+          registration
+        );
+      }
+
+      catch (error) {
+
+        updateStatus.textContent =
+          "Impossible de vérifier les mises à jour.";
+      }
+    }
+  );
+
+
+  navigator.serviceWorker.addEventListener(
+    "controllerchange",
     () => {
 
-      navigator.serviceWorker
-        .register("./sw.js")
-        .catch(
-          () => {}
-        );
+      if (reloadingForUpdate) {
+        return;
+      }
+
+      reloadingForUpdate =
+        true;
+
+      window.location.reload();
     }
   );
 }
+
+
+checkUpdateBtn.addEventListener(
+  "click",
+  async () => {
+
+    if (!serviceWorkerRegistration) {
+
+      updateStatus.textContent =
+        "La vérification des mises à jour n'est pas encore disponible.";
+
+      return;
+    }
+
+    updateStatus.textContent =
+      "Recherche d'une mise à jour…";
+
+    try {
+
+      await serviceWorkerRegistration
+        .update();
+
+      if (
+        serviceWorkerRegistration.waiting
+      ) {
+
+        showUpdateAvailable(
+          serviceWorkerRegistration
+            .waiting
+        );
+      }
+
+      else {
+
+        setTimeout(
+          () => {
+
+            if (updateBanner.hidden) {
+
+              updateStatus.textContent =
+                "Application à jour — V" +
+                APP_VERSION +
+                ".";
+            }
+          },
+          800
+        );
+      }
+    }
+
+    catch (error) {
+
+      updateStatus.textContent =
+        "Vérification impossible pour le moment.";
+    }
+  }
+);
+
+
+applyUpdateBtn.addEventListener(
+  "click",
+  () => {
+
+    if (!waitingServiceWorker) {
+      return;
+    }
+
+    applyUpdateBtn.disabled =
+      true;
+
+    applyUpdateBtn.textContent =
+      "Mise à jour…";
+
+    waitingServiceWorker
+      .postMessage({
+        type: "SKIP_WAITING"
+      });
+  }
+);
+
+
+dismissUpdateBtn.addEventListener(
+  "click",
+  () => {
+
+    updateBanner.hidden =
+      true;
+  }
+);
 
 
 /* =========================================================
@@ -3261,7 +3911,7 @@ function loadDisplaySettings() {
 
       currentFontSize =
         Math.max(
-          20,
+          34,
           Math.min(
             70,
             settings.fontSize
@@ -3556,10 +4206,68 @@ settingsResetDisplayBtn.addEventListener(
    BIBLIOTHÈQUE
 ========================================================= */
 
+function createNewText() {
+
+  scriptTitle.value = "";
+  inputText.value = "";
+  currentSavedId = null;
+
+  updateWordCount();
+
+  saveMessage.textContent =
+    "Nouveau texte.";
+
+  showHomeTab(
+    "prepare"
+  );
+
+  editorScreen.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  setTimeout(
+    () => scriptTitle.focus(),
+    150
+  );
+}
+
+
+newTextBtn.addEventListener(
+  "click",
+  createNewText
+);
+
+
+librarySearchInput.addEventListener(
+  "input",
+  renderLibrary
+);
+
+
 function renderLibrary() {
 
+  const searchTerm =
+    librarySearchInput.value
+      .trim()
+      .toLowerCase();
+
   const scripts =
-    getSavedScripts();
+    getSavedScripts()
+      .filter(
+        script =>
+          !searchTerm ||
+          script.title
+            .toLowerCase()
+            .includes(
+              searchTerm
+            ) ||
+          script.text
+            .toLowerCase()
+            .includes(
+              searchTerm
+            )
+      );
 
   libraryList.innerHTML = "";
 
@@ -3573,7 +4281,9 @@ function renderLibrary() {
       "libraryEmpty";
 
     empty.textContent =
-      "Aucun texte enregistré pour le moment.";
+      searchTerm
+      ? "Aucun texte ne correspond à cette recherche."
+      : "Aucun texte enregistré pour le moment.";
 
     libraryList.appendChild(
       empty
@@ -3711,6 +4421,86 @@ function renderLibrary() {
         );
 
 
+        const duplicate =
+          document.createElement(
+            "button"
+          );
+
+        duplicate.className =
+          "duplicateButton";
+
+        duplicate.textContent =
+          "Dupliquer";
+
+
+        duplicate.addEventListener(
+          "click",
+          () => {
+
+            const scripts =
+              getSavedScripts();
+
+            const now =
+              Date.now();
+
+            const copy = {
+
+              id:
+                "script_" +
+                now +
+                "_" +
+                Math.random()
+                  .toString(36)
+                  .slice(2,8),
+
+              title:
+                script.title +
+                " — copie",
+
+              text:
+                script.text,
+
+              createdAt:
+                now,
+
+              updatedAt:
+                now
+            };
+
+            scripts.push(
+              copy
+            );
+
+            storeScripts(
+              scripts
+            );
+
+            scriptTitle.value =
+              copy.title;
+
+            inputText.value =
+              copy.text;
+
+            currentSavedId =
+              copy.id;
+
+            updateWordCount();
+
+            saveMessage.textContent =
+              "Copie créée. Vous pouvez la modifier sans toucher à l'original.";
+
+            showHomeTab(
+              "prepare"
+            );
+
+            editorScreen.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
+        );
+
+
         const remove =
           document.createElement(
             "button"
@@ -3772,6 +4562,7 @@ function renderLibrary() {
 
 
         buttons.appendChild(open);
+        buttons.appendChild(duplicate);
         buttons.appendChild(remove);
 
 
@@ -4851,6 +5642,8 @@ if (SpeechRecognition) {
 
       else {
 
+        releaseMicroLock();
+
         voiceActive =
           false;
 
@@ -4881,7 +5674,35 @@ if (SpeechRecognition) {
 
 function startRecognition() {
 
+  if (
+    !acquireMicroLock()
+  ) {
+
+    listening = false;
+    voiceActive = false;
+    targetScrollSpeed = 0;
+
+    statusText.textContent =
+      "Micro déjà utilisé dans un autre onglet";
+
+    statusBox.classList.remove(
+      "listening"
+    );
+
+    pauseBtn.textContent =
+      "▶ Reprendre";
+
+    alert(
+      "Le prompteur est déjà utilisé dans un autre onglet. Fermez ou mettez en pause l'autre prompteur avant de continuer."
+    );
+
+    return;
+  }
+
+
   if (!SpeechRecognition) {
+
+    releaseMicroLock();
 
     alert(
       "Le suivi vocal n'est pas disponible dans ce navigateur. Essayez Chrome ou Edge."
@@ -4993,6 +5814,18 @@ launchBtn.addEventListener(
   "click",
   () => {
 
+    if (
+      isMicroUsedByAnotherTab()
+    ) {
+
+      alert(
+        "Le prompteur est déjà utilisé dans un autre onglet. Fermez ou mettez en pause l'autre prompteur avant de continuer."
+      );
+
+      return;
+    }
+
+
     if (!SpeechRecognition) {
 
       alert(
@@ -5073,6 +5906,8 @@ pauseBtn.addEventListener(
   () => {
 
     if (listening) {
+
+      releaseMicroLock();
 
       listening =
         false;
@@ -5175,6 +6010,8 @@ editBtn.addEventListener(
   "click",
   () => {
 
+    releaseMicroLock();
+
     listening =
       false;
 
@@ -5240,7 +6077,7 @@ fontMinus.addEventListener(
 
     currentFontSize =
       Math.max(
-        20,
+        34,
         currentFontSize - 2
       );
 
@@ -5543,6 +6380,14 @@ fullscreenBtn.addEventListener(
 /* =========================================================
    INITIALISATION
 ========================================================= */
+
+appVersionLabel.textContent =
+  "Version V" + APP_VERSION;
+
+updateStatus.textContent =
+  "Application à jour — V" +
+  APP_VERSION +
+  ".";
 
 updateWordCount();
 

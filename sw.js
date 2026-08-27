@@ -1,9 +1,9 @@
 /*
-  Prompteur vocal — Service Worker V5.3
+  Prompteur vocal — Service Worker V5.4
   © 2026 C. Declerck
 */
 
-const CACHE_NAME = "prompteur-vocal-v5-3";
+const CACHE_NAME = "prompteur-vocal-v5.4";
 
 const BASE_URL = new URL("./", self.location.href);
 
@@ -20,8 +20,16 @@ self.addEventListener("install", event => {
     caches
       .open(CACHE_NAME)
       .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
   );
+});
+
+self.addEventListener("message", event => {
+  if (
+    event.data &&
+    event.data.type === "SKIP_WAITING"
+  ) {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", event => {
