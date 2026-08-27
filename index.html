@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.4
+  Prompteur vocal V5.5.5
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -3139,6 +3139,19 @@ let currentScrollSpeed = 0;
 
 let estimatedReadingSpeed = 24;
 
+/*
+  V5.5.5 — estimation du rythme réel de lecture.
+  Cette valeur est distincte de la vitesse de défilement en pixels.
+  Elle sert à adapter le suivi du mot courant à la vitesse du lecteur.
+*/
+let estimatedWordsPerSecond = 2.1;
+
+let visualWord = 0;
+
+let lastRecognitionAnchorWord = 0;
+
+let lastRecognitionAnchorTime = 0;
+
 let previousTrackedWord = 0;
 let previousTrackedTime = 0;
 
@@ -3172,7 +3185,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.3";
+const APP_VERSION = "5.5.5";
 
 const TAB_ID =
   "tab_" +
@@ -3393,6 +3406,18 @@ const SILENCE_DELAY = 950;
 const SPEED_SMOOTHING = 0.055;
 
 const MAX_CORRECTION_PER_FRAME = 1.2;
+
+/*
+  V5.5.5 — prédiction mot par mot.
+  Le suivi reste piloté par la reconnaissance vocale :
+  la prédiction ne peut prendre qu'une petite avance temporaire,
+  puis la voix recale immédiatement la position.
+*/
+const MIN_ESTIMATED_WPM = 75;
+
+const MAX_ESTIMATED_WPM = 270;
+
+const WORD_PREDICTION_DELAY = 220;
 
 
 /* =========================================================
@@ -6494,11 +6519,22 @@ function buildText() {
 
   currentWord = 0;
 
+  visualWord = 0;
+
   fixedWordProgress = 0;
+
+  estimatedReadingSpeed = 24;
+
+  estimatedWordsPerSecond = 2.1;
 
   previousTrackedWord = 0;
 
   previousTrackedTime =
+    performance.now();
+
+  lastRecognitionAnchorWord = 0;
+
+  lastRecognitionAnchorTime =
     performance.now();
 
   targetScrollSpeed = 0;
@@ -6526,6 +6562,27 @@ function buildText() {
    AFFICHAGE SUIVI
 ========================================================= */
 
+function getDisplayedWordIndex() {
+
+  if (!words.length) {
+    return 0;
+  }
+
+  const index =
+    readingMode === "voice"
+      ? visualWord
+      : currentWord;
+
+  return Math.max(
+    0,
+    Math.min(
+      words.length - 1,
+      Math.round(index)
+    )
+  );
+}
+
+
 function updateDisplay(
   forcePosition = false
 ) {
@@ -6533,6 +6590,10 @@ function updateDisplay(
   if (!words.length) {
     return;
   }
+
+
+  const displayedWord =
+    getDisplayedWordIndex();
 
 
   for (
@@ -6551,7 +6612,7 @@ function updateDisplay(
     );
 
 
-    if (i < currentWord) {
+    if (i < displayedWord) {
 
       element.classList.add(
         "read"
@@ -6559,7 +6620,7 @@ function updateDisplay(
     }
 
 
-    if (i === currentWord) {
+    if (i === displayedWord) {
 
       element.classList.add(
         "current"
@@ -6585,7 +6646,9 @@ function updateDisplay(
 function positionImmediately() {
 
   const item =
-    words[currentWord];
+    words[
+      getDisplayedWordIndex()
+    ];
 
 
   if (!item) {
@@ -6612,8 +6675,168 @@ function positionImmediately() {
 
 
 /* =========================================================
-   ESTIMATION RYTHME
+   ESTIMATION RYTHME — V5.5.5 ADAPTATIF
 ========================================================= */
+
+function getEstimatedReadingWpm() {
+
+  return Math.max(
+    MIN_ESTIMATED_WPM,
+    Math.min(
+      MAX_ESTIMATED_WPM,
+      estimatedWordsPerSecond *
+      60
+    )
+  );
+}
+
+
+function getAdaptiveMaximumAdvance() {
+
+  const wpm =
+    getEstimatedReadingWpm();
+
+  if (wpm < 105) {
+    return 3;
+  }
+
+  if (wpm < 145) {
+    return 4;
+  }
+
+  if (wpm < 185) {
+    return 5;
+  }
+
+  if (wpm < 225) {
+    return 6;
+  }
+
+  return 7;
+}
+
+
+function getAdaptiveLocalSearchAhead() {
+
+  return Math.max(
+    8,
+    Math.min(
+      16,
+      getAdaptiveMaximumAdvance() +
+      5
+    )
+  );
+}
+
+
+function getAdaptivePredictiveLead() {
+
+  const wpm =
+    getEstimatedReadingWpm();
+
+  if (wpm < 110) {
+    return 1;
+  }
+
+  if (wpm < 150) {
+    return 2;
+  }
+
+  if (wpm < 190) {
+    return 3;
+  }
+
+  if (wpm < 230) {
+    return 4;
+  }
+
+  return 5;
+}
+
+
+function resetVoicePredictionAnchor(
+  wordIndex = currentWord
+) {
+
+  lastRecognitionAnchorWord =
+    Math.max(
+      0,
+      Math.min(
+        Math.max(
+          0,
+          words.length - 1
+        ),
+        wordIndex
+      )
+    );
+
+  lastRecognitionAnchorTime =
+    performance.now();
+}
+
+
+function updatePredictedVoiceWord() {
+
+  if (
+    readingMode !== "voice" ||
+    !listening ||
+    !voiceActive ||
+    !words.length
+  ) {
+    return;
+  }
+
+
+  const elapsed =
+    performance.now() -
+    lastRecognitionAnchorTime;
+
+
+  if (
+    elapsed <
+    WORD_PREDICTION_DELAY
+  ) {
+    return;
+  }
+
+
+  const expectedAdvance =
+    estimatedWordsPerSecond *
+    (elapsed / 1000);
+
+
+  const predictiveLead =
+    Math.min(
+      getAdaptivePredictiveLead(),
+      Math.max(
+        0,
+        Math.floor(
+          expectedAdvance
+        )
+      )
+    );
+
+
+  const predictedWord =
+    Math.min(
+      words.length - 1,
+      lastRecognitionAnchorWord +
+      predictiveLead
+    );
+
+
+  if (
+    predictedWord >
+    visualWord
+  ) {
+
+    visualWord =
+      predictedWord;
+
+    updateDisplay(false);
+  }
+}
+
 
 function updateReadingSpeed() {
 
@@ -6645,6 +6868,20 @@ function updateReadingSpeed() {
       wordsPerSecond > 0.7 &&
       wordsPerSecond < 6
     ) {
+
+      /*
+        Deux estimations complémentaires :
+        - mots/seconde pour le suivi du mot courant ;
+        - pixels/seconde pour conserver le défilement hybride
+          déjà validé.
+      */
+
+      estimatedWordsPerSecond =
+        estimatedWordsPerSecond *
+        0.75 +
+        wordsPerSecond *
+        0.25;
+
 
       const calculatedSpeed =
         wordsPerSecond * 13;
@@ -6729,10 +6966,13 @@ function updateProgressUI() {
     return;
   }
 
+  const displayedWord =
+    getDisplayedWordIndex();
+
   const percent =
     words.length <= 1
       ? 100
-      : currentWord /
+      : displayedWord /
         (words.length - 1) *
         100;
 
@@ -6854,6 +7094,7 @@ function hybridScrollLoop(time) {
     ) {
 
       currentWord = nextWord;
+      visualWord = currentWord;
       updateDisplay(false);
     }
 
@@ -6900,6 +7141,14 @@ function hybridScrollLoop(time) {
       voiceActive = false;
       targetScrollSpeed = 0;
     }
+
+
+    /*
+      Entre deux résultats de reconnaissance, le mot surligné
+      peut avancer légèrement selon le rythme réellement observé.
+      currentWord reste l'ancre confirmée par la voix.
+    */
+    updatePredictedVoiceWord();
   }
 
 
@@ -6930,7 +7179,9 @@ function hybridScrollLoop(time) {
     prompter.scrollTop += movement;
 
     const item =
-      words[currentWord];
+      words[
+        getDisplayedWordIndex()
+      ];
 
     if (item) {
 
@@ -7007,10 +7258,15 @@ function findBestPosition(
     );
 
 
+  const localAhead =
+    getAdaptiveLocalSearchAhead();
+
+
   const localEnd =
     Math.min(
       words.length - 1,
-      currentWord + 8
+      currentWord +
+      localAhead
     );
 
 
@@ -7116,7 +7372,9 @@ function findBestPosition(
 
 
   const recoveryStart =
-    currentWord + 9;
+    currentWord +
+    localAhead +
+    1;
 
 
   const recoveryEnd =
@@ -7360,7 +7618,7 @@ if (SpeechRecognition) {
       else {
 
         const maximumAdvance =
-          4;
+          getAdaptiveMaximumAdvance();
 
 
         newPosition =
@@ -7401,11 +7659,50 @@ if (SpeechRecognition) {
         currentWord
       ) {
 
+        const previousVisualWord =
+          visualWord;
+
+
         currentWord =
           newPosition;
 
 
         updateReadingSpeed();
+
+
+        /*
+          La reconnaissance vocale reste toujours prioritaire.
+          Si la prédiction était légèrement en avance, on la recale
+          doucement d'un mot. En cas de vrai saut ou d'écart important,
+          le recalage est immédiat.
+        */
+
+        if (
+          match.jump ||
+          currentWord >=
+            previousVisualWord
+        ) {
+
+          visualWord =
+            currentWord;
+
+        }
+
+        else {
+
+          const predictionGap =
+            previousVisualWord -
+            currentWord;
+
+
+          visualWord =
+            predictionGap <= 2
+              ? Math.max(
+                  currentWord,
+                  previousVisualWord - 1
+                )
+              : currentWord;
+        }
 
 
         updateDisplay(false);
@@ -7420,6 +7717,16 @@ if (SpeechRecognition) {
             );
         }
       }
+
+
+      /*
+        Même si le mot confirmé n'a pas changé, un nouveau résultat
+        vocal confirme notre ancre et empêche la prédiction de prendre
+        de l'avance inutilement.
+      */
+      resetVoicePredictionAnchor(
+        currentWord
+      );
     };
 
 
@@ -7559,6 +7866,21 @@ function startRecognition() {
 
   previousTrackedTime =
     performance.now();
+
+
+  if (
+    visualWord <
+    currentWord
+  ) {
+
+    visualWord =
+      currentWord;
+  }
+
+
+  resetVoicePredictionAnchor(
+    currentWord
+  );
 
 
   try {
@@ -7786,6 +8108,9 @@ resetBtn.addEventListener(
     currentWord =
       0;
 
+    visualWord =
+      0;
+
     fixedWordProgress =
       0;
 
@@ -7796,6 +8121,11 @@ resetBtn.addEventListener(
 
     previousTrackedTime =
       performance.now();
+
+
+    resetVoicePredictionAnchor(
+      0
+    );
 
 
     targetScrollSpeed =
@@ -8131,8 +8461,15 @@ progressRange.addEventListener(
         )
       );
 
+    visualWord =
+      currentWord;
+
     fixedWordProgress =
       currentWord;
+
+    resetVoicePredictionAnchor(
+      currentWord
+    );
 
     updateDisplay(true);
   }
