@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.5
+  Prompteur vocal V5.5.6
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -3140,7 +3140,7 @@ let currentScrollSpeed = 0;
 let estimatedReadingSpeed = 24;
 
 /*
-  V5.5.5 — estimation du rythme réel de lecture.
+  V5.5.6 — estimation du rythme réel de lecture.
   Cette valeur est distincte de la vitesse de défilement en pixels.
   Elle sert à adapter le suivi du mot courant à la vitesse du lecteur.
 */
@@ -3185,7 +3185,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.5";
+const APP_VERSION = "5.5.6";
 
 const TAB_ID =
   "tab_" +
@@ -3408,7 +3408,7 @@ const SPEED_SMOOTHING = 0.055;
 const MAX_CORRECTION_PER_FRAME = 1.2;
 
 /*
-  V5.5.5 — prédiction mot par mot.
+  V5.5.6 — prédiction mot par mot.
   Le suivi reste piloté par la reconnaissance vocale :
   la prédiction ne peut prendre qu'une petite avance temporaire,
   puis la voix recale immédiatement la position.
@@ -3418,6 +3418,21 @@ const MIN_ESTIMATED_WPM = 75;
 const MAX_ESTIMATED_WPM = 270;
 
 const WORD_PREDICTION_DELAY = 220;
+
+/*
+  Arrêt rapide de la prédiction du mot bleu :
+  le défilement peut garder sa souplesse,
+  mais le mot suivi ne doit quasiment plus avancer
+  dès que la voix s'arrête.
+*/
+const WORD_PREDICTION_SILENCE_CUTOFF = 320;
+
+/*
+  Pour éviter un effet trompeur, la prédiction visuelle
+  ne peut prendre qu'un seul mot d'avance sur la dernière
+  position réellement confirmée par la voix.
+*/
+const MAX_WORD_PREDICTION_AHEAD = 1;
 
 
 /* =========================================================
@@ -6675,7 +6690,7 @@ function positionImmediately() {
 
 
 /* =========================================================
-   ESTIMATION RYTHME — V5.5.5 ADAPTATIF
+   ESTIMATION RYTHME — V5.5.6 ADAPTATIF
 ========================================================= */
 
 function getEstimatedReadingWpm() {
@@ -6787,9 +6802,58 @@ function updatePredictedVoiceWord() {
   }
 
 
+  const now =
+    performance.now();
+
+
   const elapsed =
-    performance.now() -
+    now -
     lastRecognitionAnchorTime;
+
+
+  const silenceSinceLastVoice =
+    now -
+    lastVoiceActivity;
+
+
+  const maxAllowedWord =
+    Math.min(
+      words.length - 1,
+      lastRecognitionAnchorWord +
+      MAX_WORD_PREDICTION_AHEAD
+    );
+
+
+  /*
+    Dès qu'une courte pause est détectée, on coupe presque
+    immédiatement la prédiction du mot bleu et on le ramène
+    au plus à un mot d'avance sur la dernière ancre vocale.
+  */
+  if (
+    silenceSinceLastVoice >
+    WORD_PREDICTION_SILENCE_CUTOFF
+  ) {
+
+    const clampedWord =
+      Math.min(
+        visualWord,
+        maxAllowedWord
+      );
+
+
+    if (
+      clampedWord !==
+      visualWord
+    ) {
+
+      visualWord =
+        clampedWord;
+
+      updateDisplay(false);
+    }
+
+    return;
+  }
 
 
   if (
@@ -6807,6 +6871,7 @@ function updatePredictedVoiceWord() {
 
   const predictiveLead =
     Math.min(
+      MAX_WORD_PREDICTION_AHEAD,
       getAdaptivePredictiveLead(),
       Math.max(
         0,
@@ -6819,7 +6884,7 @@ function updatePredictedVoiceWord() {
 
   const predictedWord =
     Math.min(
-      words.length - 1,
+      maxAllowedWord,
       lastRecognitionAnchorWord +
       predictiveLead
     );
