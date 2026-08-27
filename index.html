@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.3
+  Prompteur vocal V5.5.4
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -2346,7 +2346,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.3</span>
+            <span id="appVersionLabel">Version V5.5.4</span>
           </div>
 
           <button
@@ -4841,6 +4841,7 @@ settingsFontSizeRange.addEventListener(
 
 
     applyDisplaySettings();
+    scheduleDraftAutosave();
   }
 );
 
@@ -4856,6 +4857,7 @@ settingsLineHeightRange.addEventListener(
 
 
     applyDisplaySettings();
+    scheduleDraftAutosave();
   }
 );
 
@@ -4871,6 +4873,7 @@ settingsTextWidthRange.addEventListener(
 
 
     applyDisplaySettings();
+    scheduleDraftAutosave();
   }
 );
 
@@ -4887,6 +4890,7 @@ settingsAlignmentButtons.forEach(
 
 
         applyDisplaySettings();
+        scheduleDraftAutosave();
       }
     );
   }
@@ -4903,6 +4907,7 @@ settingsFocusPositionRange.addEventListener(
       );
 
     applyDisplaySettings();
+    scheduleDraftAutosave();
 
     if (words.length) {
       positionImmediately();
@@ -4928,6 +4933,7 @@ settingsResetDisplayBtn.addEventListener(
 
 
     applyDisplaySettings();
+    scheduleDraftAutosave();
   }
 );
 
@@ -5060,6 +5066,74 @@ function applyReadingSettings(
 }
 
 
+function syncSessionSettingsFromHomeControls() {
+
+  const fontSizeValue =
+    Number(settingsFontSizeRange.value);
+
+  if (Number.isFinite(fontSizeValue)) {
+    currentFontSize =
+      Math.max(20,Math.min(70,fontSizeValue));
+  }
+
+  const lineHeightSetting =
+    Number(settingsLineHeightRange.value);
+
+  if (Number.isFinite(lineHeightSetting)) {
+    currentLineHeight =
+      Math.max(1.2,Math.min(2,lineHeightSetting));
+  }
+
+  const widthSetting =
+    Number(settingsTextWidthRange.value);
+
+  if (Number.isFinite(widthSetting)) {
+    currentTextWidth =
+      Math.max(45,Math.min(96,widthSetting));
+  }
+
+  const activeAlignment =
+    Array.from(settingsAlignmentButtons)
+      .find(button =>
+        button.classList.contains("active")
+      );
+
+  if (
+    activeAlignment &&
+    ["left","center","justify"].includes(
+      activeAlignment.dataset.settingsAlign
+    )
+  ) {
+    currentAlignment =
+      activeAlignment.dataset.settingsAlign;
+  }
+
+  const focusSetting =
+    Number(settingsFocusPositionRange.value);
+
+  if (Number.isFinite(focusSetting)) {
+    currentFocusPosition =
+      Math.max(25,Math.min(70,focusSetting));
+  }
+
+  readingMode =
+    settingsSpeedModeBtn.classList.contains("active")
+      ? "speed"
+      : "voice";
+
+  const wpmSetting =
+    Number(settingsWpmRange.value);
+
+  if (Number.isFinite(wpmSetting)) {
+    fixedWpm =
+      Math.max(80,Math.min(240,wpmSetting));
+  }
+
+  applyDisplaySettings(false);
+  applyReadingSettings(false);
+}
+
+
 function setReadingMode(mode) {
 
   if (
@@ -5070,6 +5144,12 @@ function setReadingMode(mode) {
 
   readingMode = mode;
   applyReadingSettings();
+
+  /*
+    Le changement doit être actif immédiatement pour le texte
+    courant, même sans cliquer sur Enregistrer.
+  */
+  scheduleDraftAutosave();
 }
 
 
@@ -5105,6 +5185,7 @@ settingsWpmRange.addEventListener(
       );
 
     applyReadingSettings();
+    scheduleDraftAutosave();
   }
 );
 
@@ -7561,6 +7642,13 @@ async function runCountdown() {
 launchBtn.addEventListener(
   "click",
   () => {
+
+    /*
+      Les réglages visibles sur la page Paramètres sont la source
+      de vérité pour le lancement courant. Ils sont appliqués
+      immédiatement, sans exiger l'enregistrement du texte.
+    */
+    syncSessionSettingsFromHomeControls();
 
     if (
       readingMode === "voice" &&
