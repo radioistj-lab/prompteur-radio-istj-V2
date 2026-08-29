@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.6
+  Prompteur vocal V5.5.7
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -996,6 +996,20 @@ button:active {
 .alignmentButton.active {
   background: var(--primary);
   color: white;
+}
+
+.displaySectionLabel {
+  margin: 4px 0 14px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  color: #F8FAFC;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.displaySectionLabel.readingSection {
+  margin-top: 4px;
 }
 
 #resetDisplayBtn {
@@ -2346,7 +2360,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.4</span>
+            <span id="appVersionLabel">Version V5.5.7</span>
           </div>
 
           <button
@@ -2417,7 +2431,7 @@ button:active {
       id="editBtn"
       class="toolbarButton"
     >
-      ✏️ Modifier
+      ← Texte
     </button>
 
 
@@ -2449,9 +2463,9 @@ button:active {
     <button
       id="displayBtn"
       class="toolbarButton"
-      title="Réglages d'affichage"
+      title="Réglages"
     >
-      ⚙️ Affichage
+      ⚙️ Réglages
     </button>
 
 
@@ -2493,7 +2507,7 @@ button:active {
     <div class="displayPanelTitle">
 
       <strong>
-        ⚙️ Affichage
+        ⚙️ Réglages
       </strong>
 
       <button
@@ -2505,6 +2519,9 @@ button:active {
 
     </div>
 
+    <div class="displaySectionLabel">
+      Affichage
+    </div>
 
     <div class="settingGroup">
 
@@ -2664,6 +2681,10 @@ button:active {
 
     </div>
 
+
+    <div class="displaySectionLabel readingSection">
+      Lecture
+    </div>
 
     <div class="settingGroup">
 
@@ -3185,7 +3206,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.6";
+const APP_VERSION = "5.5.7";
 
 const TAB_ID =
   "tab_" +
