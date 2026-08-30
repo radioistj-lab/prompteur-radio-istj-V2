@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.14
+  Prompteur vocal V5.5.15
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -2853,7 +2853,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.14</span>
+            <span id="appVersionLabel">Version V5.5.15</span>
           </div>
 
           <div class="appActionButtons">
@@ -3746,8 +3746,9 @@ button:active {
         choisissez Contrôler un prompteur puis Scanner un QR code, ou saisissez manuellement
         le code à 6 caractères. La télécommande permet Pause/Reprendre,
         retour au début, réglage rapide de la taille du texte et vitesse −/+.
-        Une commande Vitesse −/+ bascule automatiquement le prompteur en Vitesse fixe
-        et démarre ce moteur si le lecteur est déjà ouvert.
+        Une commande Vitesse −/+ quitte immédiatement le suivi vocal,
+        bascule le prompteur en Vitesse fixe et démarre ce moteur à la position courante
+        si le lecteur est déjà ouvert.
         Le texte du prompteur n'est pas transmis.
       </p>
 
@@ -3759,7 +3760,7 @@ button:active {
       </p>
 
       <div class="helpTip">
-        <strong>Prompteur vocal — V5.5.14</strong><br>
+        <strong>Prompteur vocal — V5.5.15</strong><br>
         © 2026 C. Declerck — Tous droits réservés.
       </div>
 
@@ -4283,7 +4284,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.14";
+const APP_VERSION = "5.5.15";
 
 const TAB_ID =
   "tab_" +
@@ -5767,15 +5768,17 @@ function applyRemoteFixedSpeedChange(
 ) {
 
   /*
-    La télécommande utilise Vitesse −/+ comme une vraie commande
-    de lecture, pas seulement comme un réglage numérique.
+    Une pression sur Vitesse −/+ depuis la télécommande est une
+    commande de lecture complète :
 
-    - Si le suivi vocal est actif, on l'arrête proprement.
-    - On conserve currentWord / fixedWordProgress.
-    - On bascule en mode Vitesse fixe.
-    - Si le lecteur est déjà visible, le moteur de vitesse démarre.
-    - Si le moteur de vitesse tourne déjà, on ne le redémarre pas :
-      la nouvelle valeur est simplement prise en compte.
+    1. ajuster la valeur,
+    2. sélectionner réellement le mode Vitesse fixe,
+    3. arrêter le suivi vocal s'il est actif,
+    4. conserver la position courante,
+    5. démarrer immédiatement le moteur Vitesse fixe si le lecteur
+       est déjà affiché.
+
+    Si le moteur Vitesse fixe tourne déjà, seule sa vitesse change.
   */
 
   fixedWpm =
@@ -5797,59 +5800,68 @@ function applyRemoteFixedSpeedChange(
     speedModeActive;
 
 
-  if (
-    listening &&
-    !speedModeActive
-  ) {
+  /*
+    setReadingMode synchronise aussi tous les boutons :
+    Réglages + panneau lecteur + état envoyé à la télécommande.
+  */
+  setReadingMode(
+    "speed"
+  );
 
+
+  if (listening) {
+
+    /*
+      On coupe le micro sans changer de position dans le texte.
+      pauseActiveReading remet listening à false et demande l'arrêt
+      de SpeechRecognition. Le garde-fou dans recognition.onend
+      empêche ensuite le micro d'écraser l'état du moteur de vitesse.
+    */
     pauseActiveReading(
       "Passage en vitesse fixe"
     );
   }
 
 
-  readingMode =
-    "speed";
+  /*
+    Si la vitesse fixe tournait déjà, pauseActiveReading n'a pas été
+    appelée : il suffit de recalculer la vitesse de défilement.
+  */
+  if (fixedSpeedWasAlreadyRunning) {
+
+    targetScrollSpeed =
+      getFixedScrollSpeed();
 
 
-  applyReadingSettings();
+    statusText.textContent =
+      "Vitesse fixe — " +
+      fixedWpm +
+      " mots/min";
 
-  scheduleDraftAutosave();
+
+    statusBox.classList.add(
+      "listening"
+    );
+
+
+    pauseBtn.textContent =
+      "⏸ Pause";
+
+
+    return;
+  }
 
 
   /*
-    Pendant le compte à rebours, on ne force pas le démarrage :
-    runCountdown() lancera automatiquement le mode désormais choisi.
+    Pendant le compte à rebours, on laisse runCountdown()
+    démarrer le mode sélectionné à la fin du 3-2-1.
   */
   if (
     readerIsActive &&
     !countdownRunning
   ) {
 
-    if (fixedSpeedWasAlreadyRunning) {
-
-      targetScrollSpeed =
-        getFixedScrollSpeed();
-
-
-      statusText.textContent =
-        "Vitesse fixe — " +
-        fixedWpm +
-        " mots/min";
-
-
-      statusBox.classList.add(
-        "listening"
-      );
-
-
-      pauseBtn.textContent =
-        "⏸ Pause";
-    }
-    else {
-
-      startFixedSpeed();
-    }
+    startFixedSpeed();
   }
 }
 
@@ -11201,6 +11213,21 @@ if (SpeechRecognition) {
 
         voiceActive =
           false;
+
+
+        /*
+          Si le micro vient de se fermer parce que l'utilisateur
+          a basculé vers Vitesse fixe (notamment depuis la télécommande),
+          le moteur de vitesse a désormais la priorité.
+          Ne pas écraser son état par "En pause".
+        */
+        if (
+          speedModeActive ||
+          readingMode === "speed"
+        ) {
+
+          return;
+        }
 
 
         targetScrollSpeed =
