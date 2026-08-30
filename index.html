@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.15
+  Prompteur vocal V5.5.16
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -979,6 +979,37 @@ button:active {
   gap: 9px;
 }
 
+.remoteModeLabel {
+  margin: 14px 0 7px;
+  color: #94A3B8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.remoteModeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.remoteVoiceModeButton {
+  grid-column: 1 / -1;
+}
+
+.remoteEngineActive {
+  background: #15803D !important;
+  border-color: #22C55E !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 0 1px rgba(34,197,94,.18);
+}
+
+.remoteEngineActive:hover {
+  background: #166534 !important;
+}
+
 .remoteResetButton {
   grid-column: 1 / -1;
 }
@@ -1043,11 +1074,13 @@ button:active {
 
 @media (max-width: 400px) {
   .remoteSecondaryGrid,
+  .remoteModeGrid,
   .remoteConnectActions,
   .remoteHostMainActions {
     grid-template-columns: 1fr;
   }
 
+  .remoteVoiceModeButton,
   .remoteResetButton {
     grid-column: auto;
   }
@@ -2853,7 +2886,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.15</span>
+            <span id="appVersionLabel">Version V5.5.16</span>
           </div>
 
           <div class="appActionButtons">
@@ -3613,6 +3646,35 @@ button:active {
         ⏸ Pause
       </button>
 
+      <div class="remoteModeLabel">
+        Mode de lecture
+      </div>
+
+      <div class="remoteModeGrid">
+
+        <button
+          id="remoteVoiceBtn"
+          class="remoteSecondaryButton remoteVoiceModeButton"
+        >
+          🎙 Suivi vocal
+        </button>
+
+        <button
+          id="remoteSpeedMinusBtn"
+          class="remoteSecondaryButton"
+        >
+          🐢 Vitesse −
+        </button>
+
+        <button
+          id="remoteSpeedPlusBtn"
+          class="remoteSecondaryButton"
+        >
+          🐇 Vitesse +
+        </button>
+
+      </div>
+
       <div class="remoteSecondaryGrid">
 
         <button
@@ -3634,20 +3696,6 @@ button:active {
           class="remoteSecondaryButton"
         >
           A+
-        </button>
-
-        <button
-          id="remoteSpeedMinusBtn"
-          class="remoteSecondaryButton"
-        >
-          🐢 Vitesse −
-        </button>
-
-        <button
-          id="remoteSpeedPlusBtn"
-          class="remoteSecondaryButton"
-        >
-          🐇 Vitesse +
         </button>
 
       </div>
@@ -3747,8 +3795,10 @@ button:active {
         le code à 6 caractères. La télécommande permet Pause/Reprendre,
         retour au début, réglage rapide de la taille du texte et vitesse −/+.
         Une commande Vitesse −/+ quitte immédiatement le suivi vocal,
-        bascule le prompteur en Vitesse fixe et démarre ce moteur à la position courante
-        si le lecteur est déjà ouvert.
+        bascule le prompteur en Vitesse fixe et démarre ce moteur à la position courante.
+        Le bouton Suivi vocal permet de revenir au moteur vocal au même endroit.
+        Sur la télécommande, le moteur sélectionné apparaît en vert.
+        Le mode Vitesse fixe démarre et reprend progressivement pendant environ 3 secondes.
         Le texte du prompteur n'est pas transmis.
       </p>
 
@@ -3760,7 +3810,7 @@ button:active {
       </p>
 
       <div class="helpTip">
-        <strong>Prompteur vocal — V5.5.15</strong><br>
+        <strong>Prompteur vocal — V5.5.16</strong><br>
         © 2026 C. Declerck — Tous droits réservés.
       </div>
 
@@ -4175,6 +4225,9 @@ const remoteProgressLabel =
 const remoteToggleBtn =
   document.getElementById("remoteToggleBtn");
 
+const remoteVoiceBtn =
+  document.getElementById("remoteVoiceBtn");
+
 const remoteResetBtn =
   document.getElementById("remoteResetBtn");
 
@@ -4268,6 +4321,20 @@ let fixedWpm = 150;
 
 let speedModeActive = false;
 
+
+/*
+  Démarrage progressif du moteur Vitesse fixe.
+  La rampe ne s'applique qu'au démarrage / à la reprise.
+*/
+const FIXED_SPEED_RAMP_DURATION =
+  3000;
+
+const FIXED_SPEED_RAMP_START_FACTOR =
+  0.55;
+
+let fixedSpeedRampStartedAt =
+  0;
+
 let fixedWordProgress = 0;
 
 let autosaveTimer = null;
@@ -4284,7 +4351,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.15";
+const APP_VERSION = "5.5.16";
 
 const TAB_ID =
   "tab_" +
@@ -5763,6 +5830,76 @@ function stopRemoteStateTimer() {
 }
 
 
+function applyRemoteVoiceMode() {
+
+  /*
+    Retour au suivi vocal sans perdre la position courante.
+  */
+
+  const readerIsActive =
+    readerScreen.style.display ===
+    "block";
+
+
+  if (
+    readingMode === "voice" &&
+    listening
+  ) {
+
+    sendRemoteState();
+
+    return;
+  }
+
+
+  if (speedModeActive) {
+
+    speedModeActive =
+      false;
+
+    targetScrollSpeed =
+      0;
+
+    currentScrollSpeed =
+      0;
+
+    fixedSpeedRampStartedAt =
+      0;
+  }
+
+
+  voiceActive =
+    false;
+
+
+  fixedWordProgress =
+    Math.max(
+      0,
+      currentWord
+    );
+
+
+  setReadingMode(
+    "voice"
+  );
+
+
+  if (
+    readerIsActive &&
+    !countdownRunning
+  ) {
+
+    startRecognition();
+  }
+
+
+  setTimeout(
+    sendRemoteState,
+    40
+  );
+}
+
+
 function applyRemoteFixedSpeedChange(
   delta
 ) {
@@ -5830,7 +5967,8 @@ function applyRemoteFixedSpeedChange(
   if (fixedSpeedWasAlreadyRunning) {
 
     targetScrollSpeed =
-      getFixedScrollSpeed();
+      getFixedScrollSpeed() *
+      getFixedSpeedRampFactor();
 
 
     statusText.textContent =
@@ -5871,6 +6009,13 @@ function executeRemoteCommand(
 ) {
 
   switch (action) {
+
+    case "voice":
+
+      applyRemoteVoiceMode();
+
+      break;
+
 
     case "toggle":
 
@@ -6408,6 +6553,48 @@ function updateRemoteControllerUI(
         " m/min"
       : state.mode ||
         "—";
+
+
+  remoteVoiceBtn.classList.toggle(
+    "remoteEngineActive",
+    !speedMode
+  );
+
+
+  remoteSpeedMinusBtn.classList.toggle(
+    "remoteEngineActive",
+    speedMode
+  );
+
+
+  remoteSpeedPlusBtn.classList.toggle(
+    "remoteEngineActive",
+    speedMode
+  );
+
+
+  remoteVoiceBtn.setAttribute(
+    "aria-pressed",
+    String(!speedMode)
+  );
+
+
+  remoteSpeedMinusBtn.setAttribute(
+    "aria-pressed",
+    String(speedMode)
+  );
+
+
+  remoteSpeedPlusBtn.setAttribute(
+    "aria-pressed",
+    String(speedMode)
+  );
+
+
+  remoteVoiceBtn.title =
+    speedMode
+      ? "Revenir au suivi vocal à la position courante"
+      : "Suivi vocal actif";
 
 
   remoteSpeedMinusBtn.disabled =
@@ -7335,6 +7522,17 @@ remoteToggleBtn.addEventListener(
 
     sendRemoteCommand(
       "toggle"
+    );
+  }
+);
+
+
+remoteVoiceBtn.addEventListener(
+  "click",
+  () => {
+
+    sendRemoteCommand(
+      "voice"
     );
   }
 );
@@ -10422,6 +10620,7 @@ function pauseActiveReading(
 
   if (speedModeActive) {
     speedModeActive = false;
+    fixedSpeedRampStartedAt = 0;
   }
 
   if (listening) {
@@ -10447,6 +10646,62 @@ function pauseActiveReading(
 }
 
 
+function getFixedSpeedRampFactor() {
+
+  if (!fixedSpeedRampStartedAt) {
+    return 1;
+  }
+
+
+  const elapsed =
+    performance.now() -
+    fixedSpeedRampStartedAt;
+
+
+  if (
+    elapsed >=
+    FIXED_SPEED_RAMP_DURATION
+  ) {
+
+    fixedSpeedRampStartedAt =
+      0;
+
+    return 1;
+  }
+
+
+  const progress =
+    Math.max(
+      0,
+      Math.min(
+        1,
+        elapsed /
+        FIXED_SPEED_RAMP_DURATION
+      )
+    );
+
+
+  const eased =
+    progress *
+    progress *
+    (
+      3 -
+      2 *
+      progress
+    );
+
+
+  return (
+    FIXED_SPEED_RAMP_START_FACTOR +
+    (
+      1 -
+      FIXED_SPEED_RAMP_START_FACTOR
+    ) *
+    eased
+  );
+}
+
+
 function startFixedSpeed() {
 
   releaseMicroLock();
@@ -10455,6 +10710,11 @@ function startFixedSpeed() {
   voiceActive = true;
   speedModeActive = true;
 
+
+  fixedSpeedRampStartedAt =
+    performance.now();
+
+
   fixedWordProgress =
     Math.max(
       fixedWordProgress,
@@ -10462,7 +10722,8 @@ function startFixedSpeed() {
     );
 
   targetScrollSpeed =
-    getFixedScrollSpeed();
+    getFixedScrollSpeed() *
+    FIXED_SPEED_RAMP_START_FACTOR;
 
   statusText.textContent =
     "Vitesse fixe — " +
@@ -10506,8 +10767,17 @@ function hybridScrollLoop(time) {
 
   if (speedModeActive) {
 
+    const fixedSpeedRampFactor =
+      getFixedSpeedRampFactor();
+
+
+    const effectiveFixedWpm =
+      fixedWpm *
+      fixedSpeedRampFactor;
+
+
     fixedWordProgress +=
-      fixedWpm /
+      effectiveFixedWpm /
       60 *
       (delta / 1000);
 
@@ -10530,7 +10800,8 @@ function hybridScrollLoop(time) {
     }
 
     targetScrollSpeed =
-      getFixedScrollSpeed();
+      getFixedScrollSpeed() *
+      fixedSpeedRampFactor;
 
     if (
       words.length &&
@@ -10542,6 +10813,7 @@ function hybridScrollLoop(time) {
         words.length - 1;
 
       speedModeActive = false;
+      fixedSpeedRampStartedAt = 0;
       targetScrollSpeed = 0;
       currentScrollSpeed = 0;
 
