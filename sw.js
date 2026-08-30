@@ -1,9 +1,9 @@
 /*
-  Prompteur vocal — Service Worker V5.5.11
+  Prompteur vocal — Service Worker V5.5.12
   © 2026 C. Declerck
 */
 
-const CACHE_NAME = "prompteur-vocal-v5.5.11";
+const CACHE_NAME = "prompteur-vocal-v5.5.12";
 
 const BASE_URL = new URL("./", self.location.href);
 

@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.11
+  Prompteur vocal V5.5.12
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -774,6 +774,38 @@ button:active {
   user-select: all;
 }
 
+.remoteQrWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  margin: 14px 0 10px;
+}
+
+.remoteQr {
+  display: grid;
+  place-items: center;
+  width: 196px;
+  min-height: 196px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #FFFFFF;
+}
+
+.remoteQr canvas,
+.remoteQr img {
+  display: block;
+  width: 176px !important;
+  height: 176px !important;
+}
+
+.remoteQrHelp {
+  color: #94A3B8;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.4;
+}
+
 .remoteStatus {
   margin: 12px 0;
   padding: 10px 12px;
@@ -887,8 +919,12 @@ button:active {
 
 .remoteSecondaryGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 9px;
+}
+
+.remoteResetButton {
+  grid-column: 1 / -1;
 }
 
 .remoteSecondaryButton {
@@ -919,9 +955,13 @@ button:active {
   line-height: 1.45;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 400px) {
   .remoteSecondaryGrid {
     grid-template-columns: 1fr;
+  }
+
+  .remoteResetButton {
+    grid-column: auto;
   }
 }
 
@@ -2676,8 +2716,9 @@ button:active {
 
         <p class="remoteIntro">
           Pilotez ce prompteur depuis un deuxième téléphone, une tablette
-          ou un ordinateur. Seuls les ordres de commande et l'état de lecture
-          sont transmis : le texte reste sur l'appareil principal.
+          ou un ordinateur. La connexion se fait par QR code ou code à 6 caractères.
+          Seuls les ordres de commande et l'état de lecture sont transmis :
+          le texte reste sur l'appareil principal.
         </p>
 
         <div class="remoteActionRow">
@@ -2724,7 +2765,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.11</span>
+            <span id="appVersionLabel">Version V5.5.12</span>
           </div>
 
           <div class="appActionButtons">
@@ -3284,6 +3325,20 @@ button:active {
       ------
     </div>
 
+    <div class="remoteQrWrap">
+
+      <div
+        id="remoteQr"
+        class="remoteQr"
+        aria-label="QR code de connexion"
+      ></div>
+
+      <div class="remoteQrHelp">
+        Scannez ce QR code avec le second appareil pour ouvrir directement la télécommande.
+      </div>
+
+    </div>
+
     <div
       id="remoteHostStatus"
       class="remoteStatus"
@@ -3424,7 +3479,7 @@ button:active {
 
         <button
           id="remoteResetBtn"
-          class="remoteSecondaryButton"
+          class="remoteSecondaryButton remoteResetButton"
         >
           ↩ Début
         </button>
@@ -3441,6 +3496,20 @@ button:active {
           class="remoteSecondaryButton"
         >
           A+
+        </button>
+
+        <button
+          id="remoteSpeedMinusBtn"
+          class="remoteSecondaryButton"
+        >
+          🐢 Vitesse −
+        </button>
+
+        <button
+          id="remoteSpeedPlusBtn"
+          class="remoteSecondaryButton"
+        >
+          🐇 Vitesse +
         </button>
 
       </div>
@@ -3535,9 +3604,9 @@ button:active {
 
       <h3>📱 Télécommande virtuelle</h3>
       <p>
-        Sur l'appareil principal, choisissez Créer une session puis notez le code à 6 caractères.
-        Sur le second appareil, choisissez Contrôler un prompteur et saisissez ce code.
-        La télécommande permet Pause/Reprendre, retour au début et réglage rapide de la taille du texte.
+        Sur l'appareil principal, choisissez Créer une session puis scannez le QR code
+        ou utilisez le code à 6 caractères. La télécommande permet Pause/Reprendre,
+        retour au début, réglage rapide de la taille du texte et vitesse −/+ en mode Vitesse fixe.
         Le texte du prompteur n'est pas transmis.
       </p>
 
@@ -3549,7 +3618,7 @@ button:active {
       </p>
 
       <div class="helpTip">
-        <strong>Prompteur vocal — V5.5.11</strong><br>
+        <strong>Prompteur vocal — V5.5.12</strong><br>
         © 2026 C. Declerck — Tous droits réservés.
       </div>
 
@@ -3602,6 +3671,13 @@ button:active {
 </div>
 
 
+
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+  integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
 
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 
@@ -3895,6 +3971,9 @@ const closeRemoteHostBtn =
 const remoteSessionCode =
   document.getElementById("remoteSessionCode");
 
+const remoteQr =
+  document.getElementById("remoteQr");
+
 const remoteHostStatus =
   document.getElementById("remoteHostStatus");
 
@@ -3942,6 +4021,12 @@ const remoteFontMinusBtn =
 
 const remoteFontPlusBtn =
   document.getElementById("remoteFontPlusBtn");
+
+const remoteSpeedMinusBtn =
+  document.getElementById("remoteSpeedMinusBtn");
+
+const remoteSpeedPlusBtn =
+  document.getElementById("remoteSpeedPlusBtn");
 
 const remoteDisconnectBtn =
   document.getElementById("remoteDisconnectBtn");
@@ -4037,7 +4122,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.11";
+const APP_VERSION = "5.5.12";
 
 const TAB_ID =
   "tab_" +
@@ -5138,6 +5223,21 @@ let remoteControllerConnection =
 let remoteStateTimer =
   null;
 
+let remoteQrInstance =
+  null;
+
+let lastRemoteControllerCode =
+  "";
+
+let remoteReconnectTimer =
+  null;
+
+let remoteReconnectAttempts =
+  0;
+
+let remoteManualDisconnect =
+  false;
+
 
 function remoteLibraryAvailable() {
 
@@ -5169,6 +5269,87 @@ function generateRemoteCode() {
   }
 
   return code;
+}
+
+
+function getRemoteJoinUrl(
+  code
+) {
+
+  const url =
+    new URL(
+      window.location.href
+    );
+
+
+  url.hash =
+    "";
+
+
+  url.searchParams.delete(
+    "remote"
+  );
+
+
+  url.searchParams.set(
+    "remote",
+    code
+  );
+
+
+  return url.toString();
+}
+
+
+function renderRemoteQr(
+  code
+) {
+
+  remoteQr.innerHTML =
+    "";
+
+
+  remoteQrInstance =
+    null;
+
+
+  if (
+    typeof window.QRCode !==
+    "function"
+  ) {
+
+    remoteQr.textContent =
+      "QR indisponible";
+
+    return;
+  }
+
+
+  remoteQrInstance =
+    new QRCode(
+      remoteQr,
+      {
+        text:
+          getRemoteJoinUrl(
+            code
+          ),
+
+        width:
+          176,
+
+        height:
+          176,
+
+        colorDark:
+          "#000000",
+
+        colorLight:
+          "#ffffff",
+
+        correctLevel:
+          QRCode.CorrectLevel.M
+      }
+    );
 }
 
 
@@ -5359,7 +5540,10 @@ function getRemoteReadingState() {
       ),
 
     fontSize:
-      currentFontSize
+      currentFontSize,
+
+    wpm:
+      fixedWpm
   };
 }
 
@@ -5441,6 +5625,52 @@ function executeRemoteCommand(
     case "fontPlus":
 
       fontPlus.click();
+
+      break;
+
+
+    case "speedMinus":
+
+      fixedWpm =
+        Math.max(
+          80,
+          fixedWpm - 10
+        );
+
+
+      applyReadingSettings();
+      scheduleDraftAutosave();
+
+
+      if (speedModeActive) {
+        statusText.textContent =
+          "Vitesse fixe — " +
+          fixedWpm +
+          " mots/min";
+      }
+
+      break;
+
+
+    case "speedPlus":
+
+      fixedWpm =
+        Math.min(
+          240,
+          fixedWpm + 10
+        );
+
+
+      applyReadingSettings();
+      scheduleDraftAutosave();
+
+
+      if (speedModeActive) {
+        statusText.textContent =
+          "Vitesse fixe — " +
+          fixedWpm +
+          " mots/min";
+      }
 
       break;
 
@@ -5594,6 +5824,11 @@ function createRemoteHostPeer(
 
   remoteSessionCode.textContent =
     code;
+
+
+  renderRemoteQr(
+    code
+  );
 
 
   setRemoteHostStatus(
@@ -5761,6 +5996,14 @@ function stopRemoteHostSession() {
     "------";
 
 
+  remoteQr.innerHTML =
+    "";
+
+
+  remoteQrInstance =
+    null;
+
+
   setRemoteHostStatus(
     "Session fermée."
   );
@@ -5785,6 +6028,11 @@ remoteCreateBtn.addEventListener(
 
       remoteSessionCode.textContent =
         remoteHostCode;
+
+
+      renderRemoteQr(
+        remoteHostCode
+      );
 
 
       if (
@@ -5873,9 +6121,41 @@ function updateRemoteControllerUI(
     "Prêt";
 
 
+  const speedMode =
+    state.mode ===
+    "Vitesse fixe";
+
+
   remoteModeText.textContent =
-    state.mode ||
-    "—";
+    speedMode &&
+    Number.isFinite(
+      state.wpm
+    )
+      ? "Vitesse fixe · " +
+        state.wpm +
+        " m/min"
+      : state.mode ||
+        "—";
+
+
+  remoteSpeedMinusBtn.disabled =
+    !speedMode;
+
+
+  remoteSpeedPlusBtn.disabled =
+    !speedMode;
+
+
+  remoteSpeedMinusBtn.title =
+    speedMode
+      ? "Réduire la vitesse de 10 mots/min"
+      : "Disponible uniquement en mode Vitesse fixe";
+
+
+  remoteSpeedPlusBtn.title =
+    speedMode
+      ? "Augmenter la vitesse de 10 mots/min"
+      : "Disponible uniquement en mode Vitesse fixe";
 
 
   const progress =
@@ -5910,7 +6190,26 @@ function updateRemoteControllerUI(
 }
 
 
-function stopRemoteControllerConnection() {
+function clearRemoteReconnectTimer() {
+
+  if (remoteReconnectTimer) {
+
+    clearTimeout(
+      remoteReconnectTimer
+    );
+
+    remoteReconnectTimer =
+      null;
+  }
+}
+
+
+function stopRemoteControllerConnection(
+  clearRememberedCode = false
+) {
+
+  clearRemoteReconnectTimer();
+
 
   if (remoteControllerConnection) {
 
@@ -5948,6 +6247,16 @@ function stopRemoteControllerConnection() {
     "🔗 Se connecter";
 
 
+  if (clearRememberedCode) {
+
+    lastRemoteControllerCode =
+      "";
+
+    remoteReconnectAttempts =
+      0;
+  }
+
+
   setRemoteControllerStatus(
     "Non connecté."
   );
@@ -5957,7 +6266,77 @@ function stopRemoteControllerConnection() {
 }
 
 
-function connectRemoteController() {
+function scheduleRemoteReconnect() {
+
+  if (
+    remoteManualDisconnect ||
+    !lastRemoteControllerCode ||
+    document.visibilityState !==
+      "visible" ||
+    (
+      remoteControllerConnection &&
+      remoteControllerConnection.open
+    )
+  ) {
+    return;
+  }
+
+
+  clearRemoteReconnectTimer();
+
+
+  if (
+    remoteReconnectAttempts >=
+    3
+  ) {
+
+    setRemoteControllerStatus(
+      "Reconnexion automatique impossible. Appuyez sur Se connecter pour réessayer.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const delay =
+    900 +
+    remoteReconnectAttempts *
+    900;
+
+
+  remoteReconnectTimer =
+    setTimeout(
+      () => {
+
+        remoteReconnectTimer =
+          null;
+
+        remoteReconnectAttempts +=
+          1;
+
+
+        remoteCodeInput.value =
+          lastRemoteControllerCode;
+
+
+        setRemoteControllerStatus(
+          "Reconnexion au prompteur…"
+        );
+
+
+        connectRemoteController(
+          true
+        );
+      },
+      delay
+    );
+}
+
+
+function connectRemoteController(
+  automatic = false
+) {
 
   if (!remoteLibraryAvailable()) {
 
@@ -5998,7 +6377,23 @@ function connectRemoteController() {
   }
 
 
-  stopRemoteControllerConnection();
+  if (!automatic) {
+
+    remoteManualDisconnect =
+      false;
+
+    remoteReconnectAttempts =
+      0;
+  }
+
+
+  lastRemoteControllerCode =
+    code;
+
+
+  stopRemoteControllerConnection(
+    false
+  );
 
 
   remoteCodeInput.value =
@@ -6078,6 +6473,14 @@ function connectRemoteController() {
             "✓ Connecté";
 
 
+          remoteReconnectAttempts =
+            0;
+
+
+          remoteManualDisconnect =
+            false;
+
+
           remoteControls.hidden =
             false;
 
@@ -6139,6 +6542,9 @@ function connectRemoteController() {
 
 
           updateRemoteSettingsStatus();
+
+
+          scheduleRemoteReconnect();
         }
       );
 
@@ -6203,6 +6609,11 @@ function connectRemoteController() {
 
 
       updateRemoteSettingsStatus();
+
+
+      if (automatic) {
+        scheduleRemoteReconnect();
+      }
     }
   );
 }
@@ -6383,11 +6794,78 @@ remoteFontPlusBtn.addEventListener(
 );
 
 
+remoteSpeedMinusBtn.addEventListener(
+  "click",
+  () => {
+
+    sendRemoteCommand(
+      "speedMinus"
+    );
+  }
+);
+
+
+remoteSpeedPlusBtn.addEventListener(
+  "click",
+  () => {
+
+    sendRemoteCommand(
+      "speedPlus"
+    );
+  }
+);
+
+
 remoteDisconnectBtn.addEventListener(
   "click",
   () => {
 
-    stopRemoteControllerConnection();
+    remoteManualDisconnect =
+      true;
+
+
+    stopRemoteControllerConnection(
+      true
+    );
+  }
+);
+
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    if (
+      document.visibilityState !==
+      "visible"
+    ) {
+      return;
+    }
+
+
+    /*
+      Si l'appareil principal revient d'une mise en veille,
+      PeerJS peut avoir perdu sa liaison au serveur de signalisation.
+    */
+    if (
+      remoteHostPeer &&
+      !remoteHostPeer.destroyed &&
+      remoteHostPeer.disconnected
+    ) {
+
+      try {
+        remoteHostPeer.reconnect();
+      }
+      catch (error) {}
+    }
+
+
+    /*
+      Côté télécommande, une courte mise en veille ou un changement
+      d'application peut fermer le DataChannel : on tente de retrouver
+      automatiquement la session précédente.
+    */
+    scheduleRemoteReconnect();
   }
 );
 
@@ -6417,7 +6895,67 @@ window.addEventListener(
 );
 
 
+function openRemoteControllerFromUrl() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const code =
+    (
+      params.get(
+        "remote"
+      ) ||
+      ""
+    )
+      .toUpperCase()
+      .replace(
+        /[^A-Z2-9]/g,
+        ""
+      )
+      .slice(
+        0,
+        6
+      );
+
+
+  if (code.length !== 6) {
+    return;
+  }
+
+
+  remoteCodeInput.value =
+    code;
+
+
+  lastRemoteControllerCode =
+    code;
+
+
+  remoteControllerModal.hidden =
+    false;
+
+
+  setRemoteControllerStatus(
+    "Code reçu par QR — connexion…"
+  );
+
+
+  setTimeout(
+    () => {
+
+      connectRemoteController();
+    },
+    200
+  );
+}
+
+
 updateRemoteSettingsStatus();
+
+openRemoteControllerFromUrl();
 
 
 /* =========================================================
