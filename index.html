@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.9
+  Prompteur vocal V5.5.10
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -843,8 +843,8 @@ button:active {
 
 #mirrorBtn.active,
 #rotateBtn.active {
-  background: #1E3A5F;
-  color: #BFDBFE;
+  background: var(--primary);
+  color: #FFFFFF;
 }
 
 #displayBtn.active {
@@ -1632,9 +1632,9 @@ button:active {
 }
 
 .orientationButton.active {
-  background: #1E3A5F;
-  border-color: #3B82F6;
-  color: #DBEAFE;
+  background: #2563eb;
+  border-color: #3b82f6;
+  color: #fff;
 }
 
 .speedHelp {
@@ -1772,6 +1772,43 @@ button:active {
   font-size: 13px;
 }
 
+.appActionButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.helpContent {
+  color: #E2E8F0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.helpContent h3 {
+  margin: 17px 0 6px;
+  font-size: 14px;
+  color: #F8FAFC;
+}
+
+.helpContent h3:first-child {
+  margin-top: 0;
+}
+
+.helpContent p {
+  margin: 0 0 8px;
+  color: #CBD5E1;
+}
+
+.helpTip {
+  margin-top: 14px;
+  padding: 11px 12px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #111827;
+  color: #CBD5E1;
+}
+
 @media (max-width: 560px) {
   .documentImportRow {
     align-items: stretch;
@@ -1793,6 +1830,15 @@ button:active {
   #progressLabel {
     min-width: 42px;
     font-size: 10px;
+  }
+
+  .appActionButtons {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .appActionButtons .settingsActionButton {
+    flex: 1 1 150px;
   }
 }
 
@@ -2418,15 +2464,26 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.9</span>
+            <span id="appVersionLabel">Version V5.5.10</span>
           </div>
 
-          <button
-            id="checkUpdateBtn"
-            class="settingsActionButton compactActionButton"
-          >
-            🔄 Vérifier les mises à jour
-          </button>
+          <div class="appActionButtons">
+
+            <button
+              id="helpBtn"
+              class="settingsActionButton compactActionButton"
+            >
+              ❔ Aide / À propos
+            </button>
+
+            <button
+              id="checkUpdateBtn"
+              class="settingsActionButton compactActionButton"
+            >
+              🔄 Vérifier les mises à jour
+            </button>
+
+          </div>
 
         </div>
 
@@ -2925,6 +2982,90 @@ button:active {
 
 
 <!-- =======================================================
+     AIDE / À PROPOS
+======================================================= -->
+
+<div
+  id="helpModal"
+  class="historyModal"
+  hidden
+>
+
+  <div class="historyDialog">
+
+    <div class="historyHeader">
+
+      <h2>
+        ❔ Aide / À propos
+      </h2>
+
+      <button
+        id="closeHelpBtn"
+        aria-label="Fermer"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div class="helpContent">
+
+      <h3>🎙️ Suivi vocal</h3>
+      <p>
+        Le prompteur suit votre voix et s'arrête naturellement lorsque vous cessez de parler.
+        Autorisez l'accès au microphone lorsque le navigateur le demande.
+      </p>
+
+      <h3>▶ Vitesse fixe</h3>
+      <p>
+        Le texte défile à la vitesse choisie en mots par minute.
+        Ce mode reste utilisable lorsque la reconnaissance vocale est indisponible.
+      </p>
+
+      <h3>⏸ Pause / Reprise</h3>
+      <p>
+        Utilisez le bouton Pause ou touchez directement la zone de lecture.
+        Touchez de nouveau l'écran pour reprendre.
+      </p>
+
+      <h3>🪞 Miroir et ↻ 180°</h3>
+      <p>
+        Miroir inverse horizontalement le texte. Rotation 180° retourne l'ensemble du lecteur.
+        Les deux options peuvent être combinées selon le support du téléprompteur.
+        Un bouton bleu indique que l'option est activée.
+      </p>
+
+      <h3>⛶ Plein écran</h3>
+      <p>
+        Utilisez le bouton plein écran pour masquer au maximum l'interface du navigateur pendant la lecture.
+      </p>
+
+      <h3>📄 Import de documents</h3>
+      <p>
+        Les fichiers TXT, DOCX et les PDF contenant du vrai texte peuvent être importés.
+        Les PDF constitués uniquement d'images numérisées nécessitent un OCR et ne sont pas encore pris en charge.
+      </p>
+
+      <h3>📶 Hors connexion</h3>
+      <p>
+        L'interface et les textes enregistrés peuvent rester disponibles après mise en cache.
+        Le suivi vocal dépend toutefois des capacités du navigateur et peut nécessiter une connexion.
+        Le mode Vitesse fixe reste utilisable hors connexion.
+      </p>
+
+      <div class="helpTip">
+        <strong>Prompteur vocal — V5.5.10</strong><br>
+        © 2026 C. Declerck — Tous droits réservés.
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
      MISE À JOUR PWA
 ======================================================= -->
 
@@ -3230,6 +3371,15 @@ const connectionStatus =
 const appVersionLabel =
   document.getElementById("appVersionLabel");
 
+const helpBtn =
+  document.getElementById("helpBtn");
+
+const helpModal =
+  document.getElementById("helpModal");
+
+const closeHelpBtn =
+  document.getElementById("closeHelpBtn");
+
 const checkUpdateBtn =
   document.getElementById("checkUpdateBtn");
 
@@ -3321,7 +3471,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.9";
+const APP_VERSION = "5.5.10";
 
 const TAB_ID =
   "tab_" +
@@ -4382,6 +4532,36 @@ document.addEventListener(
     ) {
 
       requestWakeLock();
+    }
+  }
+);
+
+
+/* =========================================================
+   AIDE / À PROPOS
+========================================================= */
+
+helpBtn.addEventListener(
+  "click",
+  () => {
+    helpModal.hidden = false;
+  }
+);
+
+
+closeHelpBtn.addEventListener(
+  "click",
+  () => {
+    helpModal.hidden = true;
+  }
+);
+
+
+helpModal.addEventListener(
+  "click",
+  event => {
+    if (event.target === helpModal) {
+      helpModal.hidden = true;
     }
   }
 );
@@ -8320,28 +8500,63 @@ launchBtn.addEventListener(
    PAUSE / REPRISE
 ========================================================= */
 
-pauseBtn.addEventListener(
-  "click",
-  () => {
+function toggleReadingPause() {
 
-    if (
-      listening ||
-      speedModeActive
-    ) {
+  if (
+    countdownRunning ||
+    !words.length
+  ) {
+    return;
+  }
 
-      pauseActiveReading(
-        "En pause"
-      );
+
+  if (
+    listening ||
+    speedModeActive
+  ) {
+
+    pauseActiveReading(
+      "En pause"
+    );
+  }
+  else {
+
+    if (readingMode === "speed") {
+      startFixedSpeed();
     }
     else {
-
-      if (readingMode === "speed") {
-        startFixedSpeed();
-      }
-      else {
-        startRecognition();
-      }
+      startRecognition();
     }
+  }
+}
+
+
+pauseBtn.addEventListener(
+  "click",
+  toggleReadingPause
+);
+
+
+/*
+  Un toucher dans la zone de lecture fait Pause / Reprise.
+  Les commandes, le panneau Réglages et la barre de progression
+  restent indépendants et ne déclenchent pas cette action.
+*/
+prompter.addEventListener(
+  "click",
+  event => {
+
+    if (
+      displayPanel.classList.contains("open") ||
+      countdownRunning
+    ) {
+      return;
+    }
+
+
+    event.preventDefault();
+
+    toggleReadingPause();
   }
 );
 
@@ -8758,14 +8973,30 @@ function applyMirrorMode(
 
 
   mirrorBtn.textContent =
-    mirrorMode
-      ? "🪞 Normal"
-      : "🪞 Miroir";
+    "🪞 Miroir";
+
+
+  mirrorBtn.setAttribute(
+    "aria-pressed",
+    String(mirrorMode)
+  );
+
+
+  displayMirrorBtn.setAttribute(
+    "aria-pressed",
+    String(mirrorMode)
+  );
+
+
+  settingsMirrorBtn.setAttribute(
+    "aria-pressed",
+    String(mirrorMode)
+  );
 
 
   mirrorBtn.title =
     mirrorMode
-      ? "Désactiver le mode miroir"
+      ? "Mode miroir activé — cliquer pour désactiver"
       : "Activer le mode miroir";
 
 
@@ -8846,16 +9077,32 @@ function applyRotationMode(
   );
 
 
+  rotateBtn.setAttribute(
+    "aria-pressed",
+    String(rotation180Mode)
+  );
+
+
+  displayRotateBtn.setAttribute(
+    "aria-pressed",
+    String(rotation180Mode)
+  );
+
+
+  settingsRotateBtn.setAttribute(
+    "aria-pressed",
+    String(rotation180Mode)
+  );
+
+
   rotateBtn.title =
     rotation180Mode
-      ? "Revenir à l'orientation normale"
+      ? "Rotation 180° activée — cliquer pour désactiver"
       : "Faire pivoter l'affichage à 180 degrés";
 
 
   displayRotateBtn.textContent =
-    rotation180Mode
-      ? "↻ Rotation normale"
-      : "↻ Rotation 180°";
+    "↻ Rotation 180°";
 
 
   if (save) {
