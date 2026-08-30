@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.13
+  Prompteur vocal V5.5.14
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -1004,6 +1004,36 @@ button:active {
   flex: 1;
 }
 
+.remoteHostMainActions {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.remoteHostMainActions .settingsActionButton {
+  width: 100%;
+}
+
+.remoteLaunchButton {
+  background: #2563EB;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+  font-weight: 800;
+}
+
+.remoteLaunchButton:hover {
+  background: #1D4ED8;
+}
+
+.remoteStopSessionButton {
+  width: 100%;
+  margin-top: 9px;
+  background: transparent;
+  color: #CBD5E1;
+  border-color: #475569;
+}
+
 .remotePrivacyNote {
   margin-top: 12px;
   color: #94A3B8;
@@ -1013,7 +1043,8 @@ button:active {
 
 @media (max-width: 400px) {
   .remoteSecondaryGrid,
-  .remoteConnectActions {
+  .remoteConnectActions,
+  .remoteHostMainActions {
     grid-template-columns: 1fr;
   }
 
@@ -2822,7 +2853,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.13</span>
+            <span id="appVersionLabel">Version V5.5.14</span>
           </div>
 
           <div class="appActionButtons">
@@ -3367,8 +3398,9 @@ button:active {
     </div>
 
     <p class="remoteIntro">
-      Laissez cette session active, puis lancez votre texte normalement.
-      Sur le second appareil, ouvrez Prompteur vocal et saisissez le code ci-dessous.
+      Connectez votre second appareil avec le QR code ou le code ci-dessous.
+      Vous pourrez ensuite revenir aux réglages ou lancer directement le prompteur
+      sans fermer la session télécommande.
     </p>
 
     <div class="remoteCodeLabel">
@@ -3403,16 +3435,30 @@ button:active {
       Création de la session…
     </div>
 
-    <div class="remoteFooterActions">
+    <div class="remoteHostMainActions">
 
       <button
-        id="remoteStopHostBtn"
+        id="remoteBackSettingsBtn"
         class="settingsActionButton"
       >
-        ⏹ Fermer la session
+        ← Retour aux réglages
+      </button>
+
+      <button
+        id="remoteLaunchPrompterBtn"
+        class="settingsActionButton remoteLaunchButton"
+      >
+        ▶ Lancer le prompteur
       </button>
 
     </div>
+
+    <button
+      id="remoteStopHostBtn"
+      class="settingsActionButton remoteStopSessionButton"
+    >
+      ⏹ Fermer la session
+    </button>
 
     <div class="remotePrivacyNote">
       Le code est temporaire. Cette fonction ne transmet pas votre texte :
@@ -3699,7 +3745,9 @@ button:active {
         Sur l'appareil principal, choisissez Créer une session. Sur le second appareil,
         choisissez Contrôler un prompteur puis Scanner un QR code, ou saisissez manuellement
         le code à 6 caractères. La télécommande permet Pause/Reprendre,
-        retour au début, réglage rapide de la taille du texte et vitesse −/+ en mode Vitesse fixe.
+        retour au début, réglage rapide de la taille du texte et vitesse −/+.
+        Une commande Vitesse −/+ bascule automatiquement le prompteur en Vitesse fixe
+        et démarre ce moteur si le lecteur est déjà ouvert.
         Le texte du prompteur n'est pas transmis.
       </p>
 
@@ -3711,7 +3759,7 @@ button:active {
       </p>
 
       <div class="helpTip">
-        <strong>Prompteur vocal — V5.5.13</strong><br>
+        <strong>Prompteur vocal — V5.5.14</strong><br>
         © 2026 C. Declerck — Tous droits réservés.
       </div>
 
@@ -4072,6 +4120,12 @@ const remoteQr =
 const remoteHostStatus =
   document.getElementById("remoteHostStatus");
 
+const remoteBackSettingsBtn =
+  document.getElementById("remoteBackSettingsBtn");
+
+const remoteLaunchPrompterBtn =
+  document.getElementById("remoteLaunchPrompterBtn");
+
 const remoteStopHostBtn =
   document.getElementById("remoteStopHostBtn");
 
@@ -4229,7 +4283,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.13";
+const APP_VERSION = "5.5.14";
 
 const TAB_ID =
   "tab_" +
@@ -5708,6 +5762,98 @@ function stopRemoteStateTimer() {
 }
 
 
+function applyRemoteFixedSpeedChange(
+  delta
+) {
+
+  /*
+    La télécommande utilise Vitesse −/+ comme une vraie commande
+    de lecture, pas seulement comme un réglage numérique.
+
+    - Si le suivi vocal est actif, on l'arrête proprement.
+    - On conserve currentWord / fixedWordProgress.
+    - On bascule en mode Vitesse fixe.
+    - Si le lecteur est déjà visible, le moteur de vitesse démarre.
+    - Si le moteur de vitesse tourne déjà, on ne le redémarre pas :
+      la nouvelle valeur est simplement prise en compte.
+  */
+
+  fixedWpm =
+    Math.max(
+      80,
+      Math.min(
+        240,
+        fixedWpm + delta
+      )
+    );
+
+
+  const readerIsActive =
+    readerScreen.style.display ===
+    "block";
+
+
+  const fixedSpeedWasAlreadyRunning =
+    speedModeActive;
+
+
+  if (
+    listening &&
+    !speedModeActive
+  ) {
+
+    pauseActiveReading(
+      "Passage en vitesse fixe"
+    );
+  }
+
+
+  readingMode =
+    "speed";
+
+
+  applyReadingSettings();
+
+  scheduleDraftAutosave();
+
+
+  /*
+    Pendant le compte à rebours, on ne force pas le démarrage :
+    runCountdown() lancera automatiquement le mode désormais choisi.
+  */
+  if (
+    readerIsActive &&
+    !countdownRunning
+  ) {
+
+    if (fixedSpeedWasAlreadyRunning) {
+
+      targetScrollSpeed =
+        getFixedScrollSpeed();
+
+
+      statusText.textContent =
+        "Vitesse fixe — " +
+        fixedWpm +
+        " mots/min";
+
+
+      statusBox.classList.add(
+        "listening"
+      );
+
+
+      pauseBtn.textContent =
+        "⏸ Pause";
+    }
+    else {
+
+      startFixedSpeed();
+    }
+  }
+}
+
+
 function executeRemoteCommand(
   action
 ) {
@@ -5744,46 +5890,18 @@ function executeRemoteCommand(
 
     case "speedMinus":
 
-      fixedWpm =
-        Math.max(
-          80,
-          fixedWpm - 10
-        );
-
-
-      applyReadingSettings();
-      scheduleDraftAutosave();
-
-
-      if (speedModeActive) {
-        statusText.textContent =
-          "Vitesse fixe — " +
-          fixedWpm +
-          " mots/min";
-      }
+      applyRemoteFixedSpeedChange(
+        -10
+      );
 
       break;
 
 
     case "speedPlus":
 
-      fixedWpm =
-        Math.min(
-          240,
-          fixedWpm + 10
-        );
-
-
-      applyReadingSettings();
-      scheduleDraftAutosave();
-
-
-      if (speedModeActive) {
-        statusText.textContent =
-          "Vitesse fixe — " +
-          fixedWpm +
-          " mots/min";
-      }
+      applyRemoteFixedSpeedChange(
+        10
+      );
 
       break;
 
@@ -6204,6 +6322,35 @@ remoteHostModal.addEventListener(
 );
 
 
+remoteBackSettingsBtn.addEventListener(
+  "click",
+  () => {
+
+    /*
+      Retour à la page de préparation sans fermer la session.
+    */
+    remoteHostModal.hidden =
+      true;
+  }
+);
+
+
+remoteLaunchPrompterBtn.addEventListener(
+  "click",
+  () => {
+
+    /*
+      Le bouton de lancement principal reste l'unique point d'entrée
+      de la logique de démarrage. La session télécommande reste active.
+    */
+    remoteHostModal.hidden =
+      true;
+
+    launchBtn.click();
+  }
+);
+
+
 remoteStopHostBtn.addEventListener(
   "click",
   () => {
@@ -6252,23 +6399,23 @@ function updateRemoteControllerUI(
 
 
   remoteSpeedMinusBtn.disabled =
-    !speedMode;
+    false;
 
 
   remoteSpeedPlusBtn.disabled =
-    !speedMode;
+    false;
 
 
   remoteSpeedMinusBtn.title =
     speedMode
       ? "Réduire la vitesse de 10 mots/min"
-      : "Disponible uniquement en mode Vitesse fixe";
+      : "Passer en Vitesse fixe et réduire la vitesse de 10 mots/min";
 
 
   remoteSpeedPlusBtn.title =
     speedMode
       ? "Augmenter la vitesse de 10 mots/min"
-      : "Disponible uniquement en mode Vitesse fixe";
+      : "Passer en Vitesse fixe et augmenter la vitesse de 10 mots/min";
 
 
   const progress =
