@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.17
+  Prompteur vocal V5.5.18
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -2930,7 +2930,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.17</span>
+            <span id="appVersionLabel">Version V5.5.18</span>
           </div>
 
           <div class="appActionButtons">
@@ -3859,7 +3859,8 @@ button:active {
         Une commande Vitesse −/+ quitte immédiatement le suivi vocal,
         bascule le prompteur en Vitesse fixe et démarre ce moteur à la position courante.
         Le bouton Suivi vocal permet de revenir au moteur vocal au même endroit.
-        Sur la télécommande, le moteur sélectionné apparaît en vert.
+        Sur la télécommande, le moteur réellement sélectionné sur le prompteur apparaît en vert.
+        La télécommande se synchronise avec l'appareil principal et n'utilise pas son propre réglage local.
         Une fois connectée, l'interface se compacte automatiquement pour garder les commandes
         principales visibles sans défilement sur un téléphone standard.
         Le mode Vitesse fixe démarre et reprend progressivement pendant environ 3 secondes.
@@ -3874,7 +3875,7 @@ button:active {
       </p>
 
       <div class="helpTip">
-        <strong>Prompteur vocal — V5.5.17</strong><br>
+        <strong>Prompteur vocal — V5.5.18</strong><br>
         © 2026 C. Declerck — Tous droits réservés.
       </div>
 
@@ -4421,7 +4422,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.17";
+const APP_VERSION = "5.5.18";
 
 const TAB_ID =
   "tab_" +
@@ -5823,6 +5824,14 @@ function getRemoteReadingState() {
   }
 
 
+  const engine =
+    speedModeActive
+      ? "speed"
+      : listening
+        ? "voice"
+        : readingMode;
+
+
   return {
     type:
       "state",
@@ -5830,8 +5839,11 @@ function getRemoteReadingState() {
     state:
       state,
 
+    engine:
+      engine,
+
     mode:
-      readingMode === "speed"
+      engine === "speed"
         ? "Vitesse fixe"
         : "Suivi vocal",
 
@@ -6197,8 +6209,23 @@ function attachHostConnection(
     "data",
     data => {
 
+      if (!data) {
+        return;
+      }
+
+
       if (
-        !data ||
+        data.type ===
+        "requestState"
+      ) {
+
+        sendRemoteState();
+
+        return;
+      }
+
+
+      if (
         data.type !==
           "command" ||
         typeof data.action !==
@@ -6590,6 +6617,46 @@ remoteStopHostBtn.addEventListener(
 );
 
 
+function resetRemoteEngineIndicators() {
+
+  remoteVoiceBtn.classList.remove(
+    "remoteEngineActive"
+  );
+
+
+  remoteSpeedMinusBtn.classList.remove(
+    "remoteEngineActive"
+  );
+
+
+  remoteSpeedPlusBtn.classList.remove(
+    "remoteEngineActive"
+  );
+
+
+  remoteVoiceBtn.setAttribute(
+    "aria-pressed",
+    "false"
+  );
+
+
+  remoteSpeedMinusBtn.setAttribute(
+    "aria-pressed",
+    "false"
+  );
+
+
+  remoteSpeedPlusBtn.setAttribute(
+    "aria-pressed",
+    "false"
+  );
+
+
+  remoteModeText.textContent =
+    "Synchronisation…";
+}
+
+
 function updateRemoteControllerUI(
   state
 ) {
@@ -6603,14 +6670,31 @@ function updateRemoteControllerUI(
   }
 
 
+  setRemoteControllerStatus(
+    "Télécommande connectée.",
+    "connected"
+  );
+
+
   remoteStateText.textContent =
     state.state ||
     "Prêt";
 
 
+  const remoteEngine =
+    state.engine === "speed"
+      ? "speed"
+      : state.engine === "voice"
+        ? "voice"
+        : null;
+
+
   const speedMode =
-    state.mode ===
-    "Vitesse fixe";
+    remoteEngine === "speed";
+
+
+  const voiceMode =
+    remoteEngine === "voice";
 
 
   remoteModeText.textContent =
@@ -6627,7 +6711,7 @@ function updateRemoteControllerUI(
 
   remoteVoiceBtn.classList.toggle(
     "remoteEngineActive",
-    !speedMode
+    voiceMode
   );
 
 
@@ -6645,7 +6729,7 @@ function updateRemoteControllerUI(
 
   remoteVoiceBtn.setAttribute(
     "aria-pressed",
-    String(!speedMode)
+    String(voiceMode)
   );
 
 
@@ -6662,9 +6746,9 @@ function updateRemoteControllerUI(
 
 
   remoteVoiceBtn.title =
-    speedMode
-      ? "Revenir au suivi vocal à la position courante"
-      : "Suivi vocal actif";
+    voiceMode
+      ? "Suivi vocal actif sur le prompteur"
+      : "Passer le prompteur en suivi vocal à la position courante";
 
 
   remoteSpeedMinusBtn.disabled =
@@ -6794,6 +6878,9 @@ function stopRemoteControllerConnection(
   setRemoteControllerStatus(
     "Non connecté."
   );
+
+
+  resetRemoteEngineIndicators();
 
 
   updateRemoteSettingsStatus();
@@ -7220,6 +7307,9 @@ function connectRemoteController(
   );
 
 
+  resetRemoteEngineIndicators();
+
+
   const peer =
     new Peer(
       {
@@ -7298,9 +7388,22 @@ function connectRemoteController(
 
 
           setRemoteControllerStatus(
-            "Télécommande connectée.",
+            "Télécommande connectée — synchronisation du mode…",
             "connected"
           );
+
+
+          try {
+
+            connection.send(
+              {
+                type:
+                  "requestState"
+              }
+            );
+          }
+
+          catch (error) {}
 
 
           updateRemoteSettingsStatus();
@@ -7447,6 +7550,15 @@ remoteControlBtn.addEventListener(
 
     remoteControllerModal.hidden =
       false;
+
+
+    if (
+      !remoteControllerConnection ||
+      !remoteControllerConnection.open
+    ) {
+
+      resetRemoteEngineIndicators();
+    }
 
 
     setTimeout(
