@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.16
+  Prompteur vocal V5.5.17
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -752,6 +752,28 @@ button:active {
   width: min(540px, 100%);
 }
 
+.remoteControllerDialog {
+  max-height: min(94dvh, 760px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.remoteControllerDialog.remoteControllerConnected {
+  overflow: hidden;
+}
+
+.remoteControllerDialog.remoteControllerConnected .remoteControllerSetup {
+  display: none;
+}
+
+.remoteControllerDialog.remoteControllerConnected .remotePrivacyNote {
+  display: none;
+}
+
+.remoteControllerDialog.remoteControllerConnected .historyHeader {
+  margin-bottom: 8px;
+}
+
 .remoteCodeLabel {
   margin-top: 6px;
   color: #94A3B8;
@@ -914,8 +936,8 @@ button:active {
 }
 
 .remoteStateCard {
-  padding: 13px;
-  margin-bottom: 12px;
+  padding: 10px 11px;
+  margin-bottom: 8px;
   border: 1px solid #334155;
   border-radius: 12px;
   background: #111827;
@@ -963,8 +985,8 @@ button:active {
 
 .remoteMainButton {
   width: 100%;
-  min-height: 72px;
-  margin-bottom: 10px;
+  min-height: 56px;
+  margin-bottom: 8px;
   border-radius: 14px;
   background: #2563EB;
   color: #FFFFFF;
@@ -976,11 +998,11 @@ button:active {
 .remoteSecondaryGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 9px;
+  gap: 7px;
 }
 
 .remoteModeLabel {
-  margin: 14px 0 7px;
+  margin: 8px 0 5px;
   color: #94A3B8;
   font-size: 11px;
   font-weight: 700;
@@ -991,8 +1013,8 @@ button:active {
 .remoteModeGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 9px;
-  margin-bottom: 12px;
+  gap: 7px;
+  margin-bottom: 8px;
 }
 
 .remoteVoiceModeButton {
@@ -1015,8 +1037,8 @@ button:active {
 }
 
 .remoteSecondaryButton {
-  min-height: 54px;
-  padding: 8px;
+  min-height: 42px;
+  padding: 6px 8px;
   border-radius: 11px;
   background: #1E293B;
   color: #F8FAFC;
@@ -1027,8 +1049,8 @@ button:active {
 
 .remoteFooterActions {
   display: flex;
-  gap: 9px;
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .remoteFooterActions button {
@@ -1073,16 +1095,38 @@ button:active {
 }
 
 @media (max-width: 400px) {
-  .remoteSecondaryGrid,
-  .remoteModeGrid,
   .remoteConnectActions,
   .remoteHostMainActions {
     grid-template-columns: 1fr;
   }
 
-  .remoteVoiceModeButton,
-  .remoteResetButton {
-    grid-column: auto;
+  .remoteControllerDialog.remoteControllerConnected .remoteModeGrid,
+  .remoteControllerDialog.remoteControllerConnected .remoteSecondaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .remoteControllerDialog.remoteControllerConnected .remoteVoiceModeButton,
+  .remoteControllerDialog.remoteControllerConnected .remoteResetButton {
+    grid-column: 1 / -1;
+  }
+
+  .remoteControllerDialog.remoteControllerConnected {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .remoteControllerDialog.remoteControllerConnected .historyHeader h2 {
+    font-size: 18px;
+  }
+
+  .remoteControllerDialog.remoteControllerConnected .remoteMainButton {
+    min-height: 52px;
+    font-size: 17px;
+  }
+
+  .remoteControllerDialog.remoteControllerConnected .remoteSecondaryButton {
+    min-height: 40px;
+    font-size: 13px;
   }
 }
 
@@ -2886,7 +2930,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.16</span>
+            <span id="appVersionLabel">Version V5.5.17</span>
           </div>
 
           <div class="appActionButtons">
@@ -3514,7 +3558,10 @@ button:active {
   hidden
 >
 
-  <div class="historyDialog remoteDialog">
+  <div
+    id="remoteControllerDialog"
+    class="historyDialog remoteDialog remoteControllerDialog"
+  >
 
     <div class="historyHeader">
 
@@ -3530,6 +3577,11 @@ button:active {
       </button>
 
     </div>
+
+    <div
+      id="remoteControllerSetup"
+      class="remoteControllerSetup"
+    >
 
     <p class="remoteIntro">
       Saisissez le code affiché par l'appareil qui fait défiler le texte.
@@ -3597,11 +3649,21 @@ button:active {
       Non connecté.
     </div>
 
+    </div>
+
     <div
       id="remoteControls"
       class="remoteControls"
       hidden
     >
+
+      <div
+        id="remoteConnectedBadge"
+        class="remoteStatus connected"
+        style="margin:0 0 8px"
+      >
+        Télécommande connectée
+      </div>
 
       <div class="remoteStateCard">
 
@@ -3798,6 +3860,8 @@ button:active {
         bascule le prompteur en Vitesse fixe et démarre ce moteur à la position courante.
         Le bouton Suivi vocal permet de revenir au moteur vocal au même endroit.
         Sur la télécommande, le moteur sélectionné apparaît en vert.
+        Une fois connectée, l'interface se compacte automatiquement pour garder les commandes
+        principales visibles sans défilement sur un téléphone standard.
         Le mode Vitesse fixe démarre et reprend progressivement pendant environ 3 secondes.
         Le texte du prompteur n'est pas transmis.
       </p>
@@ -3810,7 +3874,7 @@ button:active {
       </p>
 
       <div class="helpTip">
-        <strong>Prompteur vocal — V5.5.16</strong><br>
+        <strong>Prompteur vocal — V5.5.17</strong><br>
         © 2026 C. Declerck — Tous droits réservés.
       </div>
 
@@ -4183,6 +4247,12 @@ const remoteStopHostBtn =
 const remoteControllerModal =
   document.getElementById("remoteControllerModal");
 
+const remoteControllerDialog =
+  document.getElementById("remoteControllerDialog");
+
+const remoteControllerSetup =
+  document.getElementById("remoteControllerSetup");
+
 const closeRemoteControllerBtn =
   document.getElementById("closeRemoteControllerBtn");
 
@@ -4351,7 +4421,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.16";
+const APP_VERSION = "5.5.17";
 
 const TAB_ID =
   "tab_" +
@@ -6698,6 +6768,11 @@ function stopRemoteControllerConnection(
     true;
 
 
+  remoteControllerDialog.classList.remove(
+    "remoteControllerConnected"
+  );
+
+
   remoteConnectBtn.disabled =
     false;
 
@@ -7217,6 +7292,11 @@ function connectRemoteController(
             false;
 
 
+          remoteControllerDialog.classList.add(
+            "remoteControllerConnected"
+          );
+
+
           setRemoteControllerStatus(
             "Télécommande connectée.",
             "connected"
@@ -7257,6 +7337,11 @@ function connectRemoteController(
 
           remoteControls.hidden =
             true;
+
+
+          remoteControllerDialog.classList.remove(
+            "remoteControllerConnected"
+          );
 
 
           remoteConnectBtn.disabled =
@@ -7309,6 +7394,11 @@ function connectRemoteController(
 
       remoteControls.hidden =
         true;
+
+
+      remoteControllerDialog.classList.remove(
+        "remoteControllerConnected"
+      );
 
 
       remoteConnectBtn.disabled =
