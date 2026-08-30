@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.12
+  Prompteur vocal V5.5.13
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -849,6 +849,62 @@ button:active {
   box-shadow: 0 0 0 3px rgba(59,130,246,.15);
 }
 
+.remoteConnectActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.remoteConnectActions .settingsActionButton {
+  width: 100%;
+}
+
+.remoteScannerPanel {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #0B1220;
+}
+
+.remoteScannerPanel[hidden] {
+  display: none !important;
+}
+
+.remoteScannerTitle {
+  margin-bottom: 9px;
+  color: #E2E8F0;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+#remoteQrReader {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #000000;
+}
+
+#remoteQrReader video {
+  width: 100% !important;
+  border-radius: 10px;
+}
+
+.remoteScannerHelp {
+  margin-top: 8px;
+  color: #94A3B8;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.remoteScannerStop {
+  width: 100%;
+  margin-top: 9px;
+}
+
 .remoteControls {
   margin-top: 14px;
 }
@@ -956,7 +1012,8 @@ button:active {
 }
 
 @media (max-width: 400px) {
-  .remoteSecondaryGrid {
+  .remoteSecondaryGrid,
+  .remoteConnectActions {
     grid-template-columns: 1fr;
   }
 
@@ -2765,7 +2822,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.12</span>
+            <span id="appVersionLabel">Version V5.5.13</span>
           </div>
 
           <div class="appActionButtons">
@@ -3411,13 +3468,48 @@ button:active {
       aria-label="Code de connexion à six caractères"
     >
 
-    <button
-      id="remoteConnectBtn"
-      class="settingsActionButton"
-      style="width:100%"
+    <div class="remoteConnectActions">
+
+      <button
+        id="remoteScanQrBtn"
+        class="settingsActionButton"
+      >
+        📷 Scanner un QR code
+      </button>
+
+      <button
+        id="remoteConnectBtn"
+        class="settingsActionButton"
+      >
+        🔗 Se connecter
+      </button>
+
+    </div>
+
+    <div
+      id="remoteScannerPanel"
+      class="remoteScannerPanel"
+      hidden
     >
-      🔗 Se connecter
-    </button>
+
+      <div class="remoteScannerTitle">
+        Placez le QR code du prompteur dans le cadre
+      </div>
+
+      <div id="remoteQrReader"></div>
+
+      <div class="remoteScannerHelp">
+        L'accès à la caméra est utilisé uniquement pour lire le QR code de connexion.
+      </div>
+
+      <button
+        id="remoteStopScanBtn"
+        class="settingsActionButton remoteScannerStop"
+      >
+        ✕ Fermer la caméra
+      </button>
+
+    </div>
 
     <div
       id="remoteControllerStatus"
@@ -3604,8 +3696,9 @@ button:active {
 
       <h3>📱 Télécommande virtuelle</h3>
       <p>
-        Sur l'appareil principal, choisissez Créer une session puis scannez le QR code
-        ou utilisez le code à 6 caractères. La télécommande permet Pause/Reprendre,
+        Sur l'appareil principal, choisissez Créer une session. Sur le second appareil,
+        choisissez Contrôler un prompteur puis Scanner un QR code, ou saisissez manuellement
+        le code à 6 caractères. La télécommande permet Pause/Reprendre,
         retour au début, réglage rapide de la taille du texte et vitesse −/+ en mode Vitesse fixe.
         Le texte du prompteur n'est pas transmis.
       </p>
@@ -3618,7 +3711,7 @@ button:active {
       </p>
 
       <div class="helpTip">
-        <strong>Prompteur vocal — V5.5.12</strong><br>
+        <strong>Prompteur vocal — V5.5.13</strong><br>
         © 2026 C. Declerck — Tous droits réservés.
       </div>
 
@@ -3671,6 +3764,8 @@ button:active {
 </div>
 
 
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 <script
   src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
@@ -3989,6 +4084,18 @@ const closeRemoteControllerBtn =
 const remoteCodeInput =
   document.getElementById("remoteCodeInput");
 
+const remoteScanQrBtn =
+  document.getElementById("remoteScanQrBtn");
+
+const remoteScannerPanel =
+  document.getElementById("remoteScannerPanel");
+
+const remoteQrReader =
+  document.getElementById("remoteQrReader");
+
+const remoteStopScanBtn =
+  document.getElementById("remoteStopScanBtn");
+
 const remoteConnectBtn =
   document.getElementById("remoteConnectBtn");
 
@@ -4122,7 +4229,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.12";
+const APP_VERSION = "5.5.13";
 
 const TAB_ID =
   "tab_" +
@@ -5238,6 +5345,12 @@ let remoteReconnectAttempts =
 let remoteManualDisconnect =
   false;
 
+let remoteQrScanner =
+  null;
+
+let remoteQrScanning =
+  false;
+
 
 function remoteLibraryAvailable() {
 
@@ -6334,6 +6447,279 @@ function scheduleRemoteReconnect() {
 }
 
 
+function extractRemoteCodeFromQr(
+  decodedText
+) {
+
+  const raw =
+    String(
+      decodedText ||
+      ""
+    ).trim();
+
+
+  /*
+    Cas 1 : le QR contient l'URL générée par Prompteur vocal,
+    par exemple ?remote=ABC123.
+  */
+  try {
+
+    const url =
+      new URL(
+        raw
+      );
+
+
+    const fromUrl =
+      (
+        url.searchParams.get(
+          "remote"
+        ) ||
+        ""
+      )
+        .toUpperCase()
+        .replace(
+          /[^A-Z2-9]/g,
+          ""
+        )
+        .slice(
+          0,
+          6
+        );
+
+
+    if (fromUrl.length === 6) {
+      return fromUrl;
+    }
+  }
+
+  catch (error) {}
+
+
+  /*
+    Cas 2 : un QR contient directement les 6 caractères.
+  */
+  const direct =
+    raw
+      .toUpperCase()
+      .replace(
+        /[^A-Z2-9]/g,
+        ""
+      )
+      .slice(
+        0,
+        6
+      );
+
+
+  return direct.length === 6
+    ? direct
+    : "";
+}
+
+
+async function stopRemoteQrScanner() {
+
+  if (!remoteQrScanner) {
+
+    remoteScannerPanel.hidden =
+      true;
+
+    remoteQrScanning =
+      false;
+
+    return;
+  }
+
+
+  try {
+
+    if (remoteQrScanning) {
+
+      await remoteQrScanner.stop();
+    }
+  }
+
+  catch (error) {}
+
+
+  try {
+
+    await remoteQrScanner.clear();
+  }
+
+  catch (error) {}
+
+
+  remoteQrScanner =
+    null;
+
+  remoteQrScanning =
+    false;
+
+  remoteScannerPanel.hidden =
+    true;
+
+  remoteQrReader.innerHTML =
+    "";
+}
+
+
+async function startRemoteQrScanner() {
+
+  if (
+    typeof window.Html5Qrcode !==
+    "function"
+  ) {
+
+    setRemoteControllerStatus(
+      "Le lecteur de QR code n'a pas pu être chargé. Vérifiez la connexion Internet.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  await stopRemoteQrScanner();
+
+
+  remoteScannerPanel.hidden =
+    false;
+
+
+  setRemoteControllerStatus(
+    "Ouverture de la caméra…"
+  );
+
+
+  remoteQrScanner =
+    new Html5Qrcode(
+      "remoteQrReader"
+    );
+
+
+  try {
+
+    await remoteQrScanner.start(
+      {
+        facingMode:
+          "environment"
+      },
+      {
+        fps:
+          10,
+
+        qrbox:
+          {
+            width:
+              230,
+
+            height:
+              230
+          },
+
+        aspectRatio:
+          1
+      },
+      async decodedText => {
+
+        const code =
+          extractRemoteCodeFromQr(
+            decodedText
+          );
+
+
+        if (!code) {
+
+          setRemoteControllerStatus(
+            "QR code lu, mais il ne correspond pas à une session Prompteur vocal.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        remoteCodeInput.value =
+          code;
+
+
+        lastRemoteControllerCode =
+          code;
+
+
+        setRemoteControllerStatus(
+          "QR code reconnu — connexion…"
+        );
+
+
+        await stopRemoteQrScanner();
+
+
+        setTimeout(
+          () => {
+
+            connectRemoteController();
+          },
+          120
+        );
+      },
+      () => {
+        /*
+          Les échecs intermédiaires de lecture sont normaux pendant
+          que la caméra cherche le QR : aucun message à afficher.
+        */
+      }
+    );
+
+
+    remoteQrScanning =
+      true;
+
+
+    setRemoteControllerStatus(
+      "Caméra active — visez le QR code du prompteur."
+    );
+  }
+
+  catch (error) {
+
+    remoteQrScanner =
+      null;
+
+    remoteQrScanning =
+      false;
+
+    remoteScannerPanel.hidden =
+      true;
+
+
+    let message =
+      "Impossible d'ouvrir la caméra.";
+
+
+    if (
+      location.protocol !==
+        "https:" &&
+      location.hostname !==
+        "localhost"
+    ) {
+
+      message =
+        "La caméra nécessite une connexion HTTPS.";
+    }
+
+
+    setRemoteControllerStatus(
+      message +
+      " Vous pouvez toujours saisir le code manuellement.",
+      "error"
+    );
+  }
+}
+
+
 function connectRemoteController(
   automatic = false
 ) {
@@ -6645,6 +7031,8 @@ closeRemoteControllerBtn.addEventListener(
       La liaison reste active si on masque simplement la fenêtre.
       Il suffit de rouvrir Télécommande pour retrouver les commandes.
     */
+    stopRemoteQrScanner();
+
     remoteControllerModal.hidden =
       true;
   }
@@ -6659,6 +7047,8 @@ remoteControllerModal.addEventListener(
       event.target ===
       remoteControllerModal
     ) {
+
+      stopRemoteQrScanner();
 
       remoteControllerModal.hidden =
         true;
@@ -6699,6 +7089,36 @@ remoteCodeInput.addEventListener(
 
       connectRemoteController();
     }
+  }
+);
+
+
+remoteScanQrBtn.addEventListener(
+  "click",
+  () => {
+
+    startRemoteQrScanner();
+  }
+);
+
+
+remoteStopScanBtn.addEventListener(
+  "click",
+  () => {
+
+    stopRemoteQrScanner();
+
+
+    setRemoteControllerStatus(
+      remoteControllerConnection &&
+      remoteControllerConnection.open
+        ? "Télécommande connectée."
+        : "Non connecté.",
+      remoteControllerConnection &&
+      remoteControllerConnection.open
+        ? "connected"
+        : ""
+    );
   }
 );
 
@@ -6875,6 +7295,8 @@ window.addEventListener(
   () => {
 
     stopRemoteStateTimer();
+
+    stopRemoteQrScanner();
 
 
     if (remoteHostPeer) {
