@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.10
+  Prompteur vocal V5.5.11
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -710,6 +710,219 @@ button:active {
   color: #94A3B8;
   font-size: 12px;
   line-height: 1.45;
+}
+
+
+/* =========================================================
+   TÉLÉCOMMANDE VIRTUELLE
+========================================================= */
+
+.remoteIntro {
+  color: #CBD5E1;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.remoteActionRow {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.remoteActionRow .settingsActionButton {
+  flex: 1 1 190px;
+}
+
+.remoteBeta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: #78350F;
+  color: #FDE68A;
+  font-size: 10px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.remoteDialog {
+  width: min(540px, 100%);
+}
+
+.remoteCodeLabel {
+  margin-top: 6px;
+  color: #94A3B8;
+  font-size: 12px;
+  text-align: center;
+}
+
+.remoteCode {
+  margin: 8px 0 4px;
+  padding: 14px;
+  border: 1px solid #3B82F6;
+  border-radius: 13px;
+  background: #111827;
+  color: #FFFFFF;
+  font-size: clamp(30px, 9vw, 44px);
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+}
+
+.remoteStatus {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #111827;
+  color: #CBD5E1;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.remoteStatus.connected {
+  border-color: rgba(34,197,94,.45);
+  color: #86EFAC;
+}
+
+.remoteStatus.error {
+  border-color: rgba(239,68,68,.5);
+  color: #FCA5A5;
+}
+
+.remoteCodeInput {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 14px;
+  margin: 8px 0 10px;
+  border: 1px solid #475569;
+  border-radius: 11px;
+  outline: none;
+  background: #0B1220;
+  color: #FFFFFF;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.remoteCodeInput:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+
+.remoteControls {
+  margin-top: 14px;
+}
+
+.remoteControls[hidden] {
+  display: none !important;
+}
+
+.remoteStateCard {
+  padding: 13px;
+  margin-bottom: 12px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #111827;
+}
+
+.remoteStateTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.remoteStateText {
+  font-weight: 700;
+}
+
+.remoteModeText {
+  color: #94A3B8;
+  font-size: 12px;
+}
+
+.remoteProgressTrack {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #334155;
+}
+
+.remoteProgressFill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: #2563EB;
+  transition: width .18s linear;
+}
+
+.remoteProgressLabel {
+  margin-top: 6px;
+  color: #94A3B8;
+  font-size: 11px;
+  text-align: right;
+}
+
+.remoteMainButton {
+  width: 100%;
+  min-height: 72px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  background: #2563EB;
+  color: #FFFFFF;
+  font-size: 19px;
+  font-weight: 800;
+  touch-action: manipulation;
+}
+
+.remoteSecondaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+}
+
+.remoteSecondaryButton {
+  min-height: 54px;
+  padding: 8px;
+  border-radius: 11px;
+  background: #1E293B;
+  color: #F8FAFC;
+  border: 1px solid #475569;
+  font-weight: 700;
+  touch-action: manipulation;
+}
+
+.remoteFooterActions {
+  display: flex;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.remoteFooterActions button {
+  flex: 1;
+}
+
+.remotePrivacyNote {
+  margin-top: 12px;
+  color: #94A3B8;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 560px) {
+  .remoteSecondaryGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 
@@ -2457,6 +2670,53 @@ button:active {
       <div class="settingsSection">
 
         <h3>
+          Télécommande virtuelle
+          <span class="remoteBeta">BÊTA</span>
+        </h3>
+
+        <p class="remoteIntro">
+          Pilotez ce prompteur depuis un deuxième téléphone, une tablette
+          ou un ordinateur. Seuls les ordres de commande et l'état de lecture
+          sont transmis : le texte reste sur l'appareil principal.
+        </p>
+
+        <div class="remoteActionRow">
+
+          <button
+            id="remoteCreateBtn"
+            class="settingsActionButton"
+          >
+            📡 Créer une session
+          </button>
+
+          <button
+            id="remoteControlBtn"
+            class="settingsActionButton"
+          >
+            📱 Contrôler un prompteur
+          </button>
+
+        </div>
+
+        <div
+          id="remoteSettingsStatus"
+          class="settingsStatus"
+        >
+          Aucune session active.
+        </div>
+
+        <div class="offlineNote">
+          Une connexion Internet est nécessaire pour établir la liaison.
+          Cette première version de test utilise le service de signalisation
+          PeerJS Cloud.
+        </div>
+
+      </div>
+
+
+      <div class="settingsSection">
+
+        <h3>
           Application
         </h3>
 
@@ -2464,7 +2724,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.10</span>
+            <span id="appVersionLabel">Version V5.5.11</span>
           </div>
 
           <div class="appActionButtons">
@@ -2982,6 +3242,233 @@ button:active {
 
 
 <!-- =======================================================
+     TÉLÉCOMMANDE — APPAREIL PRINCIPAL
+======================================================= -->
+
+<div
+  id="remoteHostModal"
+  class="historyModal"
+  hidden
+>
+
+  <div class="historyDialog remoteDialog">
+
+    <div class="historyHeader">
+
+      <h2>
+        📡 Session télécommande
+      </h2>
+
+      <button
+        id="closeRemoteHostBtn"
+        aria-label="Masquer"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <p class="remoteIntro">
+      Laissez cette session active, puis lancez votre texte normalement.
+      Sur le second appareil, ouvrez Prompteur vocal et saisissez le code ci-dessous.
+    </p>
+
+    <div class="remoteCodeLabel">
+      Code de connexion
+    </div>
+
+    <div
+      id="remoteSessionCode"
+      class="remoteCode"
+    >
+      ------
+    </div>
+
+    <div
+      id="remoteHostStatus"
+      class="remoteStatus"
+    >
+      Création de la session…
+    </div>
+
+    <div class="remoteFooterActions">
+
+      <button
+        id="remoteStopHostBtn"
+        class="settingsActionButton"
+      >
+        ⏹ Fermer la session
+      </button>
+
+    </div>
+
+    <div class="remotePrivacyNote">
+      Le code est temporaire. Cette fonction ne transmet pas votre texte :
+      uniquement des commandes et des informations d'état comme Lecture,
+      Pause et progression.
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     TÉLÉCOMMANDE — APPAREIL DE CONTRÔLE
+======================================================= -->
+
+<div
+  id="remoteControllerModal"
+  class="historyModal"
+  hidden
+>
+
+  <div class="historyDialog remoteDialog">
+
+    <div class="historyHeader">
+
+      <h2>
+        📱 Télécommande
+      </h2>
+
+      <button
+        id="closeRemoteControllerBtn"
+        aria-label="Masquer"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <p class="remoteIntro">
+      Saisissez le code affiché par l'appareil qui fait défiler le texte.
+    </p>
+
+    <input
+      id="remoteCodeInput"
+      class="remoteCodeInput"
+      type="text"
+      maxlength="6"
+      autocomplete="off"
+      autocapitalize="characters"
+      spellcheck="false"
+      placeholder="ABC123"
+      aria-label="Code de connexion à six caractères"
+    >
+
+    <button
+      id="remoteConnectBtn"
+      class="settingsActionButton"
+      style="width:100%"
+    >
+      🔗 Se connecter
+    </button>
+
+    <div
+      id="remoteControllerStatus"
+      class="remoteStatus"
+    >
+      Non connecté.
+    </div>
+
+    <div
+      id="remoteControls"
+      class="remoteControls"
+      hidden
+    >
+
+      <div class="remoteStateCard">
+
+        <div class="remoteStateTop">
+
+          <span
+            id="remoteStateText"
+            class="remoteStateText"
+          >
+            Prêt
+          </span>
+
+          <span
+            id="remoteModeText"
+            class="remoteModeText"
+          >
+            —
+          </span>
+
+        </div>
+
+        <div class="remoteProgressTrack">
+          <div
+            id="remoteProgressFill"
+            class="remoteProgressFill"
+          ></div>
+        </div>
+
+        <div
+          id="remoteProgressLabel"
+          class="remoteProgressLabel"
+        >
+          0 %
+        </div>
+
+      </div>
+
+      <button
+        id="remoteToggleBtn"
+        class="remoteMainButton"
+      >
+        ⏸ Pause
+      </button>
+
+      <div class="remoteSecondaryGrid">
+
+        <button
+          id="remoteResetBtn"
+          class="remoteSecondaryButton"
+        >
+          ↩ Début
+        </button>
+
+        <button
+          id="remoteFontMinusBtn"
+          class="remoteSecondaryButton"
+        >
+          A−
+        </button>
+
+        <button
+          id="remoteFontPlusBtn"
+          class="remoteSecondaryButton"
+        >
+          A+
+        </button>
+
+      </div>
+
+      <div class="remoteFooterActions">
+
+        <button
+          id="remoteDisconnectBtn"
+          class="settingsActionButton"
+        >
+          Déconnecter
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="remotePrivacyNote">
+      La connexion est conçue pour un contrôle ponctuel.
+      Cette version BÊTA nécessite Internet lors de l'établissement de la liaison.
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
      AIDE / À PROPOS
 ======================================================= -->
 
@@ -3046,6 +3533,14 @@ button:active {
         Les PDF constitués uniquement d'images numérisées nécessitent un OCR et ne sont pas encore pris en charge.
       </p>
 
+      <h3>📱 Télécommande virtuelle</h3>
+      <p>
+        Sur l'appareil principal, choisissez Créer une session puis notez le code à 6 caractères.
+        Sur le second appareil, choisissez Contrôler un prompteur et saisissez ce code.
+        La télécommande permet Pause/Reprendre, retour au début et réglage rapide de la taille du texte.
+        Le texte du prompteur n'est pas transmis.
+      </p>
+
       <h3>📶 Hors connexion</h3>
       <p>
         L'interface et les textes enregistrés peuvent rester disponibles après mise en cache.
@@ -3054,7 +3549,7 @@ button:active {
       </p>
 
       <div class="helpTip">
-        <strong>Prompteur vocal — V5.5.10</strong><br>
+        <strong>Prompteur vocal — V5.5.11</strong><br>
         © 2026 C. Declerck — Tous droits réservés.
       </div>
 
@@ -3107,6 +3602,8 @@ button:active {
 </div>
 
 
+
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 
 <script>
 
@@ -3380,6 +3877,75 @@ const helpModal =
 const closeHelpBtn =
   document.getElementById("closeHelpBtn");
 
+const remoteCreateBtn =
+  document.getElementById("remoteCreateBtn");
+
+const remoteControlBtn =
+  document.getElementById("remoteControlBtn");
+
+const remoteSettingsStatus =
+  document.getElementById("remoteSettingsStatus");
+
+const remoteHostModal =
+  document.getElementById("remoteHostModal");
+
+const closeRemoteHostBtn =
+  document.getElementById("closeRemoteHostBtn");
+
+const remoteSessionCode =
+  document.getElementById("remoteSessionCode");
+
+const remoteHostStatus =
+  document.getElementById("remoteHostStatus");
+
+const remoteStopHostBtn =
+  document.getElementById("remoteStopHostBtn");
+
+const remoteControllerModal =
+  document.getElementById("remoteControllerModal");
+
+const closeRemoteControllerBtn =
+  document.getElementById("closeRemoteControllerBtn");
+
+const remoteCodeInput =
+  document.getElementById("remoteCodeInput");
+
+const remoteConnectBtn =
+  document.getElementById("remoteConnectBtn");
+
+const remoteControllerStatus =
+  document.getElementById("remoteControllerStatus");
+
+const remoteControls =
+  document.getElementById("remoteControls");
+
+const remoteStateText =
+  document.getElementById("remoteStateText");
+
+const remoteModeText =
+  document.getElementById("remoteModeText");
+
+const remoteProgressFill =
+  document.getElementById("remoteProgressFill");
+
+const remoteProgressLabel =
+  document.getElementById("remoteProgressLabel");
+
+const remoteToggleBtn =
+  document.getElementById("remoteToggleBtn");
+
+const remoteResetBtn =
+  document.getElementById("remoteResetBtn");
+
+const remoteFontMinusBtn =
+  document.getElementById("remoteFontMinusBtn");
+
+const remoteFontPlusBtn =
+  document.getElementById("remoteFontPlusBtn");
+
+const remoteDisconnectBtn =
+  document.getElementById("remoteDisconnectBtn");
+
 const checkUpdateBtn =
   document.getElementById("checkUpdateBtn");
 
@@ -3471,7 +4037,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.10";
+const APP_VERSION = "5.5.11";
 
 const TAB_ID =
   "tab_" +
@@ -4535,6 +5101,1323 @@ document.addEventListener(
     }
   }
 );
+
+
+/* =========================================================
+   TÉLÉCOMMANDE VIRTUELLE — BÊTA
+========================================================= */
+
+/*
+  Architecture de test :
+  - PeerJS Cloud sert uniquement à mettre les deux navigateurs en relation.
+  - Une fois la connexion WebRTC établie, les ordres passent par un DataChannel.
+  - Aucun contenu du texte n'est envoyé.
+*/
+
+const REMOTE_PEER_PREFIX =
+  "prompteur-vocal-";
+
+const REMOTE_CODE_CHARS =
+  "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+let remoteHostPeer =
+  null;
+
+let remoteHostConnection =
+  null;
+
+let remoteHostCode =
+  "";
+
+let remoteControllerPeer =
+  null;
+
+let remoteControllerConnection =
+  null;
+
+let remoteStateTimer =
+  null;
+
+
+function remoteLibraryAvailable() {
+
+  return (
+    typeof window.Peer ===
+    "function"
+  );
+}
+
+
+function generateRemoteCode() {
+
+  let code =
+    "";
+
+  for (
+    let i = 0;
+    i < 6;
+    i += 1
+  ) {
+
+    code +=
+      REMOTE_CODE_CHARS[
+        Math.floor(
+          Math.random() *
+          REMOTE_CODE_CHARS.length
+        )
+      ];
+  }
+
+  return code;
+}
+
+
+function setRemoteHostStatus(
+  message,
+  kind = ""
+) {
+
+  remoteHostStatus.textContent =
+    message;
+
+  remoteHostStatus.classList.remove(
+    "connected",
+    "error"
+  );
+
+  if (kind) {
+    remoteHostStatus.classList.add(
+      kind
+    );
+  }
+}
+
+
+function setRemoteControllerStatus(
+  message,
+  kind = ""
+) {
+
+  remoteControllerStatus.textContent =
+    message;
+
+  remoteControllerStatus.classList.remove(
+    "connected",
+    "error"
+  );
+
+  if (kind) {
+    remoteControllerStatus.classList.add(
+      kind
+    );
+  }
+}
+
+
+function updateRemoteSettingsStatus() {
+
+  if (
+    remoteHostPeer &&
+    !remoteHostPeer.destroyed
+  ) {
+
+    if (
+      remoteHostConnection &&
+      remoteHostConnection.open
+    ) {
+
+      remoteSettingsStatus.textContent =
+        "Télécommande connectée — code " +
+        remoteHostCode +
+        ".";
+
+      remoteSettingsStatus.classList.add(
+        "online"
+      );
+
+      remoteSettingsStatus.classList.remove(
+        "offline"
+      );
+    }
+    else {
+
+      remoteSettingsStatus.textContent =
+        "Session active — code " +
+        remoteHostCode +
+        " — en attente d'une télécommande.";
+
+      remoteSettingsStatus.classList.remove(
+        "online",
+        "offline"
+      );
+    }
+
+    remoteCreateBtn.textContent =
+      "📡 Voir la session";
+
+    return;
+  }
+
+
+  if (
+    remoteControllerConnection &&
+    remoteControllerConnection.open
+  ) {
+
+    remoteSettingsStatus.textContent =
+      "Cet appareil est connecté comme télécommande.";
+
+    remoteSettingsStatus.classList.add(
+      "online"
+    );
+
+    remoteSettingsStatus.classList.remove(
+      "offline"
+    );
+
+    return;
+  }
+
+
+  remoteSettingsStatus.textContent =
+    "Aucune session active.";
+
+  remoteSettingsStatus.classList.remove(
+    "online",
+    "offline"
+  );
+
+  remoteCreateBtn.textContent =
+    "📡 Créer une session";
+}
+
+
+function getRemoteReadingState() {
+
+  let state =
+    "Préparation";
+
+  if (
+    readerScreen.style.display ===
+    "block"
+  ) {
+
+    if (countdownRunning) {
+
+      state =
+        "Départ";
+    }
+    else if (
+      listening ||
+      speedModeActive
+    ) {
+
+      state =
+        "Lecture";
+    }
+    else {
+
+      state =
+        "Pause";
+    }
+  }
+
+
+  let progress =
+    0;
+
+  if (words.length) {
+
+    progress =
+      words.length <= 1
+        ? 100
+        : getDisplayedWordIndex() /
+          (words.length - 1) *
+          100;
+  }
+
+
+  return {
+    type:
+      "state",
+
+    state:
+      state,
+
+    mode:
+      readingMode === "speed"
+        ? "Vitesse fixe"
+        : "Suivi vocal",
+
+    progress:
+      Math.max(
+        0,
+        Math.min(
+          100,
+          Math.round(progress)
+        )
+      ),
+
+    fontSize:
+      currentFontSize
+  };
+}
+
+
+function sendRemoteState() {
+
+  if (
+    !remoteHostConnection ||
+    !remoteHostConnection.open
+  ) {
+    return;
+  }
+
+
+  try {
+
+    remoteHostConnection.send(
+      getRemoteReadingState()
+    );
+  }
+
+  catch (error) {}
+}
+
+
+function startRemoteStateTimer() {
+
+  stopRemoteStateTimer();
+
+  remoteStateTimer =
+    setInterval(
+      sendRemoteState,
+      500
+    );
+}
+
+
+function stopRemoteStateTimer() {
+
+  if (remoteStateTimer) {
+
+    clearInterval(
+      remoteStateTimer
+    );
+
+    remoteStateTimer =
+      null;
+  }
+}
+
+
+function executeRemoteCommand(
+  action
+) {
+
+  switch (action) {
+
+    case "toggle":
+
+      toggleReadingPause();
+
+      break;
+
+
+    case "reset":
+
+      resetBtn.click();
+
+      break;
+
+
+    case "fontMinus":
+
+      fontMinus.click();
+
+      break;
+
+
+    case "fontPlus":
+
+      fontPlus.click();
+
+      break;
+
+
+    default:
+
+      return;
+  }
+
+
+  setTimeout(
+    sendRemoteState,
+    40
+  );
+}
+
+
+function attachHostConnection(
+  connection
+) {
+
+  if (
+    remoteHostConnection &&
+    remoteHostConnection.open
+  ) {
+
+    connection.on(
+      "open",
+      () => {
+
+        try {
+          connection.close();
+        }
+        catch (error) {}
+      }
+    );
+
+    return;
+  }
+
+
+  remoteHostConnection =
+    connection;
+
+
+  connection.on(
+    "open",
+    () => {
+
+      setRemoteHostStatus(
+        "Télécommande connectée.",
+        "connected"
+      );
+
+
+      updateRemoteSettingsStatus();
+
+      sendRemoteState();
+
+      startRemoteStateTimer();
+    }
+  );
+
+
+  connection.on(
+    "data",
+    data => {
+
+      if (
+        !data ||
+        data.type !==
+          "command" ||
+        typeof data.action !==
+          "string"
+      ) {
+        return;
+      }
+
+
+      executeRemoteCommand(
+        data.action
+      );
+    }
+  );
+
+
+  connection.on(
+    "close",
+    () => {
+
+      remoteHostConnection =
+        null;
+
+      stopRemoteStateTimer();
+
+
+      if (
+        remoteHostPeer &&
+        !remoteHostPeer.destroyed
+      ) {
+
+        setRemoteHostStatus(
+          "Session active — en attente d'une télécommande."
+        );
+      }
+
+
+      updateRemoteSettingsStatus();
+    }
+  );
+
+
+  connection.on(
+    "error",
+    () => {
+
+      setRemoteHostStatus(
+        "La liaison avec la télécommande a rencontré une erreur.",
+        "error"
+      );
+    }
+  );
+}
+
+
+function createRemoteHostPeer(
+  attempt = 0
+) {
+
+  if (!remoteLibraryAvailable()) {
+
+    setRemoteHostStatus(
+      "Impossible de charger le module de télécommande. Vérifiez la connexion Internet puis rechargez l'application.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const code =
+    generateRemoteCode();
+
+  const peerId =
+    REMOTE_PEER_PREFIX +
+    code;
+
+
+  remoteHostCode =
+    code;
+
+  remoteSessionCode.textContent =
+    code;
+
+
+  setRemoteHostStatus(
+    "Création de la session…"
+  );
+
+
+  const peer =
+    new Peer(
+      peerId,
+      {
+        debug:
+          1
+      }
+    );
+
+
+  remoteHostPeer =
+    peer;
+
+
+  peer.on(
+    "open",
+    () => {
+
+      if (
+        remoteHostPeer !==
+        peer
+      ) {
+        return;
+      }
+
+
+      setRemoteHostStatus(
+        "Session prête — en attente d'une télécommande."
+      );
+
+
+      updateRemoteSettingsStatus();
+    }
+  );
+
+
+  peer.on(
+    "connection",
+    connection => {
+
+      if (
+        remoteHostPeer !==
+        peer
+      ) {
+        return;
+      }
+
+
+      attachHostConnection(
+        connection
+      );
+    }
+  );
+
+
+  peer.on(
+    "error",
+    error => {
+
+      if (
+        remoteHostPeer !==
+        peer
+      ) {
+        return;
+      }
+
+
+      if (
+        error &&
+        error.type ===
+          "unavailable-id" &&
+        attempt < 4
+      ) {
+
+        try {
+          peer.destroy();
+        }
+        catch (destroyError) {}
+
+
+        remoteHostPeer =
+          null;
+
+
+        createRemoteHostPeer(
+          attempt + 1
+        );
+
+        return;
+      }
+
+
+      setRemoteHostStatus(
+        "Impossible d'établir la session. Vérifiez Internet et réessayez.",
+        "error"
+      );
+
+
+      updateRemoteSettingsStatus();
+    }
+  );
+
+
+  peer.on(
+    "disconnected",
+    () => {
+
+      if (
+        remoteHostPeer !==
+        peer
+      ) {
+        return;
+      }
+
+
+      setRemoteHostStatus(
+        "Connexion au service de mise en relation interrompue. La télécommande déjà connectée peut continuer à fonctionner.",
+        "error"
+      );
+    }
+  );
+}
+
+
+function stopRemoteHostSession() {
+
+  stopRemoteStateTimer();
+
+
+  if (remoteHostConnection) {
+
+    try {
+      remoteHostConnection.close();
+    }
+    catch (error) {}
+
+    remoteHostConnection =
+      null;
+  }
+
+
+  if (remoteHostPeer) {
+
+    try {
+      remoteHostPeer.destroy();
+    }
+    catch (error) {}
+
+    remoteHostPeer =
+      null;
+  }
+
+
+  remoteHostCode =
+    "";
+
+  remoteSessionCode.textContent =
+    "------";
+
+
+  setRemoteHostStatus(
+    "Session fermée."
+  );
+
+
+  updateRemoteSettingsStatus();
+}
+
+
+remoteCreateBtn.addEventListener(
+  "click",
+  () => {
+
+    remoteHostModal.hidden =
+      false;
+
+
+    if (
+      remoteHostPeer &&
+      !remoteHostPeer.destroyed
+    ) {
+
+      remoteSessionCode.textContent =
+        remoteHostCode;
+
+
+      if (
+        remoteHostConnection &&
+        remoteHostConnection.open
+      ) {
+
+        setRemoteHostStatus(
+          "Télécommande connectée.",
+          "connected"
+        );
+      }
+      else {
+
+        setRemoteHostStatus(
+          "Session active — en attente d'une télécommande."
+        );
+      }
+
+      return;
+    }
+
+
+    createRemoteHostPeer();
+  }
+);
+
+
+closeRemoteHostBtn.addEventListener(
+  "click",
+  () => {
+
+    /*
+      Masquer la fenêtre ne ferme pas la session.
+      L'utilisateur peut donc lancer le lecteur ensuite.
+    */
+    remoteHostModal.hidden =
+      true;
+  }
+);
+
+
+remoteHostModal.addEventListener(
+  "click",
+  event => {
+
+    if (
+      event.target ===
+      remoteHostModal
+    ) {
+
+      remoteHostModal.hidden =
+        true;
+    }
+  }
+);
+
+
+remoteStopHostBtn.addEventListener(
+  "click",
+  () => {
+
+    stopRemoteHostSession();
+
+    remoteHostModal.hidden =
+      true;
+  }
+);
+
+
+function updateRemoteControllerUI(
+  state
+) {
+
+  if (
+    !state ||
+    state.type !==
+      "state"
+  ) {
+    return;
+  }
+
+
+  remoteStateText.textContent =
+    state.state ||
+    "Prêt";
+
+
+  remoteModeText.textContent =
+    state.mode ||
+    "—";
+
+
+  const progress =
+    Number.isFinite(
+      state.progress
+    )
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            state.progress
+          )
+        )
+      : 0;
+
+
+  remoteProgressFill.style.width =
+    progress +
+    "%";
+
+
+  remoteProgressLabel.textContent =
+    Math.round(progress) +
+    " %";
+
+
+  remoteToggleBtn.textContent =
+    state.state ===
+      "Lecture"
+      ? "⏸ Pause"
+      : "▶ Reprendre";
+}
+
+
+function stopRemoteControllerConnection() {
+
+  if (remoteControllerConnection) {
+
+    try {
+      remoteControllerConnection.close();
+    }
+    catch (error) {}
+
+    remoteControllerConnection =
+      null;
+  }
+
+
+  if (remoteControllerPeer) {
+
+    try {
+      remoteControllerPeer.destroy();
+    }
+    catch (error) {}
+
+    remoteControllerPeer =
+      null;
+  }
+
+
+  remoteControls.hidden =
+    true;
+
+
+  remoteConnectBtn.disabled =
+    false;
+
+
+  remoteConnectBtn.textContent =
+    "🔗 Se connecter";
+
+
+  setRemoteControllerStatus(
+    "Non connecté."
+  );
+
+
+  updateRemoteSettingsStatus();
+}
+
+
+function connectRemoteController() {
+
+  if (!remoteLibraryAvailable()) {
+
+    setRemoteControllerStatus(
+      "Impossible de charger le module de télécommande. Vérifiez la connexion Internet puis rechargez l'application.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const code =
+    remoteCodeInput.value
+      .toUpperCase()
+      .replace(
+        /[^A-Z2-9]/g,
+        ""
+      )
+      .slice(
+        0,
+        6
+      );
+
+
+  remoteCodeInput.value =
+    code;
+
+
+  if (code.length !== 6) {
+
+    setRemoteControllerStatus(
+      "Saisissez le code à 6 caractères affiché par le prompteur.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  stopRemoteControllerConnection();
+
+
+  remoteCodeInput.value =
+    code;
+
+
+  remoteConnectBtn.disabled =
+    true;
+
+
+  remoteConnectBtn.textContent =
+    "Connexion…";
+
+
+  setRemoteControllerStatus(
+    "Recherche du prompteur…"
+  );
+
+
+  const peer =
+    new Peer(
+      {
+        debug:
+          1
+      }
+    );
+
+
+  remoteControllerPeer =
+    peer;
+
+
+  peer.on(
+    "open",
+    () => {
+
+      if (
+        remoteControllerPeer !==
+        peer
+      ) {
+        return;
+      }
+
+
+      const connection =
+        peer.connect(
+          REMOTE_PEER_PREFIX +
+          code,
+          {
+            reliable:
+              true
+          }
+        );
+
+
+      remoteControllerConnection =
+        connection;
+
+
+      connection.on(
+        "open",
+        () => {
+
+          if (
+            remoteControllerConnection !==
+            connection
+          ) {
+            return;
+          }
+
+
+          remoteConnectBtn.disabled =
+            false;
+
+
+          remoteConnectBtn.textContent =
+            "✓ Connecté";
+
+
+          remoteControls.hidden =
+            false;
+
+
+          setRemoteControllerStatus(
+            "Télécommande connectée.",
+            "connected"
+          );
+
+
+          updateRemoteSettingsStatus();
+        }
+      );
+
+
+      connection.on(
+        "data",
+        data => {
+
+          updateRemoteControllerUI(
+            data
+          );
+        }
+      );
+
+
+      connection.on(
+        "close",
+        () => {
+
+          if (
+            remoteControllerConnection !==
+            connection
+          ) {
+            return;
+          }
+
+
+          remoteControllerConnection =
+            null;
+
+
+          remoteControls.hidden =
+            true;
+
+
+          remoteConnectBtn.disabled =
+            false;
+
+
+          remoteConnectBtn.textContent =
+            "🔗 Se connecter";
+
+
+          setRemoteControllerStatus(
+            "La connexion au prompteur a été fermée.",
+            "error"
+          );
+
+
+          updateRemoteSettingsStatus();
+        }
+      );
+
+
+      connection.on(
+        "error",
+        () => {
+
+          setRemoteControllerStatus(
+            "Erreur de liaison avec le prompteur.",
+            "error"
+          );
+        }
+      );
+    }
+  );
+
+
+  peer.on(
+    "error",
+    error => {
+
+      if (
+        remoteControllerPeer !==
+        peer
+      ) {
+        return;
+      }
+
+
+      remoteControls.hidden =
+        true;
+
+
+      remoteConnectBtn.disabled =
+        false;
+
+
+      remoteConnectBtn.textContent =
+        "🔗 Se connecter";
+
+
+      let message =
+        "Impossible de se connecter au prompteur.";
+
+
+      if (
+        error &&
+        error.type ===
+          "peer-unavailable"
+      ) {
+
+        message =
+          "Code introuvable. Vérifiez le code et que la session est toujours ouverte.";
+      }
+
+
+      setRemoteControllerStatus(
+        message,
+        "error"
+      );
+
+
+      updateRemoteSettingsStatus();
+    }
+  );
+}
+
+
+remoteControlBtn.addEventListener(
+  "click",
+  () => {
+
+    remoteControllerModal.hidden =
+      false;
+
+
+    setTimeout(
+      () => {
+        remoteCodeInput.focus();
+      },
+      50
+    );
+  }
+);
+
+
+closeRemoteControllerBtn.addEventListener(
+  "click",
+  () => {
+
+    /*
+      La liaison reste active si on masque simplement la fenêtre.
+      Il suffit de rouvrir Télécommande pour retrouver les commandes.
+    */
+    remoteControllerModal.hidden =
+      true;
+  }
+);
+
+
+remoteControllerModal.addEventListener(
+  "click",
+  event => {
+
+    if (
+      event.target ===
+      remoteControllerModal
+    ) {
+
+      remoteControllerModal.hidden =
+        true;
+    }
+  }
+);
+
+
+remoteCodeInput.addEventListener(
+  "input",
+  () => {
+
+    remoteCodeInput.value =
+      remoteCodeInput.value
+        .toUpperCase()
+        .replace(
+          /[^A-Z2-9]/g,
+          ""
+        )
+        .slice(
+          0,
+          6
+        );
+  }
+);
+
+
+remoteCodeInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key ===
+      "Enter"
+    ) {
+
+      event.preventDefault();
+
+      connectRemoteController();
+    }
+  }
+);
+
+
+remoteConnectBtn.addEventListener(
+  "click",
+  connectRemoteController
+);
+
+
+function sendRemoteCommand(
+  action
+) {
+
+  if (
+    !remoteControllerConnection ||
+    !remoteControllerConnection.open
+  ) {
+
+    setRemoteControllerStatus(
+      "La télécommande n'est pas connectée.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  try {
+
+    remoteControllerConnection.send(
+      {
+        type:
+          "command",
+
+        action:
+          action
+      }
+    );
+  }
+
+  catch (error) {
+
+    setRemoteControllerStatus(
+      "Impossible d'envoyer la commande.",
+      "error"
+    );
+  }
+}
+
+
+remoteToggleBtn.addEventListener(
+  "click",
+  () => {
+
+    sendRemoteCommand(
+      "toggle"
+    );
+  }
+);
+
+
+remoteResetBtn.addEventListener(
+  "click",
+  () => {
+
+    sendRemoteCommand(
+      "reset"
+    );
+  }
+);
+
+
+remoteFontMinusBtn.addEventListener(
+  "click",
+  () => {
+
+    sendRemoteCommand(
+      "fontMinus"
+    );
+  }
+);
+
+
+remoteFontPlusBtn.addEventListener(
+  "click",
+  () => {
+
+    sendRemoteCommand(
+      "fontPlus"
+    );
+  }
+);
+
+
+remoteDisconnectBtn.addEventListener(
+  "click",
+  () => {
+
+    stopRemoteControllerConnection();
+  }
+);
+
+
+window.addEventListener(
+  "beforeunload",
+  () => {
+
+    stopRemoteStateTimer();
+
+
+    if (remoteHostPeer) {
+      try {
+        remoteHostPeer.destroy();
+      }
+      catch (error) {}
+    }
+
+
+    if (remoteControllerPeer) {
+      try {
+        remoteControllerPeer.destroy();
+      }
+      catch (error) {}
+    }
+  }
+);
+
+
+updateRemoteSettingsStatus();
 
 
 /* =========================================================
