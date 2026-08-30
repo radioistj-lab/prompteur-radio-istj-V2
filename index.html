@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!--
-  Prompteur vocal V5.5.7
+  Prompteur vocal V5.5.8
   © 2026 C. Declerck
   Tous droits réservés.
 -->
@@ -762,6 +762,12 @@ button:active {
 
   background: #0B1220;
   overflow: hidden;
+
+  transform-origin: center center;
+}
+
+#readerScreen.rotated180 {
+  transform: rotate(180deg);
 }
 
 
@@ -1590,7 +1596,8 @@ button:active {
   line-height: 1.35;
 }
 
-.readingModeButtons {
+.readingModeButtons,
+.orientationButtons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 7px;
@@ -1610,6 +1617,22 @@ button:active {
   background: #2563eb;
   border-color: #3b82f6;
   color: #fff;
+}
+
+.orientationButton {
+  min-height: 40px;
+  padding: 7px 8px;
+  border-radius: 9px;
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  font-size: 12px;
+}
+
+.orientationButton.active {
+  background: #1E3A5F;
+  border-color: #3B82F6;
+  color: #DBEAFE;
 }
 
 .speedHelp {
@@ -2360,7 +2383,7 @@ button:active {
 
           <div>
             <strong>Prompteur vocal</strong>
-            <span id="appVersionLabel">Version V5.5.7</span>
+            <span id="appVersionLabel">Version V5.5.8</span>
           </div>
 
           <button
@@ -2678,6 +2701,37 @@ button:active {
         step="1"
         value="43"
       >
+
+    </div>
+
+
+    <div class="settingGroup">
+
+      <div class="settingHeader">
+        <span>Orientation</span>
+      </div>
+
+      <div class="orientationButtons">
+
+        <button
+          id="displayMirrorBtn"
+          class="orientationButton"
+        >
+          🪞 Miroir
+        </button>
+
+        <button
+          id="displayRotateBtn"
+          class="orientationButton"
+        >
+          ↻ Rotation 180°
+        </button>
+
+      </div>
+
+      <div class="speedHelp">
+        Les deux options peuvent être combinées selon le support du téléprompteur.
+      </div>
 
     </div>
 
@@ -3033,6 +3087,12 @@ const displayWpmRange =
 const displayWpmValue =
   document.getElementById("displayWpmValue");
 
+const displayMirrorBtn =
+  document.getElementById("displayMirrorBtn");
+
+const displayRotateBtn =
+  document.getElementById("displayRotateBtn");
+
 const progressRange =
   document.getElementById("progressRange");
 
@@ -3198,6 +3258,8 @@ let autosaveTimer = null;
 
 let mirrorMode = false;
 
+let rotation180Mode = false;
+
 let countdownRunning = false;
 
 let currentSavedId = null;
@@ -3206,7 +3268,7 @@ let serviceWorkerRegistration = null;
 let waitingServiceWorker = null;
 let reloadingForUpdate = false;
 
-const APP_VERSION = "5.5.7";
+const APP_VERSION = "5.5.8";
 
 const TAB_ID =
   "tab_" +
@@ -8363,7 +8425,7 @@ displayBtn.addEventListener(
     ) {
 
       pauseActiveReading(
-        "En pause — réglages d'affichage"
+        "En pause — réglages"
       );
     }
 
@@ -8587,6 +8649,10 @@ function applyMirrorMode() {
     mirrorBtn.title =
       "Désactiver le mode miroir";
 
+    displayMirrorBtn.classList.add(
+      "active"
+    );
+
   }
 
   else {
@@ -8607,6 +8673,10 @@ function applyMirrorMode() {
 
     mirrorBtn.title =
       "Activer le mode miroir";
+
+    displayMirrorBtn.classList.remove(
+      "active"
+    );
   }
 }
 
@@ -8620,6 +8690,63 @@ mirrorBtn.addEventListener(
 
 
     applyMirrorMode();
+  }
+);
+
+
+displayMirrorBtn.addEventListener(
+  "click",
+  () => {
+
+    mirrorMode =
+      !mirrorMode;
+
+
+    applyMirrorMode();
+  }
+);
+
+
+/* =========================================================
+   ROTATION 180°
+========================================================= */
+
+function applyRotationMode() {
+
+  readerScreen.classList.toggle(
+    "rotated180",
+    rotation180Mode
+  );
+
+
+  displayRotateBtn.classList.toggle(
+    "active",
+    rotation180Mode
+  );
+
+
+  displayRotateBtn.textContent =
+    rotation180Mode
+      ? "↻ Rotation normale"
+      : "↻ Rotation 180°";
+
+
+  displayRotateBtn.title =
+    rotation180Mode
+      ? "Revenir à l'orientation normale"
+      : "Faire pivoter l'affichage du prompteur à 180 degrés";
+}
+
+
+displayRotateBtn.addEventListener(
+  "click",
+  () => {
+
+    rotation180Mode =
+      !rotation180Mode;
+
+
+    applyRotationMode();
   }
 );
 
@@ -8687,6 +8814,8 @@ restoreDraftIfAvailable();
 updateHistoryButton();
 
 applyMirrorMode();
+
+applyRotationMode();
 
 renderLibrary();
 
